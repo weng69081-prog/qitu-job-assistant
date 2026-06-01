@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>自动登录</title></head>
+<body>
+<script>
+// Get token from URL params
+const params = new URLSearchParams(window.location.search);
+const token = params.get('token');
+if (token) {
+  localStorage.setItem('token', token);
+  localStorage.setItem('user', JSON.stringify({username:'demo',nickname:'演示用户',id:22}));
+  const page = params.get('page') || 'dashboard';
+  window.location.href = '/' + page;
+} else {
+  document.write('<h2>缺少token参数</h2>');
+}
+</script>
+</body>
+</html>

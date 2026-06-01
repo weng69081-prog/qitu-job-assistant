@@ -1,0 +1,16 @@
+{
+  "name": "interview-agent",
+  "version": "1.0.0",
+  "description": "面向高校学生的求职全流程智能工具。",
+  "main": "sample-slide.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "pptxgenjs": "^4.0.1"
+  }
+}
