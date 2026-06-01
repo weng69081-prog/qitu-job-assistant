@@ -1,0 +1,183 @@
+[
+  {
+    "career": "元宇宙架构师",
+    "match": 85,
+    "difficulty": "高级",
+    "salary": "30K-80K",
+    "short_intro": "设计与构建元宇宙虚拟世界的专家",
+    "responsibilities": [
+      "规划元宇宙整体技术架构与空间设计",
+      "整合VR/AR、区块链、AI等关键技术",
+      "制定交互协议与数据标准",
+      "协调开发团队并保障系统性能与安全"
+    ],
+    "hard_requirements": [
+      "计算机、图形学或相关专业本科以上学历",
+      "精通3D引擎（如Unity/Unreal）及编程语言",
+      "熟悉区块链、分布式系统或云计算技术"
+    ],
+    "soft_requirements": [
+      "优秀的空间想象力与架构思维",
+      "强大的跨团队协作与沟通能力",
+      "快速学习新技术并适应行业变化"
+    ],
+    "growth_path": [
+      "初级(1-2年,15K-25K)→参与模块开发与场景搭建",
+      "中级(2-4年,25K-45K)→主导子系统设计与技术选型",
+      "高级(4年+,45K-80K+)→负责整体架构与战略规划"
+    ],
+    "trend": "技术融合加速，应用场景逐步拓展至社交、娱乐与工业",
+    "keywords": [
+      "元宇宙",
+      "虚拟现实",
+      "架构设计"
+    ],
+    "work_type": "技术类",
+    "suitable_audience": "具备技术背景，热爱创新，对虚拟世界有浓厚兴趣的人",
+    "avoid_tips": "缺乏编程或3D设计基础，不愿持续学习新技术的人",
+    "salary_tag": "30KK起",
+    "salary_table": [
+      {
+        "level": "应届/初级（0-2年）",
+        "range": "8K-15K"
+      },
+      {
+        "level": "中级（2-4年）",
+        "range": "15K-22K"
+      },
+      {
+        "level": "高级（4-6年）",
+        "range": "22K-30K"
+      },
+      {
+        "level": "资深/专家（6年+）",
+        "range": "30K-50K+"
+      }
+    ],
+    "ai_generated": true,
+    "source": "user_added",
+    "major_category": "计算机类",
+    "created_at": "2026-05-28T07:42:31.978125"
+  },
+  {
+    "career": "深度学习工程师",
+    "match": 95,
+    "difficulty": "中级",
+    "salary": "15K-40K",
+    "short_intro": "设计并实现深度学习模型解决实际问题",
+    "responsibilities": [
+      "设计并训练深度学习模型（如CNN、RNN、Transformer）",
+      "数据预处理、特征工程与模型调优",
+      "模型部署与性能优化（含推理加速）",
+      "跟踪前沿算法并落地到业务场景"
+    ],
+    "hard_requirements": [
+      "精通Python与至少一种深度学习框架（如PyTorch/TensorFlow）",
+      "扎实的数学基础（线性代数、概率统计、优化理论）",
+      "熟悉主流模型架构与训练技巧"
+    ],
+    "soft_requirements": [
+      "优秀的逻辑思维与问题分解能力",
+      "良好的沟通协作与文档撰写能力",
+      "持续学习与跟踪技术前沿的动力"
+    ],
+    "growth_path": [
+      "初级(1-2年,15K-25K)→参与模型开发与实验",
+      "中级(2-4年,25K-35K)→独立负责模块与性能优化",
+      "高级(4年+,35K-45K+)→主导算法方案与系统设计"
+    ],
+    "trend": "大模型与多模态技术推动行业快速发展",
+    "keywords": [
+      "深度学习",
+      "模型训练",
+      "PyTorch",
+      "算法优化"
+    ],
+    "work_type": "技术类",
+    "suitable_audience": "逻辑严谨、数学基础好、热爱技术探索的理工科背景者",
+    "avoid_tips": "缺乏耐心、数学基础薄弱或不喜欢动手实验者",
+    "salary_tag": "15KK起",
+    "salary_table": [
+      {
+        "level": "应届/初级（0-2年）",
+        "range": "8K-15K"
+      },
+      {
+        "level": "中级（2-4年）",
+        "range": "15K-22K"
+      },
+      {
+        "level": "高级（4-6年）",
+        "range": "22K-30K"
+      },
+      {
+        "level": "资深/专家（6年+）",
+        "range": "30K-50K+"
+      }
+    ],
+    "ai_generated": true,
+    "source": "user_added",
+    "major_category": "计算机类",
+    "created_at": "2026-05-28T07:42:43.325134"
+  },
+  {
+    "career": "AIGC应用开发工程师",
+    "match": 85,
+    "difficulty": "中级",
+    "salary": "15K-40K",
+    "short_intro": "利用生成式AI技术开发智能应用",
+    "responsibilities": [
+      "设计并实现基于大模型的AI应用",
+      "优化模型推理性能与成本",
+      "集成AIGC能力到现有产品",
+      "与产品、算法团队协作落地"
+    ],
+    "hard_requirements": [
+      "扎实的编程基础（Python/Java等）",
+      "熟悉大模型API或微调技术",
+      "了解云服务与部署流程"
+    ],
+    "soft_requirements": [
+      "快速学习新技术能力",
+      "良好的沟通协作能力",
+      "解决复杂问题的逻辑思维"
+    ],
+    "growth_path": [
+      "初级(1-2年,15K-25K)→参与模块开发，熟悉AIGC工具链",
+      "中级(2-4年,25K-35K)→独立负责应用开发与优化",
+      "高级(4年+,35K-40K+)→技术架构设计与团队指导"
+    ],
+    "trend": "AIGC技术加速渗透各行业，需求持续增长",
+    "keywords": [
+      "大模型",
+      "生成式AI",
+      "应用开发"
+    ],
+    "work_type": "技术类",
+    "suitable_audience": "对AI技术热情，具备编程基础，喜欢解决实际问题的人",
+    "avoid_tips": "不擅长持续学习或对新技术缺乏兴趣者",
+    "salary_tag": "15KK起",
+    "salary_table": [
+      {
+        "level": "应届/初级（0-2年）",
+        "range": "8K-15K"
+      },
+      {
+        "level": "中级（2-4年）",
+        "range": "15K-22K"
+      },
+      {
+        "level": "高级（4-6年）",
+        "range": "22K-30K"
+      },
+      {
+        "level": "资深/专家（6年+）",
+        "range": "30K-50K+"
+      }
+    ],
+    "ai_generated": true,
+    "source": "user_added",
+    "major_category": "计算机类",
+    "created_at": "2026-05-28T07:47:23.290684"
+  }
+]

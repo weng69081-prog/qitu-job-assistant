@@ -1,7 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from database import engine, Base
-from routers import career, interview, resume, job_match
+from routers import career, interview, resume, job_match, user, exam, bilibili, delivery, assistant
+import json
+import os
 
 # 创建数据库表
 Base.metadata.create_all(bind=engine)
@@ -20,11 +23,39 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+DEBUG_LOG_PATH = 'debug_logs.jsonl'
+
+@app.post('/api/debug-log')
+async def debug_log(request: Request):
+    body = await request.json()
+    with open(DEBUG_LOG_PATH, 'a') as f:
+        f.write(json.dumps(body, ensure_ascii=False) + '\n')
+    return JSONResponse({'ok': True})
+
+@app.get('/api/debug-logs')
+async def get_debug_logs():
+    if not os.path.exists(DEBUG_LOG_PATH):
+        return {'logs': []}
+    with open(DEBUG_LOG_PATH, 'r') as f:
+        lines = [json.loads(l) for l in f if l.strip()]
+    return {'logs': lines[-20:]}
+
+@app.delete('/api/debug-logs')
+async def clear_debug_logs():
+    if os.path.exists(DEBUG_LOG_PATH):
+        os.remove(DEBUG_LOG_PATH)
+    return {'ok': True}
+
 # 注册路由
 app.include_router(career.router)
 app.include_router(interview.router)
 app.include_router(resume.router)
 app.include_router(job_match.router)
+app.include_router(user.router)
+app.include_router(exam.router)
+app.include_router(bilibili.router)
+app.include_router(delivery.router)
+app.include_router(assistant.router)
 
 @app.get("/")
 def root():

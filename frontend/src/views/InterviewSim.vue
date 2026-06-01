@@ -1,123 +1,831 @@
 <template>
-  <div class="page">
-    <h2>🎤 面试模拟</h2>
-    <p class="hint">⭐ 核心功能 — 完整的AI模拟面试与多维度评测</p>
+  <div class="interview-sim">
+    <!-- ═══ 页面顶部 Banner ═══ -->
+    <PageBanner fullwidth
+      title="面试模拟"
+      description="AI 面试官实时对话，模拟真实面试场景，多维评估报告"
+      icon="fa-microphone"
+      variant="primary"
+    />
+    <!-- ============================================================
+         一、顶部标题区
+         ============================================================ -->
+    <section class="section-header">
+      <i class="fas fa-microphone header-icon"></i>
+      <h2 class="section-title">面试模拟</h2>
+      <p class="header-desc">多模态 AI 模拟面试，语音 + 视频 + 表情分析，真实还原面试场景</p>
+    </section>
 
-    <!-- 初始化 -->
-    <div v-if="step === 'init'" class="card">
-      <div class="form-group"><label>目标岗位</label>
-        <select v-model="position"><option>前端开发工程师</option><option>后端开发工程师</option><option>算法工程师</option></select>
+    <!-- ============================================================
+         二、核心操作区（Hero Card）
+         ============================================================ -->
+    <section class="zone-core">
+      <div class="zone-label"><i class="fas fa-bolt"></i> 核心操作</div>
+      <div class="hero-card" @click="$router.push('/interview/session')">
+        <div class="hero-bg-glow"></div>
+        <img src="/src/assets/xiaoju-glasses.png" class="hero-cat" alt="小橘面试官">
+        <div class="hero-content">
+          <div class="hero-icon-block">
+            <i class="fas fa-video hero-main-icon"></i>
+          </div>
+          <div class="hero-text-block">
+            <div class="hero-title">多模态 AI 模拟面试</div>
+            <div class="hero-desc">AI 面试官实时对话 · 语音互动 · 摄像头录制 · 多维评估报告</div>
+            <div class="hero-tags">
+              <span class="tag-pill"><i class="fas fa-microphone-alt"></i> 语音对话</span>
+              <span class="tag-pill"><i class="fas fa-camera"></i> 摄像头录制</span>
+              <span class="tag-pill"><i class="fas fa-chart-bar"></i> 多维评估</span>
+            </div>
+          </div>
+<div class="hero-action-block">
+            <span class="btn-primary hero-btn">开始面试</span>
+            <i class="fas fa-arrow-right hero-btn-arrow"></i>
+          </div>
+        </div>
       </div>
-      <div class="form-group"><label>面试题型</label>
-        <select v-model="questionType"><option>基础知识</option><option>算法题</option><option>项目经验</option></select>
-      </div>
-      <div class="form-group"><label>面试时长</label>
-        <select v-model="duration"><option :value="15">15分钟</option><option :value="30">30分钟</option></select>
-      </div>
-      <button @click="startInterview">🎬 开始面试</button>
-    </div>
+    </section>
 
-    <!-- 面试中 -->
-    <div v-else-if="step === 'answering'" class="card">
-      <div class="question-box">
-        <p class="q-label">第 {{ currentQ }} / {{ totalQ }} 题</p>
-        <p class="q-text">{{ question }}</p>
-      </div>
-      <div class="form-group">
-        <label>你的回答（后续将支持语音输入）</label>
-        <textarea v-model="answer" rows="4" placeholder="请输入你的回答..."></textarea>
-      </div>
-      <button @click="submitAnswer">📤 提交回答</button>
-    </div>
+    <!-- ============================================================
+         三、成长辅助区（今日任务 + 热门面经 + 折叠）
+         ============================================================ -->
+    <section class="zone-growth" :class="{ 'is-collapsed': growthCollapsed }">
+      <!-- 引导提示 -->
+      <transition name="guide-fade">
+        <div class="growth-guide" v-if="showGrowthGuide">
+          <i class="fas fa-lightbulb"></i> 这里可以领每日练习、看大厂面经
+        </div>
+      </transition>
 
-    <!-- 打分结果 -->
-    <div v-else-if="step === 'scoring'" class="card">
-      <h3>📊 本题得分</h3>
-      <div class="scores">
-        <div class="score-item">技术 <b>{{ score.tech }}</b></div>
-        <div class="score-item">表达 <b>{{ score.express }}</b></div>
-        <div class="score-item">仪态 <b>{{ score.emotion }}</b></div>
+      <!-- 区域头 -->
+      <div class="zone-growth-header">
+        <div class="zone-label" style="margin-bottom:0">
+          <i class="fas fa-seedling"></i> 成长辅助
+        </div>
+        <div class="growth-toggle" @click="growthCollapsed = !growthCollapsed">
+          <span>{{ growthCollapsed ? '展开' : '收起' }}</span>
+          <i class="fas fa-chevron-down toggle-arrow" :class="{ up: !growthCollapsed }"></i>
+        </div>
       </div>
-      <p class="comment">💬 {{ comment }}</p>
-      <button @click="nextQuestion" v-if="currentQ < totalQ">➡️ 下一题</button>
-      <button @click="finishInterview" v-else>📋 查看报告</button>
-    </div>
 
-    <!-- 最终报告 -->
-    <div v-else-if="step === 'report'" class="card">
-      <h3>📋 面试报告</h3>
-      <p class="overall">综合得分：<b>{{ overall }}</b></p>
-      <div class="scores">
-        <div class="score-item">技术：{{ scores.tech }}</div>
-        <div class="score-item">表达：{{ scores.express }}</div>
-        <div class="score-item">仪态：{{ scores.emotion }}</div>
+      <div class="growth-body" v-show="!growthCollapsed">
+        <!-- 左侧：今日面试小任务 -->
+        <div class="growth-left">
+          <div class="card daily-task-card">
+            <div class="daily-task-header">
+              <i class="fas fa-clipboard-list daily-task-icon"></i>
+              <span class="daily-task-title">今日面试小任务</span>
+            </div>
+            <div class="daily-task-content">
+              <div class="daily-task-name">{{ dailyTask.title }}</div>
+              <div class="daily-task-desc">{{ dailyTask.desc }}</div>
+              <div class="daily-task-meta"><i class="fas fa-clock"></i> 预计 {{ dailyTask.time }}</div>
+            </div>
+            <button class="btn-primary daily-task-btn" @click="$router.push(dailyTask.link)">
+              开始练习 <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 右侧：热门面经速览 -->
+        <div class="growth-right">
+          <div class="experience-header">
+            <span class="experience-title"><i class="fas fa-fire"></i> 热门面经速览</span>
+            <button class="btn-outline experience-refresh" @click="refreshExperiences">
+              <i class="fas fa-sync"></i> 换一批
+            </button>
+          </div>
+          <div class="experience-list">
+            <div
+              v-for="(exp, i) in displayedExperiences"
+              :key="i"
+              class="card experience-item"
+              @click="openExperience(exp)"
+            >
+              <span class="tag-pill exp-tag" :style="{ background: exp.tagColor + '18', color: exp.tagColor }">{{ exp.tag }}</span>
+              <span class="exp-title">{{ exp.title }}</span>
+              <i class="fas fa-chevron-right exp-arrow"></i>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="suggestions">
-        <h4>💡 改进建议</h4>
-        <li v-for="s in suggestions" :key="s">{{ s }}</li>
+    </section>
+
+    <!-- ============================================================
+         四、复盘记录区（等宽三卡片）
+         ============================================================ -->
+    <section class="zone-review">
+      <div class="section-header" style="margin-bottom:1rem;padding:0;">
+        <i class="fas fa-history"></i>
+        <h3 class="section-title" style="font-size:1.1rem;">复盘工具</h3>
       </div>
-      <button @click="reset">🔄 重新面试</button>
-    </div>
+      <div class="grid-3 review-cards">
+        <!-- 面试历史记录 -->
+        <div class="card stat-card review-card" @click="$router.push('/interview/history')">
+          <div class="review-card-icon-wrap" style="background:var(--primary-bg)">
+            <i class="fas fa-chart-bar review-card-icon" style="color:var(--primary)"></i>
+          </div>
+          <div class="review-card-title">面试历史记录</div>
+          <div class="review-card-stat">已完成 <b>{{ stats.total_interview_sessions }}</b> 次模拟</div>
+          <div class="review-card-hint">历次问答、表情分析、成绩趋势</div>
+          <div class="review-card-cta">查看详情 <i class="fas fa-arrow-right"></i></div>
+        </div>
+
+        <!-- 全部错题回顾 -->
+        <div class="card stat-card review-card" @click="$router.push('/interview/wrong-questions')">
+          <div class="review-card-icon-wrap" style="background:var(--accent-bg)">
+            <i class="fas fa-xmark review-card-icon" style="color:var(--accent)"></i>
+          </div>
+          <div class="review-card-title">全部错题回顾</div>
+          <div class="review-card-stat">共 <b>{{ interviewWrongTotal }}</b> 道待回顾</div>
+          <div class="review-card-hint">重新练习、标记掌握、清除错题</div>
+          <div class="review-card-cta">查看详情 <i class="fas fa-arrow-right"></i></div>
+        </div>
+
+        <!-- 我的收藏 -->
+        <div class="card stat-card review-card" @click="$router.push('/interview/saved-questions')">
+          <div class="review-card-icon-wrap" style="background:var(--accent-bg)">
+            <i class="fas fa-star review-card-icon" style="color:var(--accent)"></i>
+          </div>
+          <div class="review-card-title">我的收藏</div>
+          <div class="review-card-stat">已收藏 <b>{{ interviewSavedTotal }}</b> 道题</div>
+          <div class="review-card-hint">收藏的优质面试题，方便复习</div>
+          <div class="review-card-cta">查看详情 <i class="fas fa-arrow-right"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         五、底部辅助区
+         ============================================================ -->
+    <section class="helper-section">
+      <div class="helper-item" @click="showHelp = !showHelp">
+        <i class="fas fa-question-circle helper-icon"></i>
+        <span>使用帮助</span>
+      </div>
+      <span class="helper-dot">·</span>
+      <div class="helper-item" @click="showFeedback = !showFeedback">
+        <i class="fas fa-comment helper-icon"></i>
+        <span>意见反馈</span>
+      </div>
+    </section>
+
+    <!-- 使用帮助弹窗 -->
+    <el-dialog v-model="showHelp" width="480px" destroy-on-close>
+      <template #title>
+        <i class="fas fa-question-circle"></i> 使用帮助
+      </template>
+      <div class="help-content">
+        <div class="help-item">
+          <span class="help-num">1</span>
+          <span>点击「多模态 AI 模拟面试」开启一次完整的 AI 面试体验</span>
+        </div>
+        <div class="help-item">
+          <span class="help-num">2</span>
+          <span>选择岗位类型，AI 面试官会根据岗位进行针对性提问</span>
+        </div>
+        <div class="help-item">
+          <span class="help-num">3</span>
+          <span>支持语音回答和文字输入两种方式，自由切换</span>
+        </div>
+        <div class="help-item">
+          <span class="help-num">4</span>
+          <span>面试结束后生成完整评估报告，查看表情分析数据</span>
+        </div>
+        <div class="help-item">
+          <span class="help-num">5</span>
+          <span>错题可以回顾重练，收藏好题方便日后复习</span>
+        </div>
+        <div class="help-note">如有问题请联系项目团队</div>
+      </div>
+    </el-dialog>
+
+    <!-- 意见反馈弹窗 -->
+    <el-dialog v-model="showFeedback" width="480px" destroy-on-close>
+      <template #title>
+        <i class="fas fa-comment"></i> 意见反馈
+      </template>
+      <div class="feedback-content">
+        <el-input v-model="feedbackText" type="textarea" :rows="5" placeholder="请描述你的建议或遇到的问题..." />
+        <div class="feedback-actions" style="margin-top:1rem;text-align:right">
+          <el-button @click="showFeedback = false">取消</el-button>
+          <el-button type="primary" @click="submitFeedback">提交反馈</el-button>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-const step = ref('init')
-const position = ref('前端开发工程师')
-const questionType = ref('基础知识')
-const duration = ref(15)
-const question = ref('')
-const currentQ = ref(1)
-const totalQ = ref(5)
-const answer = ref('')
-const score = ref({ tech: 0, express: 0, emotion: 0 })
-const comment = ref('')
-const overall = ref(0)
-const scores = ref({ tech: 0, express: 0, emotion: 0 })
-const suggestions = ref([])
+import { ref, reactive, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import axios from 'axios'
+import PageBanner from '../components/PageBanner.vue'
 
-async function startInterview() {
-  const res = await fetch(`/api/interview/start?position=${position.value}&question_type=${questionType.value}&duration=${duration.value}`, { method: 'POST' })
-  const data = await res.json()
-  question.value = data.question; totalQ.value = data.total_questions; currentQ.value = 1
-  step.value = 'answering'
+// ===== 统计 =====
+const stats = reactive({ total_interview_sessions: 0, total_saved: 0 })
+async function loadStats() {
+  try { const { data } = await axios.get('/api/exam/stats'); Object.assign(stats, data) } catch { /* ignore */ }
 }
-async function submitAnswer() {
-  const res = await fetch(`/api/interview/submit?answer_text=${answer.value}`, { method: 'POST' })
-  const data = await res.json()
-  score.value = { tech: data.score_tech, express: data.score_express, emotion: data.score_emotion }
-  comment.value = data.comment; answer.value = ''
-  step.value = 'scoring'
+
+// ===== 面试错题统计 =====
+const interviewWrongTotal = ref(0)
+async function loadInterviewWrongCount() {
+  try {
+    const { data } = await axios.get('/api/interview/wrong-questions', { params: { page: 1, page_size: 1 } })
+    interviewWrongTotal.value = data.total || 0
+  } catch { /* ignore */ }
 }
-async function nextQuestion() {
-  currentQ.value++
-  const res = await fetch('/api/interview/start', { method: 'POST' })
-  const data = await res.json()
-  question.value = data.question
-  step.value = 'answering'
+
+// ===== 面试收藏统计 =====
+const interviewSavedTotal = ref(0)
+async function loadInterviewSavedCount() {
+  try {
+    const { data } = await axios.get('/api/interview/saved-questions', { params: { page: 1, page_size: 1 } })
+    interviewSavedTotal.value = data.total || 0
+  } catch { /* ignore */ }
 }
-async function finishInterview() {
-  const res = await fetch('/api/interview/report', { method: 'POST' })
-  const data = await res.json()
-  overall.value = data.overall_score; scores.value = data.scores; suggestions.value = data.suggestions
-  step.value = 'report'
+
+// ===== 弹窗 =====
+const showHelp = ref(false)
+const showFeedback = ref(false)
+const feedbackText = ref('')
+
+// ===== 🌱 成长辅助区 =====
+// 每日任务池（按日期轮换）
+const taskPool = [
+  { title: '自我介绍练习', desc: '用1分钟介绍你的专业背景、项目经历和求职动机', time: '3分钟', link: '/interview/session' },
+  { title: '项目亮点梳理', desc: '准备好3个关键词概括你最满意的项目经历', time: '5分钟', link: '/interview/session' },
+  { title: '岗位认知问答', desc: '说说你对目标岗位的理解，为什么适合这份工作', time: '3分钟', link: '/interview/session' },
+  { title: '行为面试准备', desc: '用STAR法则梳理一个克服困难的团队经历', time: '5分钟', link: '/interview/session' },
+  { title: '技术面预热', desc: '快速回顾你所学专业最核心的2个知识点', time: '4分钟', link: '/interview/session' },
+  { title: '职业规划表达', desc: '准备1分钟简洁回答：你未来3年的职业目标是什么', time: '3分钟', link: '/interview/session' },
+]
+// 用日期取模选今日任务
+const todayIdx = new Date().getDate() % taskPool.length
+const dailyTask = ref(taskPool[todayIdx])
+
+// 面经池
+const experiencePool = [
+  { title: '字节后端三面常问的Redis核心问题', tag: '字节跳动', tagColor: '#e74c3c' },
+  { title: '腾讯产品经理群面全流程复盘', tag: '腾讯', tagColor: '#2196F3' },
+  { title: '阿里前端一面手写题与场景题汇总', tag: '阿里巴巴', tagColor: '#ff6a00' },
+  { title: '美团后端二面项目深挖实录', tag: '美团', tagColor: '#00b894' },
+  { title: '百度产品运营群面案例题解析', tag: '百度', tagColor: '#2962ff' },
+  { title: '华为技术面代码手撕与系统设计', tag: '华为', tagColor: '#cf1322' },
+  { title: '拼多多后端高频算法题整理', tag: '拼多多', tagColor: '#e74c3c' },
+  { title: '蔚来汽车自动驾驶算法面试复盘', tag: '蔚来', tagColor: '#00b894' },
+  { title: '小红书数据分析SQL与AB测试真题', tag: '小红书', tagColor: '#ff6a00' },
+  { title: '快手前端React原理与性能优化', tag: '快手', tagColor: '#ff6a00' },
+  { title: '京东后端分布式与微服务面试题', tag: '京东', tagColor: '#e74c3c' },
+  { title: '网易游戏策划岗案例分析题攻略', tag: '网易', tagColor: '#cf1322' },
+]
+const displayedExperiences = ref([])
+function refreshExperiences() {
+  const shuffled = [...experiencePool].sort(() => Math.random() - 0.5)
+  displayedExperiences.value = shuffled.slice(0, 3)
 }
-function reset() { step.value = 'init' }
+refreshExperiences() // 初始化
+
+// 折叠状态
+const growthCollapsed = ref(false)
+
+// 引导提示（首次进入显示1秒）
+const showGrowthGuide = ref(false)
+function showGuideOnce() {
+  const seen = localStorage.getItem('growth_guide_done')
+  if (!seen) {
+    showGrowthGuide.value = true
+    localStorage.setItem('growth_guide_done', '1')
+    setTimeout(() => { showGrowthGuide.value = false }, 1500)
+  }
+}
+
+// 点击面经弹窗查看
+function openExperience(exp) {
+  ElMessage.info(`📄 ${exp.tag} · ${exp.title}\n（模拟面经预览功能，正式版将对接真实面经平台）`)
+}
+
+function submitFeedback() {
+  if (!feedbackText.value.trim()) { ElMessage.warning('请填写反馈内容'); return }
+  ElMessage.success('感谢你的反馈！我们会尽快处理 🙏')
+  showFeedback.value = false
+  feedbackText.value = ''
+}
+
+// ===== 生命周期 =====
+onMounted(() => {
+  loadStats()
+  loadInterviewWrongCount()
+  loadInterviewSavedCount()
+  showGuideOnce()
+})
 </script>
 
 <style scoped>
-.page { padding: 1rem; } .hint { color: #666; margin-bottom: 1rem; }
-.card { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-.form-group { margin-bottom: 1rem; } label { display: block; margin-bottom: 0.3rem; font-weight: 600; font-size: 0.9rem; }
-select, textarea, input { width: 100%; padding: 0.6rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.95rem; }
-button { background: #667eea; color: white; border: none; padding: 0.7rem 2rem; border-radius: 8px; font-size: 1rem; cursor: pointer; margin-top: 0.5rem; margin-right: 0.5rem; }
-.question-box { background: #f0f2ff; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; }
-.q-label { font-size: 0.8rem; color: #888; }
-.q-text { font-size: 1.1rem; margin-top: 0.5rem; }
-.scores { display: flex; gap: 1rem; margin: 1rem 0; }
-.score-item { background: #f0f2ff; padding: 0.5rem 1rem; border-radius: 8px; }
-.comment { color: #555; margin: 0.5rem 0; }
-.overall { font-size: 1.3rem; margin: 0.5rem 0; }
-.suggestions { margin-top: 1rem; } .suggestions li { margin: 0.3rem 0; color: #555; }
+/* ═══════════════════════════ 布局 & 容器 ═══════════════════════════ */
+.interview-sim {
+  padding: 0 0 3rem;
+}
+
+/* ═══════════════════════════ 一、顶部标题区 ═══════════════════════════ */
+.section-header {
+  text-align: center;
+  padding: 2rem 0 0.6rem;
+}
+.header-icon {
+  font-size: 2.8rem;
+  color: var(--primary);
+  margin-bottom: 0.2rem;
+}
+.section-title {
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin: 0.3rem 0;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+.header-desc {
+  color: var(--text-muted, #999);
+  font-size: 0.85rem;
+  max-width: 480px;
+  margin: 0 auto 0.8rem;
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════ 区域标签 ═══════════════════════════ */
+.zone-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted, #bbb);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  padding-left: 4px;
+}
+
+/* ═══════════════════════════ 二、核心操作区 ═══════════════════════════ */
+.zone-core {
+  margin: 20px 0 36px;
+  padding: 20px;
+  border-radius: var(--radius-lg, 16px);
+  background: var(--primary-bg, var(--primary-bg));
+  border: 1px solid var(--border-light, #E8ECF2);
+}
+
+.hero-card {
+  position: relative;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--primary-gradient);
+  border: none;
+}
+.hero-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(61, 90, 128, 0.35);
+}
+.hero-bg-glow {
+  position: absolute;
+  top: -60%;
+  right: -20%;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 28px 32px;
+  position: relative;
+  z-index: 1;
+}
+.hero-icon-block {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  backdrop-filter: blur(4px);
+}
+.hero-main-icon { font-size: 2.4rem; color: #fff; }
+
+.hero-text-block { flex: 1; min-width: 0; }
+.hero-text-block .hero-title {
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.hero-text-block .hero-desc {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+.hero-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.hero-tags .tag-pill {
+  font-size: 0.75rem;
+  padding: 3px 12px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.9);
+  backdrop-filter: blur(4px);
+  border: none;
+}
+
+/* ═══ 面试猫助手 ═══ */
+.hero-cat {
+  height: 100px;
+  width: auto;
+  opacity: 0.95;
+  filter: drop-shadow(0 3px 10px rgba(0,0,0,0.2));
+  transition: transform 0.3s ease;
+  position: absolute;
+  right: 220px;
+  bottom: -5px;
+  z-index: 2;
+}
+.hero-cat:hover {
+  transform: scale(1.08) rotate(3deg);
+}
+.hero-action-block {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 10px 20px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 12px;
+  transition: all 0.2s;
+  position: relative;
+  overflow: visible;
+}
+.hero-card:hover .hero-action-block {
+  background: rgba(255,255,255,0.3);
+  transform: scale(1.03);
+}
+
+/* 开始面试按钮 */
+.hero-btn.btn-primary {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+}
+.hero-btn-arrow {
+  font-size: 1.1rem;
+  color: #fff;
+  transition: transform 0.2s;
+}
+.hero-card:hover .hero-btn-arrow {
+  transform: translateX(4px);
+}
+
+/* ═══════════════════════════ 三、成长辅助区 ═══════════════════════════ */
+.zone-growth {
+  margin: 0 0 24px;
+  padding: 16px 20px 20px;
+  border-radius: var(--radius-lg, 16px);
+  background: var(--bg-alt, var(--bg-alt));
+  border: 1px solid var(--border-light, #eef0ff);
+  position: relative;
+}
+.zone-growth.is-collapsed {
+  padding-bottom: 12px;
+}
+
+/* 引导提示 */
+.growth-guide {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary-gradient);
+  color: #fff;
+  font-size: 0.82rem;
+  padding: 6px 22px;
+  border-radius: 30px;
+  box-shadow: 0 4px 16px rgba(61, 90, 128, 0.25);
+  white-space: nowrap;
+  z-index: 5;
+}
+.guide-fade-enter-active { transition: all 0.4s ease; }
+.guide-fade-leave-active { transition: all 0.5s ease; }
+.guide-fade-enter-from,
+.guide-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-8px);
+}
+
+/* 区域头 */
+.zone-growth-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.growth-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted, #bbb);
+  cursor: pointer;
+  padding: 2px 10px;
+  border-radius: 6px;
+  transition: all 0.15s;
+  user-select: none;
+}
+.growth-toggle:hover { color: var(--primary, #3D5A80); background: var(--primary-bg, var(--primary-bg)); }
+.toggle-arrow {
+  font-size: 0.7rem;
+  transition: transform 0.2s;
+}
+.toggle-arrow.up { transform: rotate(180deg); }
+
+/* 主体：左右两栏 */
+.growth-body {
+  display: flex;
+  gap: 16px;
+}
+.growth-left {
+  flex: 1;
+  min-width: 0;
+}
+.growth-right {
+  flex: 1.6;
+  min-width: 0;
+}
+
+/* 每日任务卡片 */
+.card.daily-task-card {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.daily-task-card:hover {
+  box-shadow: var(--shadow-hover, 0 4px 16px rgba(61, 90, 128, 0.08));
+}
+.daily-task-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.daily-task-icon {
+  font-size: 1.1rem;
+  color: var(--primary, #3D5A80);
+}
+.daily-task-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted, #888);
+}
+.daily-task-content {
+  flex: 1;
+  margin-bottom: 12px;
+}
+.daily-task-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-heading, #444);
+  margin-bottom: 4px;
+}
+.daily-task-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted, #999);
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+.daily-task-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted, #bbb);
+}
+
+/* 右侧面经 */
+.experience-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.experience-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted, #888);
+}
+.btn-outline.experience-refresh {
+  font-size: 0.75rem;
+  padding: 2px 10px;
+  border: 1px solid var(--border, #e0e0e0);
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  color: var(--text-muted, #aaa);
+  transition: all 0.15s;
+}
+.btn-outline.experience-refresh:hover {
+  color: var(--primary, #3D5A80);
+  border-color: var(--primary, #3D5A80);
+  background: var(--primary-bg, var(--primary-bg));
+}
+
+.experience-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.card.experience-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.card.experience-item:hover {
+  border-color: var(--border, #ddd);
+  background: var(--bg-alt, var(--bg-hover));
+  transform: translateX(2px);
+}
+.exp-tag.tag-pill {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.exp-title {
+  flex: 1;
+  font-size: 0.82rem;
+  color: var(--text-body, #555);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.exp-arrow {
+  font-size: 0.75rem;
+  color: var(--text-muted, #ccc);
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+.card.experience-item:hover .exp-arrow {
+  color: var(--primary, #3D5A80);
+  transform: translateX(2px);
+}
+
+/* ═══════════════════════════ 四、复盘记录区 ═══════════════════════════ */
+.zone-review {
+  margin-bottom: 30px;
+  padding: 20px;
+  border-radius: var(--radius-lg, 16px);
+  background: var(--bg-card, var(--bg-card));
+  border: 1px solid var(--border, #f0f0f0);
+}
+
+.review-cards {
+  gap: 14px;
+}
+.card.stat-card.review-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px 16px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.card.stat-card.review-card:hover {
+  border-color: var(--border, #ddd);
+  box-shadow: var(--shadow-hover, 0 4px 18px rgba(0,0,0,0.06));
+  transform: translateY(-3px);
+}
+.review-card-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.review-card-icon { font-size: 1.6rem; }
+.review-card-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-heading, #444);
+  margin-bottom: 6px;
+}
+.review-card-stat {
+  font-size: 0.78rem;
+  color: var(--text-muted, #999);
+  margin-bottom: 4px;
+}
+.review-card-stat b {
+  font-size: 1rem;
+  color: var(--primary, #3D5A80);
+}
+.review-card-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted, #ccc);
+  line-height: 1.3;
+  margin-bottom: 12px;
+}
+.review-card-cta {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary, #3D5A80);
+  padding: 4px 16px;
+  border-radius: 8px;
+  background: var(--primary-bg, var(--primary-bg));
+  transition: all 0.15s;
+}
+.card.stat-card.review-card:hover .review-card-cta {
+  background: var(--primary, #3D5A80);
+  color: #fff;
+}
+
+/* ═══════════════════════════ 五、弹窗 ═══════════════════════════ */
+.help-content { padding: 0 4px; }
+.help-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-body, #444);
+}
+.help-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--primary, #3D5A80);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.help-note {
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text-muted, #bbb);
+  margin-top: 16px;
+}
+
+/* ═══════════════════════════ 六、底部辅助区 ═══════════════════════════ */
+.helper-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 18px 0 4px;
+  border-top: 1px solid var(--border, #f0f0f0);
+}
+.helper-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.82rem;
+  color: var(--text-muted, #ccc);
+  cursor: pointer;
+  padding: 4px 12px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+.helper-item:hover { color: var(--primary, #3D5A80); background: var(--primary-bg, var(--bg-hover)); }
+.helper-icon { font-size: 0.9rem; }
+.helper-dot { color: var(--text-muted, #ddd); font-size: 0.9rem; padding: 0 4px; }
+
+/* ═══════════════════════════ 响应式 ═══════════════════════════ */
+@media (max-width: 768px) {
+  .grid-3 { grid-template-columns: 1fr; }
+  .hero-text-block .hero-desc { display: none; }
+  .hero-tags { display: none; }
+  .hero-action-block { padding: 8px 14px; }
+  .hero-btn { font-size: 0.85rem; }
+}
 </style>

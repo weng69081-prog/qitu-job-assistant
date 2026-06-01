@@ -14,7 +14,49 @@
 
 ## 📸 功能截图
 
-_（截图待补充 — 启动后见 http://localhost:5173）_
+<p align="center">
+  <img src="screenshots/01-landing.png" alt="欢迎页" width="45%">
+  <img src="screenshots/02-auth.png" alt="登录页" width="45%">
+</p>
+<p align="center">
+  <em>欢迎页 & 登录/注册页</em>
+</p>
+
+<p align="center">
+  <img src="screenshots/03-dashboard.png" alt="首页仪表盘" width="90%">
+</p>
+<p align="center">
+  <em>首页仪表盘 — 欢迎横幅 + 收藏汇总 + AI助手小橘</em>
+</p>
+
+<p align="center">
+  <img src="screenshots/04-career-explore.png" alt="职业探索" width="90%">
+</p>
+<p align="center">
+  <em>职业探索 — AI推荐 + 三级职业图谱 + 成长路径</em>
+</p>
+
+<p align="center">
+  <img src="screenshots/05-interview-sim.png" alt="面试模拟" width="90%">
+</p>
+<p align="center">
+  <em>面试模拟 — 对话式AI面试官 + 面部表情分析 + 评估报告</em>
+</p>
+
+<p align="center">
+  <img src="screenshots/06-exam-practice.png" alt="笔试练习" width="45%">
+  <img src="screenshots/07-delivery-assistant.png" alt="投递助手" width="45%">
+</p>
+<p align="center">
+  <em>笔试练习（左）& 投递助手（右）</em>
+</p>
+
+<p align="center">
+  <img src="screenshots/08-settings.png" alt="设置页" width="45%">
+</p>
+<p align="center">
+  <em>设置页 — 个人信息编辑 + 头像上传</em>
+</p>
 
 ---
 

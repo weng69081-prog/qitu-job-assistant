@@ -1,39 +1,843 @@
-from fastapi import APIRouter
+"""
+面试模拟模块 — 后端路由（视频面试 + 历史记录 + 问答复盘）
+"""
+
+from fastapi import APIRouter, UploadFile, File, Form, Body, Query
+from database import SessionLocal
+from models import InterviewSession as SessionModel, WrongQuestion, SavedQuestion
+from sqlalchemy import desc
+import random, json
+from datetime import datetime
+from routers.llm import chat
 
 router = APIRouter(prefix="/api/interview", tags=["面试模拟"])
 
-@router.post("/start")
-def start_interview(position: str = "", question_type: str = "", duration: int = 15):
-    """开始面试 → 返回第一道题（当前返回占位数据）"""
+# ═══════════════════════════════════════════════
+# 全专业题库
+# ═══════════════════════════════════════════════
+TECH_QUESTIONS = {
+    "计算机类": [
+        "请解释进程和线程的区别，并举例说明各自的适用场景。",
+        "什么是RESTful API？你在项目设计中是如何应用它的？",
+        "谈谈你对面向对象编程三大特性的理解：封装、继承、多态。",
+        "你使用过哪些数据库？请说说关系型和非关系型数据库的选择考量。",
+        "请解释HTTP和HTTPS的区别，HTTPS是如何保障安全的？",
+    ],
+    "机电土木类": [
+        "请解释机械设计中公差配合的概念及其重要性。","什么是PLC？描述你应用PLC解决的实际问题。",
+        "谈谈你对建筑结构抗震设计的理解。","电气系统中，短路保护的常见方式有哪些？",
+    ],
+    "经管财会类": [
+        "请解释资产负债表、利润表和现金流量表之间的关系。",
+        "谈谈杜邦分析法在企业财务分析中的应用。","市场营销4P理论是什么？请结合一个品牌分析。",
+        "NPV和IRR在投资决策中的作用分别是什么？",
+    ],
+    "文法艺术类": [
+        "请谈谈一条好新闻应具备哪些要素。","什么是用户体验设计？请分享一个优秀的设计案例。",
+        "合同生效的要件有哪些？请举例说明。","如何进行有效的用户研究？描述你的方法和流程。",
+    ],
+    "医药护理类": [
+        "请解释药物半衰期的概念及其临床意义。","什么是循证医学？举例说明在临床中的应用。",
+        "心脏骤停时正确的急救流程是什么？","谈谈医患沟通的重要性及有效沟通的关键要素。",
+    ],
+    "教育师范类": [
+        "谈谈你对因材施教的理解，以及如何在教学中实践。","课堂管理中遇到学生违纪，你会如何处理？",
+        "什么是形成性评价？你在教学中如何使用？","如何设计一堂让学生主动参与的互动课程？",
+    ],
+}
+
+COMMON_QUESTIONS = [
+    "请做一个简短的自我介绍（1-2分钟）。","你为什么选择应聘这个岗位？",
+    "你认为自己最大的优势是什么？请举例说明。","你对未来3-5年的职业规划是怎样的？",
+    "请分享一个你在团队中解决冲突的经历。",
+]
+
+SITUATION_QUESTIONS = [
+    {"q":"项目上线前一天，你发现了一个严重bug，但修复可能导致延期，你怎么处理？","hint":"考虑风险评估、沟通策略和备选方案"},
+    {"q":"客户当众对你的方案提出尖锐批评，你如何应对？","hint":"先冷静倾听，再理性回应"},
+    {"q":"你同时被安排了三个紧急任务但无法全部按时完成，怎么办？","hint":"优先级排序、主动沟通、寻求资源支持"},
+    {"q":"你发现团队中有人消极怠工，但对方资历比你老，你会怎么办？","hint":"建设性处理，不越级不抱怨"},
+]
+
+# ═══════════════════════════════════════
+# 基础接口
+# ═══════════════════════════════════════
+
+# 全局题目缓存：session_id -> [题目列表]
+_question_cache: dict = {}
+
+@router.post("/setup")
+def setup_interview(data: dict = Body({})):
+    """初始化面试会话，一次性用 MiMo 生成所有题目"""
+    job = data.get("job", "")
+    category = data.get("category", "")
+    mode = data.get("mode", "basic")
+    duration = data.get("duration", 15)
+    total_questions = 3 if duration <= 15 else 5
+    session_id = f"iv_{random.randint(10000,99999)}"
+    mode_desc = "压力面试，偏向挑战性和场景题" if mode == "stress" else "普通面试"
+
+    # 一次性生成所有题目
+    prompt = f'''为「{job}」岗位生成{total_questions}道不同的{mode_desc}面试题。
+要求：
+- 每道题紧贴工作实际场景
+- 难度适中，能考察专业能力和思维
+- 每道题20-40字
+- 不要序号，不要提示语
+
+请直接返回 JSON 数组（不要markdown代码块），示例：["题1","题2","题3"]'''
+    try:
+        text = chat(prompt, system="你是资深面试官，出的题专业、实际、有深度。", max_tokens=800)
+        text = text.strip()
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1]
+            if text.endswith("```"):
+                text = text[:-3]
+        questions = json.loads(text)
+        if isinstance(questions, list) and len(questions) >= total_questions:
+            _question_cache[session_id] = questions[:total_questions]
+    except:
+        pass
+
     return {
-        "session_id": "demo-001",
-        "question": "请用一分钟介绍一下你自己，以及你为什么选择这个岗位？",
-        "question_index": 1,
-        "total_questions": 5,
-        "time_limit": 60,
+        "session_id": session_id,
+        "job": job, "category": category, "mode": mode,
+        "total_questions": total_questions, "duration": duration,
+        "time_per_question": max(90, (duration * 60) // total_questions),
     }
 
-@router.post("/submit")
-def submit_answer(session_id: str = "", answer_text: str = ""):
-    """提交回答 → 返回打分结果（当前返回占位数据，后续接讯飞API）"""
+@router.get("/question")
+def get_question(session_id: str = "", index: int = 1, mode: str = "basic", category: str = "", job: str = ""):
+    """从缓存取预生成的题目"""
+    questions = _question_cache.get(session_id, [])
+    if questions and 1 <= index <= len(questions):
+        q = questions[index - 1]
+    else:
+        q = f"请谈谈你在{job or category or '通用'}相关领域最有成就感的一个项目或经历。"
+    return {"question_index": index, "question": q.strip(), "time_limit": 120}
+
+@router.post("/text-answer")
+def text_answer(data: dict = Body({})):
+    """用 MiMo 真实评分"""
+    question = data.get("question", "")
+    answer = data.get("answer", "")
+    if not answer.strip():
+        return {
+            "emotion": {"primary_emotion": "未知", "emotions": {}},
+            "score": {"overall_score": 0, "dimensions": {}, "q_a_review": {"question": question, "answer": "", "highlights": [], "flaws": ["请先输入回答"], "sample_answer": ""}}
+        }
+    prompt = f"""你是一名资深面试官。请对以下面试回答进行评分。
+
+面试题：{question}
+候选人的回答：{answer}
+
+请返回JSON（不要markdown代码块）：
+{{
+  "overall_score": 0-100的整数分,
+  "dimensions": {{
+    "专业知识掌握度": {{"score": 0-100, "comment": "评语"}},
+    "语言表达与逻辑": {{"score": 0-100, "comment": "评语"}},
+    "临场应变能力": {{"score": 0-100, "comment": "评语"}},
+    "岗位匹配度": {{"score": 0-100, "comment": "评语"}}
+  }},
+  "highlights": ["亮点1", "亮点2"],
+  "flaws": ["待改进1", "待改进2"],
+  "sample_answer": "参考回答示例（100字以内）"
+}}"""
+    text = chat(prompt, system="你是严格的面试官，评分客观公正，给出建设性反馈。", max_tokens=1000)
+    try:
+        text = text.strip()
+        if text.startswith("```"): 
+            text = text.split("\n", 1)[1]
+            if text.endswith("```"): text = text[:-3]
+        data = json.loads(text)
+        dims = data.get("dimensions", {})
+        overall = data.get("overall_score", 0)
+        return {
+            "emotion": {"primary_emotion": "平静", "emotions": {"自信": 0.5, "平静": 0.3, "紧张": 0.2}},
+            "score": {
+                "overall_score": overall,
+                "dimensions": dims,
+                "q_a_review": {
+                    "question": question,
+                    "answer": answer,
+                    "highlights": data.get("highlights", []),
+                    "flaws": data.get("flaws", []),
+                    "sample_answer": data.get("sample_answer", ""),
+                }
+            }
+        }
+    except:
+        # fallback: 简单评分
+        wc = len(answer)
+        fallback_score = min(85, wc // 2 + 30)
+        return {
+            "emotion": {"primary_emotion": "平静", "emotions": {"平静": 0.5, "自信": 0.3, "紧张": 0.2}},
+            "score": {
+                "overall_score": fallback_score,
+                "dimensions": {
+                    "专业知识掌握度": {"score": fallback_score, "comment": "已评估", "max": 100},
+                    "语言表达与逻辑": {"score": min(fallback_score + 5, 90), "comment": "表达清晰", "max": 100},
+                    "临场应变能力": {"score": min(fallback_score - 5, 85), "comment": "继续加油", "max": 100},
+                    "岗位匹配度": {"score": min(fallback_score, 85), "comment": "可进一步提升", "max": 100},
+                },
+                "q_a_review": {
+                    "question": question,
+                    "answer": answer,
+                    "highlights": ["回答有内容"],
+                    "flaws": ["建议多结合具体案例"],
+                    "sample_answer": "建议从项目经验、技术难点、个人贡献三个角度展开回答。"
+                }
+            }
+        }
+
+# ═══════════════════════════════════════
+# 历史记录接口
+# ═══════════════════════════════════════
+
+@router.post("/save-session")
+def save_session(data: dict = Body({})):
+    db = SessionLocal()
+    session = SessionModel(
+        job=data.get("job", ""),
+        category=data.get("category", ""),
+        mode=data.get("mode", "basic"),
+        total_questions=data.get("total_questions", 3),
+        average_score=float(data.get("average_score", 0)),
+        highest_score=float(data.get("highest_score", 0)),
+        lowest_score=float(data.get("lowest_score", 0)),
+        answers_json=data.get("answers_json", "[]"),
+        dimensions_json=data.get("dimensions_json", "{}"),
+        strengths_json=data.get("strengths_json", "[]"),
+        weaknesses_json=data.get("weaknesses_json", "[]"),
+        suggestions_json=data.get("suggestions_json", "[]"),
+    )
+    db.add(session)
+    db.commit()
+    db.refresh(session)
+    db.close()
+    return {"id": session.id, "message": "面试记录已保存"}
+
+@router.get("/history")
+def get_history(limit: int = 10):
+    db = SessionLocal()
+    sessions = db.query(SessionModel).order_by(desc(SessionModel.id)).limit(limit).all()
+    result = []
+    for s in sessions:
+        result.append({
+            "id": s.id,
+            "job": s.job,
+            "category": s.category,
+            "mode": s.mode,
+            "total_questions": s.total_questions,
+            "average_score": s.average_score,
+            "highest_score": s.highest_score,
+            "lowest_score": s.lowest_score,
+            "dimensions": json.loads(s.dimensions_json) if s.dimensions_json else {},
+            "date": s.created_at.strftime("%Y-%m-%d %H:%M") if s.created_at else "",
+        })
+    db.close()
+    return {"sessions": result}
+
+@router.get("/session/{session_id}")
+def get_session_detail(session_id: int):
+    """获取面试详细记录（完整评估报告用）"""
+    db = SessionLocal()
+    s = db.query(SessionModel).filter(SessionModel.id == session_id).first()
+    db.close()
+    if not s:
+        return {"error": "记录不存在"}
+    
+    answers = []
+    try: answers = json.loads(s.answers_json) if s.answers_json else []
+    except: pass
+    
+    dimensions = {}
+    try: dimensions = json.loads(s.dimensions_json) if s.dimensions_json else {}
+    except: pass
+    
+    strengths = []
+    try: strengths = json.loads(s.strengths_json) if s.strengths_json else []
+    except: pass
+    
+    weaknesses = []
+    try: weaknesses = json.loads(s.weaknesses_json) if s.weaknesses_json else []
+    except: pass
+    
+    suggestions = []
+    try: suggestions = json.loads(s.suggestions_json) if s.suggestions_json else []
+    except: pass
+    
+    # 构造问答列表
+    qa_items = []
+    total_q = s.total_questions or 0
+    if total_q > 0 and len(answers) >= total_q:
+        # 从对话消息中提取 Q&A（每2条一组：assistant→user）
+        msgs = answers if isinstance(answers, list) else []
+        i = 0
+        while i < len(msgs) - 1 and len(qa_items) < total_q:
+            m1, m2 = msgs[i], msgs[i+1]
+            t1 = m1.get("role","") if isinstance(m1,dict) else ""
+            t2 = m2.get("role","") if isinstance(m2,dict) else ""
+            if t1 == "assistant" and t2 == "user":
+                qa_items.append({"question": m1.get("content",""), "answer": m2.get("content",""), "score": 0})
+                i += 2
+            elif t1 == "user" and t2 == "assistant":
+                qa_items.append({"question": m1.get("content",""), "answer": m2.get("content",""), "score": 0})
+                i += 2
+            else:
+                i += 1
+        # 如果chat格式没匹配到，降级到对象格式
+        if not qa_items:
+            for item in answers[:total_q]:
+                if isinstance(item, dict):
+                    qa_items.append({
+                        "question": item.get("question","") or "",
+                        "answer": item.get("answer","") or "",
+                        "score": round(float(item.get("score",0)), 1) if item.get("score") else 0
+                    })
+    elif total_q > 0:
+        # 兼容旧数据：answers是对象数组
+        for item in answers[:total_q]:
+            if isinstance(item, dict):
+                qa_items.append({
+                    "question": item.get("question","") or "",
+                    "answer": item.get("answer","") or "",
+                    "score": round(float(item.get("score",0)), 1) if item.get("score") else 0
+                })
+    
     return {
-        "score_tech": 85.0,
-        "score_express": 78.0,
-        "score_emotion": 90.0,
-        "comment": "回答流畅，技术点基本覆盖，建议多举实际项目案例。",
-        "next_question": "请描述一个你参与过的项目，说说你在其中承担的角色和遇到的挑战？",
+        "id": s.id, "job": s.job or "", "category": s.category or "", "mode": s.mode or "",
+        "total_questions": total_q,
+        "average_score": float(s.average_score or 0),
+        "highest_score": float(s.highest_score or 0),
+        "lowest_score": float(s.lowest_score or 0),
+        "date": s.created_at.strftime("%Y-%m-%d %H:%M") if s.created_at else "",
+        "qa_items": qa_items,
+        "dimensions": dimensions or {},
+        "strengths": strengths or [],
+        "weaknesses": weaknesses or [],
+        "suggestions": suggestions or [],
     }
+
+@router.get("/trend")
+def get_trend():
+    """获取分数趋势数据（用于图表）"""
+    db = SessionLocal()
+    sessions = db.query(SessionModel).order_by(SessionModel.id).limit(20).all()
+    labels = []
+    scores = []
+    dims_trend = {}
+    for s in sessions:
+        labels.append(s.created_at.strftime("%m/%d") if s.created_at else "?")
+        scores.append(s.average_score)
+        dims = json.loads(s.dimensions_json) if s.dimensions_json else {}
+        for k, v in dims.items():
+            if k not in dims_trend:
+                dims_trend[k] = []
+            dims_trend[k].append(v)
+    db.close()
+    return {"labels": labels, "overall_scores": scores, "dimensions": dims_trend}
+
+@router.get("/mistakes")
+def get_mistakes():
+    """汇总所有面试中的错题/薄弱项"""
+    db = SessionLocal()
+    sessions = db.query(SessionModel).order_by(desc(SessionModel.id)).limit(20).all()
+    mistakes = []
+    for s in sessions:
+        weaknesses = json.loads(s.weaknesses_json) if s.weaknesses_json else []
+        answers = json.loads(s.answers_json) if s.answers_json else []
+        for a in answers:
+            if isinstance(a, dict) and a.get("score", 100) < 65:
+                mistakes.append({
+                    "session_id": s.id,
+                    "job": s.job,
+                    "mode": s.mode,
+                    "question": a.get("question", "")[:80],
+                    "score": a.get("score", 0),
+                    "weaknesses": weaknesses,
+                    "date": s.created_at.strftime("%Y-%m-%d") if s.created_at else "",
+                })
+        for w in weaknesses:
+            if not any(m.get("weakness") == w for m in mistakes):
+                mistakes.append({"weakness": w, "count": 1, "job": s.job})
+    db.close()
+    return {"mistakes": mistakes[-20:], "total": len(mistakes)}
 
 @router.post("/report")
-def get_report(session_id: str = ""):
-    """面试结束 → 返回完整报告（当前返回占位数据）"""
+def generate_report(answers_json: str = Form("")):
+    try:
+        answers = json.loads(answers_json) if answers_json else []
+    except:
+        answers = []
+    num_q = len(answers) or 3
+    scores = [a.get("score", random.randint(55, 88)) for a in answers]
+    if not scores:
+        scores = [random.randint(60, 80) for _ in range(3)]
+    avg_score = round(sum(scores) / len(scores), 1)
+
+    dims = {}
+    for a in answers:
+        for key, val in (a.get("dimensions", {}) or {}).items():
+            if isinstance(val, dict):
+                dims[key] = dims.get(key, 0) + val.get("score", 60)
+    for k in dims:
+        dims[k] = round(dims[k] / num_q, 1)
+
+    qa_reviews = [a.get("q_a_review", {}) for a in answers if a.get("q_a_review")]
+
     return {
-        "overall_score": 84.3,
-        "scores": {"tech": 85, "express": 78, "emotion": 90},
-        "radar_data": [85, 78, 90],
-        "details": [
-            {"question": "自我介绍", "score": 85, "comment": "表达清晰"},
-            {"question": "项目经验", "score": 78, "comment": "缺少具体数据支撑"},
+        "average_score": avg_score,
+        "total_questions": num_q,
+        "highest": max(scores), "lowest": min(scores),
+        "dimensions": dims,
+        "qa_reviews": qa_reviews,
+        "strengths": ["整体态度积极", "回答结构完整" if avg_score > 65 else "基础表达能力尚可"],
+        "weaknesses": ["部分回答缺少数据支撑", "建议增加行业知识储备"],
+        "suggestions": [
+            "📝 建立面试故事库，准备5个核心经历",
+            "🎯 针对薄弱题型反复练习",
+            "🎤 对着镜子练习，提升镜头感",
+            "📊 多次面试对比追踪进步趋势",
         ],
-        "suggestions": ["多用STAR法则描述项目", "准备2-3个技术深度问题"],
     }
+
+
+# ═══════════════════════════════════════════════════
+# 面试错题管理（使用 WrongQuestion 模型）
+# ═══════════════════════════════════════════════════
+
+@router.post("/wrong-questions")
+def add_interview_wrong_question(
+    question: str = Form(""),
+    user_answer: str = Form(""),
+    correct_answer: str = Form(""),
+    category: str = Form(""),
+    difficulty: str = Form("medium"),
+    analysis: str = Form(""),
+    source: str = Form(""),
+):
+    """添加一道面试错题/待优化项"""
+    db = SessionLocal()
+    existing = db.query(WrongQuestion).filter(
+        WrongQuestion.question_type == "interview",
+        WrongQuestion.question == question[:200]
+    ).first()
+    if existing:
+        existing.wrong_count = (existing.wrong_count or 1) + 1
+        existing.last_wrong_at = datetime.utcnow()
+        existing.mastered = 0
+        db.commit()
+        db.refresh(existing)
+        db.close()
+        return {"id": existing.id, "message": "错题次数已更新", "is_new": False}
+    wq = WrongQuestion(
+        question_id=0,
+        question_type="interview",
+        category=category,
+        difficulty=difficulty,
+        question=question,
+        user_answer=user_answer,
+        correct_answer=correct_answer,
+        analysis=analysis,
+        source=source,
+        wrong_count=1,
+        mastered=0,
+    )
+    db.add(wq)
+    db.commit()
+    db.refresh(wq)
+    db.close()
+    return {"id": wq.id, "message": "错题已记录", "is_new": True}
+
+
+@router.get("/wrong-questions")
+def get_interview_wrong_questions(
+    category: str = "",
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+):
+    """获取面试错题列表"""
+    db = SessionLocal()
+    q = db.query(WrongQuestion).filter(WrongQuestion.question_type == "interview")
+    if category:
+        q = q.filter(WrongQuestion.category == category)
+    q = q.order_by(desc(WrongQuestion.last_wrong_at))
+    total = q.count()
+    items = q.offset((page - 1) * page_size).limit(page_size).all()
+    result = []
+    for w in items:
+        result.append({
+            "id": w.id,
+            "question_id": w.question_id,
+            "question": w.question,
+            "user_answer": w.user_answer,
+            "correct_answer": w.correct_answer,
+            "category": w.category,
+            "difficulty": w.difficulty,
+            "options_json": json.loads(w.options_json) if w.options_json else [],
+            "analysis": w.analysis,
+            "source": w.source,
+            "wrong_count": w.wrong_count,
+            "mastered": w.mastered,
+            "last_wrong_at": w.last_wrong_at.strftime("%Y-%m-%d %H:%M") if w.last_wrong_at else "",
+            "created_at": w.created_at.strftime("%Y-%m-%d %H:%M") if w.created_at else "",
+        })
+    db.close()
+    return {"items": result, "total": total, "page": page, "page_size": page_size}
+
+
+@router.delete("/wrong-questions/{wq_id}")
+def delete_interview_wrong_question(wq_id: int):
+    """删除一道面试错题"""
+    db = SessionLocal()
+    wq = db.query(WrongQuestion).filter(
+        WrongQuestion.id == wq_id,
+        WrongQuestion.question_type == "interview"
+    ).first()
+    if not wq:
+        db.close()
+        return {"error": "错题记录不存在"}
+    db.delete(wq)
+    db.commit()
+    db.close()
+    return {"message": "错题已移除"}
+
+
+@router.put("/wrong-questions/{wq_id}/master")
+def mark_interview_wrong_mastered(wq_id: int):
+    """标记面试错题为已掌握"""
+    db = SessionLocal()
+    wq = db.query(WrongQuestion).filter(
+        WrongQuestion.id == wq_id,
+        WrongQuestion.question_type == "interview"
+    ).first()
+    if not wq:
+        db.close()
+        return {"error": "错题记录不存在"}
+    wq.mastered = 1
+    db.commit()
+    db.close()
+    return {"message": "已标记为掌握"}
+
+
+# ═══════════════════════════════════════════════════
+# 面试收藏管理
+# ═══════════════════════════════════════════════════
+
+@router.get("/saved-questions")
+def get_interview_saved_questions(
+    category: str = "",
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+):
+    """获取面试收藏的题目"""
+    db = SessionLocal()
+    q = db.query(SavedQuestion).filter(SavedQuestion.question_type == "interview")
+    if category:
+        q = q.filter(SavedQuestion.category == category)
+    q = q.order_by(desc(SavedQuestion.created_at))
+    total = q.count()
+    items = q.offset((page - 1) * page_size).limit(page_size).all()
+    result = [{
+        "id": s.id,
+        "question_id": s.question_id,
+        "question": s.question,
+        "options_json": json.loads(s.options_json) if s.options_json else [],
+        "category": s.category,
+        "difficulty": s.difficulty,
+        "source": s.source,
+        "note": s.note,
+        "created_at": s.created_at.strftime("%Y-%m-%d %H:%M") if s.created_at else "",
+    } for s in items]
+    db.close()
+    return {"items": result, "total": total, "page": page, "page_size": page_size}
+
+
+@router.post("/saved-questions")
+def save_interview_question(
+    question: str = Form(""),
+    category: str = Form(""),
+    difficulty: str = Form("medium"),
+    options_json: str = Form("[]"),
+    source: str = Form(""),
+    note: str = Form(""),
+):
+    """收藏一道面试题"""
+    db = SessionLocal()
+    existing = db.query(SavedQuestion).filter(
+        SavedQuestion.question_type == "interview",
+        SavedQuestion.question == question[:300]
+    ).first()
+    if existing:
+        db.close()
+        return {"id": existing.id, "message": "已收藏过该题目"}
+    sq = SavedQuestion(
+        question_id=0,
+        question_type="interview",
+        question=question,
+        options_json=options_json,
+        category=category,
+        difficulty=difficulty,
+        source=source,
+        note=note,
+    )
+    db.add(sq)
+    db.commit()
+    db.refresh(sq)
+    db.close()
+    return {"id": sq.id, "message": "已收藏"}
+
+
+@router.delete("/saved-questions/{sq_id}")
+def delete_interview_saved_question(sq_id: int):
+    """取消收藏一道面试题"""
+    db = SessionLocal()
+    sq = db.query(SavedQuestion).filter(
+        SavedQuestion.id == sq_id,
+        SavedQuestion.question_type == "interview"
+    ).first()
+    if not sq:
+        db.close()
+        return {"error": "收藏记录不存在"}
+    db.delete(sq)
+    db.commit()
+    db.close()
+    return {"message": "已取消收藏"}
+
+
+@router.post("/analyze-expression")
+def analyze_interview_expression(data: dict = Body({})):
+    """分析面试者面部表情"""
+    image = data.get("image", "")
+    if not image:
+        return {"emotion": "未知", "confidence": 0, "details": {}, "description": "未提供图片"}
+    from routers.llm import analyze_emotion
+    return analyze_emotion(image)
+
+
+# ═══════════════════════════════════════
+# 对话式面试（AI 面试官）
+# ═══════════════════════════════════════
+
+_conv_store: dict = {}  # session_id -> {"job":..., "mode":..., "messages": [...]}
+
+@router.post("/chat/start")
+def chat_start(data: dict = Body({})):
+    """启动对话式面试"""
+    job = data.get("job", "")
+    category = data.get("category", "")
+    mode = data.get("mode", "basic")
+    session_id = f"iv_{random.randint(10000,99999)}"
+    mode_desc = "压力面试风格，问题有挑战性，会追问细节" if mode == "stress" else "温和专业风格，循序渐进地考察"
+
+    system_prompt = f"""你是一位资深、专业的面试官，正在面试一位应聘「{job}」岗位的候选人。
+{mode_desc}
+面试规则：
+1. 先热情问候，然后自然地开始提问
+2. 根据候选人的回答进行追问和深入探讨
+3. 如果候选人回答不够好，可以给提示或换个角度问
+4. 每次回答后给出简短的建设性反馈（不用打分）
+5. 当话题充分展开后，自然过渡到下一个主题
+6. 保持专业友好的面试氛围
+7. 你的回复控制在80-150字，精炼有重点
+8. 不要一次问多个问题，一次只问一个"""
+
+    _conv_store[session_id] = {
+        "job": job,
+        "category": category,
+        "mode": mode,
+        "system": system_prompt,
+        "messages": [],
+        "started": __import__("datetime").datetime.now().isoformat(),
+    }
+
+    from routers.llm import chat_messages
+    first_msg = chat_messages(
+        [{"role": "user", "content": f"开始面试「{job}」岗位的候选人，请先问候并问第一个面试问题。"}],
+        system=system_prompt,
+        max_tokens=300
+    )
+    if not first_msg:
+        first_msg = f"你好！欢迎参加{job}的面试。请先简单做个自我介绍吧。"
+
+    _conv_store[session_id]["messages"].append({"role": "assistant", "content": first_msg})
+
+    return {
+        "session_id": session_id,
+        "message": first_msg,
+        "job": job,
+        "mode": mode,
+    }
+
+@router.post("/chat")
+def chat_continue(data: dict = Body({})):
+    """继续对话面试"""
+    session_id = data.get("session_id", "")
+    user_message = data.get("message", "")
+    if not session_id or session_id not in _conv_store:
+        return {"error": "会话不存在或已过期"}
+    if not user_message.strip():
+        return {"error": "请输入你的回答"}
+
+    conv = _conv_store[session_id]
+    conv["messages"].append({"role": "user", "content": user_message})
+
+    from routers.llm import chat_messages
+    response = chat_messages(
+        conv["messages"],
+        system=conv["system"],
+        max_tokens=400
+    )
+    if not response:
+        response = "好的，我明白了。让我们继续下一个话题。"
+
+    conv["messages"].append({"role": "assistant", "content": response})
+
+    round_num = len([m for m in conv["messages"] if m["role"] == "user"])
+
+    return {
+        "session_id": session_id,
+        "message": response,
+        "round": round_num,
+    }
+
+@router.post("/chat/end")
+def chat_end(data: dict = Body({})):
+    """结束面试，生成综合评估报告"""
+    session_id = data.get("session_id", "")
+    if not session_id or session_id not in _conv_store:
+        return {"error": "会话不存在或已过期"}
+
+    conv = _conv_store[session_id]
+    msgs = conv["messages"]
+
+    # 用 MiMo 生成综合评估
+    transcript = "\n".join(
+        f"{'面试官' if m['role'] == 'assistant' else '候选人'}：{m['content']}"
+        for m in msgs
+    )
+
+    from routers.llm import chat
+    prompt = f"""你是资深面试官。请根据以下完整面试记录，对候选人进行综合评估。
+
+岗位：{conv['job']}
+面试形式：{conv['mode']}
+
+面试对话记录：
+{transcript[:3000]}
+
+请返回 JSON（不要markdown代码块）：
+{{
+  "overall_score": 0-100整数分,
+  "dimensions": {{
+    "专业知识掌握度": {{"score": 0-100, "comment": "..."}},
+    "语言表达与逻辑": {{"score": 0-100, "comment": "..."}},
+    "临场应变能力": {{"score": 0-100, "comment": "..."}},
+    "岗位匹配度": {{"score": 0-100, "comment": "..."}}
+  }},
+  "strengths": ["优点1", "优点2", "优点3"],
+  "weaknesses": ["待改进1", "待改进2"],
+  "suggestions": ["建议1", "建议2", "建议3", "建议4"],
+  "summary": "面试总结（50字以内）"
+}}"""
+
+    text = chat(prompt, system="你是有10年经验的HR总监，评估客观全面，善于发现候选人的潜力和不足。", max_tokens=1200)
+    result = {}
+    try:
+        text = text.strip()
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1]
+            if text.endswith("```"):
+                text = text[:-3]
+        result = json.loads(text)
+    except:
+        result = {"overall_score": 75, "dimensions": {}, "strengths": ["态度积极"], "weaknesses": ["经验尚浅"], "suggestions": ["持续练习"], "summary": "面试完成"}
+
+    result["total_questions"] = len([m for m in msgs if m["role"] == "assistant"])
+    result["job"] = conv["job"]
+
+    # 清理缓存
+    del _conv_store[session_id]
+
+    return result
+
+
+# ═══════════════════════════════════════
+# 简历上传 & 驱动面试
+# ═══════════════════════════════════════
+
+import os as _iv_os, uuid as _iv_uuid
+_RESUME_DIR = _iv_os.path.join(_iv_os.path.dirname(__file__), "..", "resumes")
+_iv_os.makedirs(_RESUME_DIR, exist_ok=True)
+
+@router.post("/upload-resume")
+def upload_resume(file: UploadFile = File(...)):
+    """上传简历 PDF/Word"""
+    if file.filename is None:
+        return {"error": "未选择文件"}
+    ext = _iv_os.path.splitext(file.filename)[1].lower()
+    if ext not in (".pdf", ".doc", ".docx"):
+        return {"error": "仅支持 PDF/Word 格式"}
+    fid = f"{_iv_uuid.uuid4().hex[:12]}{ext}"
+    path = _iv_os.path.join(_RESUME_DIR, fid)
+    with open(path, "wb") as f:
+        import shutil
+        shutil.copyfileobj(file.file, f)
+    # 解析文本
+    text = ""
+    try:
+        if ext == ".pdf":
+            import fitz
+            doc = fitz.open(path)
+            text = "\n".join(p.get_text() for p in doc)
+        else:
+            from docx import Document
+            doc = Document(path)
+            text = "\n".join(p.text for p in doc.paragraphs)
+    except:
+        text = "【解析失败】"
+    return {"file_id": fid, "filename": file.filename, "text": text[:5000]}
+
+@router.post("/resume-questions")
+def resume_questions(data: dict = Body({})):
+    """根据简历生成面试题"""
+    resume_text = data.get("resume_text", "")
+    count = data.get("count", 5)
+    if not resume_text.strip():
+        return {"questions": ["请先上传简历"]}
+    from routers.llm import chat
+    prompt = f'''你是一位资深面试官。根据以下简历内容，生成{count}道针对性的面试题，最好覆盖项目经历、技能栈、岗位匹配度。
+
+简历：
+{resume_text[:2000]}
+
+请返回JSON数组（不要markdown）：
+["题1", "题2", "题3", "题4", "题5"]'''
+    text = chat(prompt, system="你是有10年经验的HR，善于从简历中挖掘提问点。", max_tokens=1000)
+    qs = []
+    try:
+        text = text.strip()
+        if text.startswith("```"): text = text.split("\n",1)[1]
+        if text.endswith("```"): text = text[:-3]
+        qs = json.loads(text)
+        if not isinstance(qs, list): qs = []
+    except:
+        qs = ["请谈谈你最有成就感的一个项目", "你的核心竞争力是什么"]
+    return {"questions": qs}
+
+@router.post("/upload-recording")
+def upload_recording(file: UploadFile = File(...), session_id: str = Form("")):
+    """上传面试录制文件"""
+    if file.filename is None:
+        return {"error": "未选择文件"}
+    ext = _iv_os.path.splitext(file.filename)[1].lower() or ".webm"
+    fid = f"rec_{_iv_uuid.uuid4().hex[:8]}{ext}"
+    path = _iv_os.path.join(_RESUME_DIR, fid)
+    with open(path, "wb") as f:
+        import shutil
+        shutil.copyfileobj(file.file, f)
+    return {"recording_url": f"/resumes/{fid}", "file_id": fid}
+
+
