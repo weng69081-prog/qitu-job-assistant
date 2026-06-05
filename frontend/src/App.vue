@@ -66,7 +66,7 @@
       <header class="app-topbar">
         <div class="topbar-left">
           <!-- 搜索框 -->
-          <div class="search-box">
+          <div class="search-box" v-show="showSearch">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             <input
               type="text"
@@ -109,6 +109,7 @@ const route = useRoute()
 const token = ref(null)
 const userDisplay = ref({})
 const searchQuery = ref('')
+const showSearch = computed(() => route.path !== '/favorites')
 const isStandalone = computed(() => route.meta?.standalone === true)
 
 // 头像：如果有 base64 就显示图片，否则只显示文字

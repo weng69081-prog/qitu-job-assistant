@@ -143,7 +143,6 @@ const greeting = h < 12 ? '早上好' : h < 18 ? '下午好' : '晚上好'
 const displayName = ref('同学')
 const todayStr = now.toLocaleDateString('zh-CN', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase()
 
-const searchQuery = ref('')
 const activeTab = ref('all')
 const loading = ref(false)
 
@@ -181,23 +180,14 @@ const allItems = computed(() => {
   return items
 })
 
-// 搜索过滤
+// 按分类过滤
 const filteredItems = computed(() => {
   let items = allItems.value
   if (activeTab.value !== 'all') {
     items = items.filter(i => i._type === activeTab.value)
   }
-  const q = searchQuery.value.trim().toLowerCase()
-  if (q) {
-    items = items.filter(i => {
-      const text = JSON.stringify(i).toLowerCase()
-      return text.includes(q)
-    })
-  }
   return items
 })
-
-function onSearchChange() { /* 计算属性自动响应 */ }
 function diffPill(d) {
   const m = { easy: 'green', 简单: 'green', medium: 'orange', 中等: 'orange', hard: 'red', 困难: 'red' }
   return m[d] || 'gray'
