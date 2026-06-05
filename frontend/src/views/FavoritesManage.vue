@@ -1,24 +1,19 @@
 <template>
-  <div class="page">
+  <div class="fav-page">
     <!-- ═══ 页面标题 ═══ -->
-    <div class="section-header">
-      <div class="section-title">
-        <Star :size="16" :color="'var(--accent)'" />
-        收藏管理
-      </div>
-    </div>
+    <div class="page-header">收藏管理</div>
 
     <!-- ═══ 搜索栏 ═══ -->
-    <div class="fav-search-bar">
-      <Search :size="16" class="icon-blue" />
+    <div class="search-bar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input
         type="text"
         v-model="searchQuery"
         placeholder="搜索收藏的职业、视频、面试题…"
         @input="onSearchChange"
       />
-      <span v-if="searchQuery" class="fav-search-clear" @click="searchQuery='';onSearchChange()">
-        <X :size="16" class="icon-blue" />
+      <span v-if="searchQuery" class="search-clear" @click="searchQuery='';onSearchChange()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </span>
     </div>
 
@@ -32,87 +27,110 @@
         @click="activeTab = tab.key"
       >
         {{ tab.label }}
-        <span class="fav-tab-count">{{ tab.count }}</span>
+        <span class="tab-count">{{ tab.count }}</span>
       </span>
     </div>
 
     <!-- ═══ 加载态 ═══ -->
-    <div v-if="loading" class="loading-state"><Loader :size="16" class="icon-blue" /> 加载中…</div>
+    <div v-if="loading" class="loading-state">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
+      加载中…
+    </div>
 
     <!-- ═══ 空态 ═══ -->
     <div v-else-if="!filteredItems.length" class="empty-state">
-      <span class="empty-icon">📂</span>
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-icon"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
       <p v-if="activeTab === 'all'">还没有收藏任何内容</p>
       <p v-else>{{ tabs.find(t => t.key === activeTab)?.label }}还没有收藏</p>
       <p class="empty-hint">去职业探索或面试页收藏内容吧</p>
-      <router-link to="/career" class="fav-go-btn">去探索 <ArrowRight :size="16" class="icon-blue" /></router-link>
+      <router-link to="/career" class="explore-btn">去探索 ›</router-link>
     </div>
 
     <!-- ═══ 收藏列表 ═══ -->
-    <template v-else>
+    <div v-else class="fav-list">
       <div
         v-for="item in filteredItems"
         :key="item._id"
-        class="fav-item-card"
+        class="fav-item"
       >
         <!-- 职业收藏 -->
         <template v-if="item._type === 'career'">
-          <div class="fav-item-icon career">⭐</div>
-          <div class="fav-item-info" @click="goCareer(item)">
-            <div class="fav-item-title">{{ item.career }}</div>
-            <div class="fav-item-meta">{{ item.difficulty || '中等' }} · {{ item.salary || '' }}</div>
+          <div class="fav-type-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
           </div>
-          <div class="fav-item-actions">
-            <router-link :to="`/career/${encodeURIComponent(item.career)}`" class="fav-item-btn" title="查看详情"><Eye :size="16" class="icon-blue" /></router-link>
-            <button class="fav-item-btn danger" @click="removeCareer(item)" title="取消收藏"><X :size="16" class="icon-blue" /></button>
+          <div class="fav-info" @click="goCareer(item)">
+            <div class="fav-title">{{ item.career }}</div>
+            <div class="fav-meta">{{ item.difficulty || '中等' }} · {{ item.salary || '' }}</div>
+          </div>
+          <div class="fav-actions">
+            <router-link :to="`/career/${encodeURIComponent(item.career)}`" class="fav-btn" title="查看详情">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </router-link>
+            <button class="fav-btn danger" @click="removeCareer(item)" title="取消收藏">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
         </template>
 
         <!-- 视频收藏 -->
         <template v-else-if="item._type === 'video'">
-          <div class="fav-item-icon video">📺</div>
-          <div class="fav-item-info" @click="goUrl(item.url)">
-            <div class="fav-item-title">{{ item.title || '未命名视频' }}</div>
-            <div class="fav-item-meta">{{ item.author || 'B站' }}<span v-if="item.career"> · {{ item.career }}</span></div>
+          <div class="fav-type-icon video">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
           </div>
-          <div class="fav-item-actions">
-            <a :href="item.url" target="_blank" class="fav-item-btn" title="观看"><ExternalLink :size="16" class="icon-blue" /></a>
-            <button class="fav-item-btn danger" @click="removeVideo(item)" title="取消收藏"><X :size="16" class="icon-blue" /></button>
+          <div class="fav-info" @click="goUrl(item.url)">
+            <div class="fav-title">{{ item.title || '未命名视频' }}</div>
+            <div class="fav-meta">{{ item.author || 'B站' }}<span v-if="item.career"> · {{ item.career }}</span></div>
+          </div>
+          <div class="fav-actions">
+            <a :href="item.url" target="_blank" class="fav-btn" title="观看">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+            <button class="fav-btn danger" @click="removeVideo(item)" title="取消收藏">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
         </template>
 
         <!-- 面试题收藏 -->
         <template v-else-if="item._type === 'interview'">
-          <div class="fav-item-icon interview">🎙️</div>
-          <div class="fav-item-info">
-            <div class="fav-item-title">{{ item.question }}</div>
-            <div class="fav-item-meta">
+          <div class="fav-type-icon interview">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div class="fav-info">
+            <div class="fav-title">{{ item.question }}</div>
+            <div class="fav-meta">
               <span class="tag-pill" :class="diffPill(item.difficulty)">{{ item.difficulty || '中等' }}</span>
               <span v-if="item.category"> · {{ item.category }}</span>
               <span> · {{ item.created_at }}</span>
             </div>
           </div>
-          <div class="fav-item-actions">
-            <button class="fav-item-btn danger" @click="removeInterview(item)" title="取消收藏"><X :size="16" class="icon-blue" /></button>
+          <div class="fav-actions">
+            <button class="fav-btn danger" @click="removeInterview(item)" title="取消收藏">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
         </template>
 
         <!-- 笔试收藏 -->
         <template v-else-if="item._type === 'exam'">
-          <div class="fav-item-icon exam">📝</div>
-          <div class="fav-item-info">
-            <div class="fav-item-title">{{ item.question || item.title || '试题' }}</div>
-            <div class="fav-item-meta">
+          <div class="fav-type-icon exam">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <div class="fav-info">
+            <div class="fav-title">{{ item.question || item.title || '试题' }}</div>
+            <div class="fav-meta">
               <span v-if="item.category">{{ item.category }}</span>
               <span v-if="item.question_type"> · {{ item.question_type }}</span>
             </div>
           </div>
-          <div class="fav-item-actions">
-            <button class="fav-item-btn danger" @click="removeExam(item)" title="取消收藏"><X :size="16" class="icon-blue" /></button>
+          <div class="fav-actions">
+            <button class="fav-btn danger" @click="removeExam(item)" title="取消收藏">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
         </template>
       </div>
-    </template>
+    </div>
   </div>
 </template>
 
@@ -235,84 +253,132 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.page { max-width: 960px; margin: 0 auto; }
+/* ═══ 收藏管理页面 ═══ */
+.fav-page { max-width: 860px; }
 
-/* ═══ 搜索栏 ═══ */
-.fav-search-bar {
-  display: flex; align-items: center;
-  background: #fff; border: 1px solid #e0e4ea; border-radius: 10px;
-  padding: 0 14px; height: 44px; margin-bottom: 18px;
+/* ── 页面标题 ── */
+.page-header {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 22px; font-weight: 700; color: var(--text-heading);
+  padding: 0 0 20px;
+}
+
+/* ── 搜索栏 ── */
+.search-bar {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg-light);
+  border: 1.5px dashed var(--border-dashed);
+  border-radius: 10px;
+  padding: 0 16px;
+  height: 44px;
+  margin-bottom: 18px;
   transition: border-color 0.2s;
 }
-.fav-search-bar:focus-within { border-color: #3D5A80; }
-.fav-search-bar i { font-size: 15px; color: #8EA0B8; margin-right: 10px; }
-.fav-search-bar input {
-  flex: 1; border: none; outline: none; font-size: 14px; color: #2C3E50;
+.search-bar:focus-within { border-color: var(--primary); }
+.search-bar input {
+  flex: 1; border: none; outline: none;
+  font-size: 14px; color: var(--text-heading);
   background: transparent;
+  font-family: inherit;
 }
-.fav-search-bar input::placeholder { color: #A0B4CC; }
-.fav-search-clear {
-  cursor: pointer; color: #8EA0B8; font-size: 14px; padding: 4px;
+.search-bar input::placeholder { color: var(--text-muted); }
+.search-clear {
+  cursor: pointer; color: var(--text-muted);
+  padding: 4px; display: flex; align-items: center;
 }
-.fav-search-clear:hover { color: #C85A20; }
+.search-clear:hover { color: var(--primary); }
 
-/* ═══ 分类标签 ═══ */
+/* ── 分类标签 ── */
 .fav-tabs {
-  display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap;
+  display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
 }
 .fav-tab {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 16px; border-radius: 20px;
-  font-size: 13px; font-weight: 500; cursor: pointer;
-  background: #f4f6f9; color: #4A5568; border: 1px solid transparent;
+  padding: 7px 18px; border-radius: 20px;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  background: var(--bg-light); color: var(--primary);
+  border: 1.5px dashed transparent;
   transition: all 0.2s;
 }
-.fav-tab:hover { background: #eaecf0; }
-.fav-tab.active { background: #3D5A80; color: #fff; border-color: #3D5A80; }
-.fav-tab-count {
+.fav-tab:hover { border-color: var(--border-dashed); }
+.fav-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.fav-tab .tab-count {
   display: inline-flex; align-items: center; justify-content: center;
-  min-width: 18px; height: 18px; border-radius: 9px;
-  background: rgba(0,0,0,.08); font-size: 11px; padding: 0 5px;
+  min-width: 20px; height: 20px; border-radius: 10px;
+  background: rgba(37,99,235,0.10);
+  font-size: 11px; padding: 0 6px; color: var(--primary);
 }
-.fav-tab.active .fav-tab-count { background: rgba(255,255,255,.2); }
+.fav-tab.active .tab-count { background: rgba(255,255,255,0.2); color: #fff; }
 
-/* ═══ 收藏卡片 ═══ */
-.fav-item-card {
+/* ── 加载态 ── */
+.loading-state {
+  text-align: center; padding: 60px 0;
+  color: var(--text-muted); font-size: 14px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+
+/* ── 收藏列表 ── */
+.fav-list { display: flex; flex-direction: column; gap: 10px; }
+
+/* ── 收藏项卡片 ── */
+.fav-item {
   display: flex; align-items: center; gap: 14px;
-  background: #fff; border: 1px solid #f0f2f6; border-radius: 12px;
-  padding: 14px 18px; margin-bottom: 10px;
+  background: var(--bg-light);
+  border-radius: 12px;
+  padding: 14px 18px;
+  border: 1.5px dashed var(--border-dashed);
   transition: box-shadow 0.2s;
 }
-.fav-item-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,.05); }
-.fav-item-icon {
-  width: 42px; height: 42px; border-radius: 10px;
+.fav-item:hover { box-shadow: 0 2px 10px rgba(37,99,235,0.08); }
+.fav-type-icon {
+  width: 40px; height: 40px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 20px; flex-shrink: 0;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.65);
+  color: var(--primary);
 }
-.fav-item-icon.career { background: rgba(61,90,128,.08); }
-.fav-item-icon.video { background: rgba(200,90,32,.08); }
-.fav-item-icon.interview { background: rgba(61,90,128,.08); }
-.fav-item-icon.exam { background: rgba(191,168,149,.15); }
-.fav-item-info { flex: 1; min-width: 0; cursor: pointer; }
-.fav-item-title { font-size: 14px; font-weight: 600; color: #2C3E50; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.fav-item-meta { font-size: 12px; color: #8EA0B8; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
-.fav-item-actions { display: flex; gap: 4px; flex-shrink: 0; }
-.fav-item-btn {
+.fav-type-icon.video { color: var(--accent); }
+.fav-type-icon.interview { color: #7C3AED; }
+.fav-type-icon.exam { color: #059669; }
+.fav-info { flex: 1; min-width: 0; cursor: pointer; }
+.fav-title { font-size: 14px; font-weight: 700; color: var(--text-heading); margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fav-meta { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.tag-pill {
+  display: inline-flex; padding: 1px 8px; border-radius: 10px; font-size: 11px;
+  background: rgba(37,99,235,0.10); color: var(--primary);
+}
+.tag-pill.green { background: rgba(5,150,105,0.1); color: #059669; }
+.tag-pill.orange { background: rgba(234,179,8,0.12); color: #B45309; }
+.tag-pill.red { background: rgba(220,38,38,0.1); color: #DC2626; }
+.fav-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.fav-btn {
   width: 32px; height: 32px; border-radius: 8px;
   display: inline-flex; align-items: center; justify-content: center;
-  border: 1px solid #e0e4ea; background: #fff;
-  color: #4A5568; font-size: 13px; cursor: pointer;
-  transition: all 0.2s; text-decoration: none;
+  border: 1.5px dashed var(--border-dashed);
+  background: rgba(255,255,255,0.65);
+  color: var(--primary); cursor: pointer;
+  transition: all 0.2s;
 }
-.fav-item-btn:hover { border-color: #3D5A80; color: #3D5A80; }
-.fav-item-btn.danger:hover { border-color: #fca5a5; color: #dc2626; }
+.fav-btn:hover { border-color: var(--primary); background: #fff; }
+.fav-btn.danger:hover { border-color: #FCA5A5; color: #DC2626; background: rgba(220,38,38,0.05); }
 
-/* ═══ 空状态 ═══ */
-.fav-go-btn {
-  display: inline-block; margin-top: 12px;
-  padding: 8px 20px; border-radius: 20px;
-  background: #3D5A80; color: #fff; font-size: 13px; font-weight: 500;
-  transition: opacity 0.2s;
+/* ── 空状态 ── */
+.empty-state {
+  text-align: center; padding: 80px 20px;
+  color: var(--text-muted);
 }
-.fav-go-btn:hover { opacity: .85; }
+.empty-state .empty-icon { margin-bottom: 12px; }
+.empty-state p { font-size: 14px; margin-bottom: 6px; }
+.empty-state .empty-hint { font-size: 12px; color: var(--text-muted); }
+.explore-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 16px; padding: 10px 24px; border-radius: 10px;
+  background: var(--primary); color: #fff;
+  font-size: 14px; font-weight: 700;
+  text-decoration: none; transition: opacity 0.2s;
+  font-family: inherit;
+}
+.explore-btn:hover { opacity: 0.85; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
