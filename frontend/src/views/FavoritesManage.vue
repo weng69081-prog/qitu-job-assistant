@@ -1,20 +1,12 @@
 <template>
   <div class="fav-page">
-    <!-- ═══ 页面标题 ═══ -->
-    <div class="page-header">收藏管理</div>
-
-    <!-- ═══ 搜索栏 ═══ -->
-    <div class="search-bar">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input
-        type="text"
-        v-model="searchQuery"
-        placeholder="搜索收藏的职业、视频、面试题…"
-        @input="onSearchChange"
-      />
-      <span v-if="searchQuery" class="search-clear" @click="searchQuery='';onSearchChange()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </span>
+    <!-- ═══ 欢迎横幅 ═══ -->
+    <div class="welcome">
+      <div>
+        <h1>{{ greeting }}，<span class="hl-name">{{ displayName }}</span></h1>
+      </div>
+      <div class="date">{{ todayStr }}</div>
+      <img src="/src/assets/xiaoju-on-banner.png" class="banner-cat" alt="小橘">
     </div>
 
     <!-- ═══ 分类标签 ═══ -->
@@ -144,6 +136,13 @@ import axios from 'axios'
 const router = useRouter()
 const store = useCareerStore()
 
+// ── 问候 ──
+const now = new Date()
+const h = now.getHours()
+const greeting = h < 12 ? '早上好' : h < 18 ? '下午好' : '晚上好'
+const displayName = ref('同学')
+const todayStr = now.toLocaleDateString('zh-CN', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase()
+
 const searchQuery = ref('')
 const activeTab = ref('all')
 const loading = ref(false)
@@ -256,37 +255,28 @@ onMounted(async () => {
 /* ═══ 收藏管理页面 ═══ */
 .fav-page { max-width: 860px; }
 
-/* ── 页面标题 ── */
-.page-header {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 22px; font-weight: 700; color: var(--text-heading);
-  padding: 0 0 20px;
-}
-
-/* ── 搜索栏 ── */
-.search-bar {
-  display: flex; align-items: center; gap: 10px;
+/* ═══ 欢迎横幅 ═══ */
+.welcome {
   background: var(--bg-light);
-  border: 1.5px dashed var(--border-dashed);
-  border-radius: 10px;
-  padding: 0 16px;
-  height: 44px;
-  margin-bottom: 18px;
-  transition: border-color 0.2s;
+  padding: 32px 32px;
+  margin: -24px -28px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
 }
-.search-bar:focus-within { border-color: var(--primary); }
-.search-bar input {
-  flex: 1; border: none; outline: none;
-  font-size: 14px; color: var(--text-heading);
-  background: transparent;
-  font-family: inherit;
+.welcome h1 { font-size: 24px; color: var(--text-heading); font-weight: 400; }
+.welcome h1 .hl-name { color: var(--primary); }
+.welcome .date { font-size: 13px; color: var(--text-muted); letter-spacing: 0.05em; }
+.banner-cat {
+  position: absolute;
+  bottom: -5px;
+  right: 320px;
+  width: 140px;
+  height: auto;
+  pointer-events: none;
+  z-index: 0;
 }
-.search-bar input::placeholder { color: var(--text-muted); }
-.search-clear {
-  cursor: pointer; color: var(--text-muted);
-  padding: 4px; display: flex; align-items: center;
-}
-.search-clear:hover { color: var(--primary); }
 
 /* ── 分类标签 ── */
 .fav-tabs {
