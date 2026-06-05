@@ -5,12 +5,12 @@
       <PageBanner fullwidth
         title="简历优化"
         description="智能润色或 AI 生成简历，模板可视化预览，一键导出"
-        icon="fa-file-pen"
+        :icon="'FileEdit'"
         variant="primary"
       >
         <template #actions>
           <el-button size="small" @click="showHistory = true" style="background:rgba(255,255,255,0.15);border:none;color:#fff;">
-            <i class="fas fa-folder-open"></i> 简历历史
+            <FolderOpen :size="16" class="icon-blue" /> 简历历史
           </el-button>
         </template>
       </PageBanner>
@@ -20,9 +20,9 @@
     <!-- ═══ 收藏岗位快捷选择 ═══ -->
     <div v-if="bookmarks.length" class="bookmark-band">
       <div class="bm-band-header">
-        <span class="bm-band-title"><i class="fas fa-star"></i> 收藏岗位：</span>
+        <span class="bm-band-title"><Star :size="16" class="icon-blue" /> 收藏岗位：</span>
         <div v-if="targetCareer" class="bm-active">
-          <i class="fas fa-check-circle" style="color: var(--primary);margin-right:4px"></i>
+          <CheckCircle :size="16" :color="'var(--primary)'" style="margin-right:4px" />
           已选「{{ targetCareer }}」
         </div>
       </div>
@@ -45,13 +45,13 @@
           :class="['filter-tag', { active: mode === 'optimize' }]"
           @click="mode='optimize'"
         >
-          <i class="fas fa-file-lines"></i> 简历润色
+          <FileText :size="16" class="icon-blue" /> 简历润色
         </span>
         <span
           :class="['filter-tag', { active: mode === 'generate' }]"
           @click="mode='generate'"
         >
-          <i class="fas fa-wand-magic-sparkles"></i> 智能生成
+          <WandSparkles :size="16" class="icon-blue" /> 智能生成
         </span>
       </div>
     </div>
@@ -61,7 +61,7 @@
          ══════════════════════════════════════════════════════════════ -->
     <div class="template-section">
       <div class="template-label">
-        <i class="fas fa-palette"></i> 选择简历模板 — 点击即可预览布局
+        <Palette :size="16" class="icon-blue" /> 选择简历模板 — 点击即可预览布局
       </div>
       <div class="template-track">
         <div
@@ -82,7 +82,7 @@
          润色模式
          ══════════════════════════════════════════════════════════════ -->
     <div v-if="mode === 'optimize'" class="card section-card">
-      <div class="section-title-sm"><i class="fas fa-cloud-upload-alt"></i> 上传或粘贴简历</div>
+      <div class="section-title-sm"><CloudUpload :size="16" class="icon-blue" /> 上传或粘贴简历</div>
 
       <div
         class="upload-zone"
@@ -94,43 +94,43 @@
         @click="triggerFileInput"
       >
         <input ref="fileInput" type="file" accept=".txt,.pdf,.docx" style="display:none" @change="onFileChange" />
-        <div class="upload-icon"><i class="fas fa-file-upload"></i></div>
+        <div class="upload-icon"><FileUp :size="16" class="icon-blue" /></div>
         <div class="upload-text">
-          <span v-if="!uploadedFile"><i class="fas fa-cloud-upload-alt" style="margin-right:6px;color:var(--primary)"></i>点击或拖拽上传简历文件（.txt / .pdf / .docx）</span>
-          <span v-else style="color:var(--primary)"><i class="fas fa-check-circle"></i> {{ uploadedFile }}</span>
+          <span v-if="!uploadedFile"><CloudUpload :size="16" :color="'var(--primary)'" style="margin-right:6px;" />点击或拖拽上传简历文件（.txt / .pdf / .docx）</span>
+          <span v-else style="color:var(--primary)"><CheckCircle :size="16" class="icon-blue" /> {{ uploadedFile }}</span>
         </div>
       </div>
 
-      <div class="opt-divider"><i class="fas fa-ellipsis-h"></i> 或者直接粘贴文本 <i class="fas fa-ellipsis-h"></i></div>
+      <div class="opt-divider"><MoreHorizontal :size="16" class="icon-blue" /> 或者直接粘贴文本 <MoreHorizontal :size="16" class="icon-blue" /></div>
 
       <el-input v-model="resumeText" type="textarea" :rows="6" placeholder="请粘贴你的简历文本内容…" class="resume-input" />
 
       <!-- 定制要求 -->
       <div class="req-section">
         <div class="section-title-sm" style="font-size:0.9rem;margin-bottom:0.6rem">
-          <i class="fas fa-lightbulb"></i> 输入定制要求（可选）
+          <Lightbulb :size="16" class="icon-blue" /> 输入定制要求（可选）
         </div>
         <div class="req-row">
           <el-input v-model="reqText" type="textarea" :rows="3" placeholder="例如：我想突出项目经验，把技能放最后。或者：帮我精简到一页。" class="req-input" />
           <div class="req-upload" @click="triggerReqInput">
             <input ref="reqFileInput" type="file" accept=".txt" style="display:none" @change="onReqFileChange" />
-            <el-button text size="small"><i class="fas fa-paperclip"></i> 传文件</el-button>
+            <el-button text size="small"><Paperclip :size="16" class="icon-blue" /> 传文件</el-button>
           </div>
         </div>
-        <div v-if="reqFileName" class="req-file-name"><i class="fas fa-paperclip"></i> {{ reqFileName }}</div>
+        <div v-if="reqFileName" class="req-file-name"><Paperclip :size="16" class="icon-blue" /> {{ reqFileName }}</div>
       </div>
 
       <div class="action-row">
         <el-button type="primary" :loading="optLoading" @click="generateWithTemplate">
-          <i class="fas fa-magic"></i> 按模板生成简历
+          <WandSparkles :size="16" class="icon-blue" /> 按模板生成简历
         </el-button>
       </div>
 
       <div v-if="optResult" class="result-box">
         <div class="result-header">
-          <h4><i class="fas fa-file-alt"></i> AI 生成的简历</h4>
+          <h4><FileText :size="16" class="icon-blue" /> AI 生成的简历</h4>
           <div class="result-actions">
-            <el-button size="small" @click="copyResult(optResult)"><i class="fas fa-copy"></i> 复制全文</el-button>
+            <el-button size="small" @click="copyResult(optResult)"><Copy :size="16" class="icon-blue" /> 复制全文</el-button>
           </div>
         </div>
         <pre class="result-pre">{{ optResult }}</pre>
@@ -153,25 +153,25 @@
       <!-- 个性化需求 -->
       <div class="card info-card">
         <div class="info-card-header">
-          <i class="fas fa-lightbulb"></i> 个性化需求 <span class="field-note">（可选）</span>
+          <Lightbulb :size="16" class="icon-blue" /> 个性化需求 <span class="field-note">（可选）</span>
         </div>
         <div class="card-body">
           <div class="req-row">
             <el-input v-model="reqTextGen" type="textarea" :rows="3" placeholder="例如：在校大学生找前端实习，突出Vue项目。或：要一页纸简历。" class="req-input" />
             <div class="req-upload" @click="triggerGenReqInput">
               <input ref="genReqFileInput" type="file" accept=".txt" style="display:none" @change="onGenReqFileChange" />
-              <el-button text size="small"><i class="fas fa-paperclip"></i> 传文件</el-button>
+              <el-button text size="small"><Paperclip :size="16" class="icon-blue" /> 传文件</el-button>
             </div>
           </div>
-          <div v-if="genReqFileName" class="req-file-name"><i class="fas fa-paperclip"></i> {{ genReqFileName }}</div>
+          <div v-if="genReqFileName" class="req-file-name"><Paperclip :size="16" class="icon-blue" /> {{ genReqFileName }}</div>
         </div>
       </div>
 
       <!-- ══ 基础信息 ══ -->
-      <div class="section-badge"><i class="fas fa-id-card"></i> 基础信息（必填）</div>
+      <div class="section-badge"><IdCard :size="16" class="icon-blue" /> 基础信息（必填）</div>
 
       <div class="card info-card">
-        <div class="info-card-header"><i class="fas fa-user"></i> ① 个人基本信息</div>
+        <div class="info-card-header"><User :size="16" class="icon-blue" /> ① 个人基本信息</div>
         <div class="card-body">
           <el-row :gutter="16">
             <el-col :span="8"><el-input v-model="f.name" placeholder="姓名" /></el-col>
@@ -197,15 +197,15 @@
             <div class="photo-upload-area" @click="triggerPhotoInput">
               <img v-if="f.photo" :src="f.photo" class="photo-preview" />
               <div v-else class="photo-placeholder">
-                <i class="fas fa-camera photo-icon"></i>
+                <Camera :size="16" class="icon-blue" />
                 <span class="photo-hint">上传证件照</span>
               </div>
             </div>
             <div class="photo-info">
-              <div class="photo-label"><i class="fas fa-image"></i> 证件照片</div>
+              <div class="photo-label"><Image :size="16" class="icon-blue" /> 证件照片</div>
               <div class="photo-desc">标准证件照，白底/蓝底均可<br/>JPG / PNG，建议 2.5×3.5cm</div>
               <el-button v-if="f.photo" text size="small" type="danger" @click.stop="f.photo = ''">
-                <i class="fas fa-trash-alt"></i> 删除照片
+                <Trash2 :size="16" class="icon-blue" /> 删除照片
               </el-button>
             </div>
             <input ref="photoInput" type="file" accept="image/*" style="display:none" @change="onPhotoChange" />
@@ -214,7 +214,7 @@
       </div>
 
       <div class="card info-card">
-        <div class="info-card-header"><i class="fas fa-graduation-cap"></i> ② 教育经历</div>
+        <div class="info-card-header"><GraduationCap :size="16" class="icon-blue" /> ② 教育经历</div>
         <div class="card-body">
           <el-row :gutter="16">
             <el-col :span="8"><el-input v-model="f.edu.school" placeholder="就读院校" /></el-col>
@@ -238,13 +238,13 @@
       </div>
 
       <div class="card info-card">
-        <div class="info-card-header"><i class="fas fa-briefcase"></i> ③ 工作/实习经历</div>
+        <div class="info-card-header"><Briefcase :size="16" class="icon-blue" /> ③ 工作/实习经历</div>
         <div class="card-body">
           <div v-for="(e, i) in f.experiences" :key="i" class="multi-item">
             <div class="multi-header">
               <span class="multi-num">#{{ i + 1 }}</span>
               <el-button text type="danger" size="small" @click="f.experiences.splice(i, 1)">
-                <i class="fas fa-trash-alt"></i> 删除
+                <Trash2 :size="16" class="icon-blue" /> 删除
               </el-button>
             </div>
             <el-row :gutter="12">
@@ -258,19 +258,19 @@
             </div>
           </div>
           <el-button text type="primary" @click="addExperience">
-            <i class="fas fa-plus-circle"></i> 添加一条经历
+            <PlusCircle :size="16" class="icon-blue" /> 添加一条经历
           </el-button>
         </div>
       </div>
 
       <div class="card info-card">
-        <div class="info-card-header"><i class="fas fa-code-branch"></i> ④ 项目经历</div>
+        <div class="info-card-header"><GitBranch :size="16" class="icon-blue" /> ④ 项目经历</div>
         <div class="card-body">
           <div v-for="(p, i) in f.projects" :key="i" class="multi-item">
             <div class="multi-header">
               <span class="multi-num">#{{ i + 1 }}</span>
               <el-button text type="danger" size="small" @click="f.projects.splice(i, 1)">
-                <i class="fas fa-trash-alt"></i> 删除
+                <Trash2 :size="16" class="icon-blue" /> 删除
               </el-button>
             </div>
             <el-row :gutter="12">
@@ -284,13 +284,13 @@
             </div>
           </div>
           <el-button text type="primary" @click="addProject">
-            <i class="fas fa-plus-circle"></i> 添加一个项目
+            <PlusCircle :size="16" class="icon-blue" /> 添加一个项目
           </el-button>
         </div>
       </div>
 
       <div class="card info-card">
-        <div class="info-card-header"><i class="fas fa-cogs"></i> ⑤ 专业技能</div>
+        <div class="info-card-header"><Settings2 :size="16" class="icon-blue" /> ⑤ 专业技能</div>
         <div class="card-body">
           <el-row :gutter="16">
             <el-col :span="12" style="margin-bottom:12px">
@@ -315,16 +315,16 @@
       </div>
 
       <!-- ══ 加分项 ══ -->
-      <div class="section-badge bonus"><i class="fas fa-star"></i> 加分项（可选）</div>
+      <div class="section-badge bonus"><Star :size="16" class="icon-blue" /> 加分项（可选）</div>
 
       <div class="card info-card">
-        <div class="info-card-header"><i class="fas fa-school"></i> ⑥ 校园经历 <span class="field-note">（应届生重点）</span></div>
+        <div class="info-card-header"><School :size="16" class="icon-blue" /> ⑥ 校园经历 <span class="field-note">（应届生重点）</span></div>
         <div class="card-body">
           <div v-for="(c, i) in f.campus_activities" :key="i" class="multi-item">
             <div class="multi-header">
               <span class="multi-num">#{{ i + 1 }}</span>
               <el-button text type="danger" size="small" @click="f.campus_activities.splice(i, 1)">
-                <i class="fas fa-trash-alt"></i> 删除
+                <Trash2 :size="16" class="icon-blue" /> 删除
               </el-button>
             </div>
             <el-row :gutter="12">
@@ -334,19 +334,19 @@
             </el-row>
           </div>
           <el-button text type="primary" @click="addCampus">
-            <i class="fas fa-plus-circle"></i> 添加校园经历
+            <PlusCircle :size="16" class="icon-blue" /> 添加校园经历
           </el-button>
         </div>
       </div>
 
       <div class="card info-card">
-        <div class="info-card-header"><i class="fas fa-trophy"></i> ⑦ 荣誉奖项</div>
+        <div class="info-card-header"><Trophy :size="16" class="icon-blue" /> ⑦ 荣誉奖项</div>
         <div class="card-body">
           <div v-for="(a, i) in f.awards" :key="i" class="multi-item">
             <div class="multi-header">
               <span class="multi-num">#{{ i + 1 }}</span>
               <el-button text type="danger" size="small" @click="f.awards.splice(i, 1)">
-                <i class="fas fa-trash-alt"></i> 删除
+                <Trash2 :size="16" class="icon-blue" /> 删除
               </el-button>
             </div>
             <el-row :gutter="12">
@@ -356,13 +356,13 @@
             </el-row>
           </div>
           <el-button text type="primary" @click="addAward">
-            <i class="fas fa-plus-circle"></i> 添加奖项
+            <PlusCircle :size="16" class="icon-blue" /> 添加奖项
           </el-button>
         </div>
       </div>
 
       <div class="card info-card">
-        <div class="info-card-header"><i class="fas fa-comment"></i> ⑧ 自我评价 <span class="field-note">（简短，贴合岗位）</span></div>
+        <div class="info-card-header"><MessageSquare :size="16" class="icon-blue" /> ⑧ 自我评价 <span class="field-note">（简短，贴合岗位）</span></div>
         <div class="card-body">
           <el-input v-model="f.self_evaluation" type="textarea" :rows="4" placeholder="总结个人优势、性格、职业态度，避免空话套话" />
         </div>
@@ -371,20 +371,20 @@
       <!-- 生成按钮 -->
       <div class="gen-action">
         <el-button type="primary" size="large" :loading="genLoading" @click="generateSmart">
-          <i class="fas fa-magic"></i> 生成简历
+          <WandSparkles :size="16" class="icon-blue" /> 生成简历
         </el-button>
       </div>
 
       <!-- 生成结果 -->
       <div v-if="genResult" class="result-box">
         <div class="result-header">
-          <h4><i class="fas fa-file-alt"></i> 预览</h4>
+          <h4><FileText :size="16" class="icon-blue" /> 预览</h4>
           <div class="result-actions">
             <el-button size="small" type="primary" :loading="dlLoading" @click="downloadDocx">
-              <i class="fas fa-download"></i> 下载 Word 文档
+              <Download :size="16" class="icon-blue" /> 下载 Word 文档
             </el-button>
             <el-button size="small" @click="copyResult(genResult)">
-              <i class="fas fa-copy"></i> 复制全文
+              <Copy :size="16" class="icon-blue" /> 复制全文
             </el-button>
           </div>
         </div>
@@ -395,11 +395,11 @@
     <!-- ═══ 简历历史弹窗 ═══ -->
     <el-dialog v-model="showHistory" width="640px" destroy-on-close class="history-dialog">
       <template #header>
-        <span class="dialog-title"><i class="fas fa-folder-open"></i> 简历历史</span>
+        <span class="dialog-title"><FolderOpen :size="16" class="icon-blue" /> 简历历史</span>
       </template>
-      <div v-if="historyLoading" class="loading-state"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>
+      <div v-if="historyLoading" class="loading-state"><Loader :size="16" class="icon-blue" /> 加载中...</div>
       <div v-else-if="historyRecords.length === 0" class="empty-state">
-        <i class="fas fa-inbox empty-icon"></i>
+        <Inbox :size="16" class="icon-blue" />
         <p>暂无保存的简历</p>
         <p class="empty-hint">生成简历后会自动保存到历史中</p>
       </div>
@@ -409,16 +409,16 @@
             <div class="history-name">{{ r.name || '未命名' }}</div>
             <div class="history-meta">
               <span class="history-tpl">{{ r.template_name }}</span>
-              <span v-if="r.career" class="history-career"><i class="fas fa-bullseye"></i> {{ r.career }}</span>
+              <span v-if="r.career" class="history-career"><Crosshair :size="16" class="icon-blue" /> {{ r.career }}</span>
               <span class="history-date">{{ r.created_at }}</span>
             </div>
           </div>
           <div class="history-actions">
             <el-button size="small" text @click="restoreHistory(r.id)">
-              <i class="fas fa-undo-alt"></i> 恢复
+              <Undo :size="16" class="icon-blue" /> 恢复
             </el-button>
             <el-button size="small" text type="danger" @click="deleteHistory(r.id)">
-              <i class="fas fa-trash-alt"></i> 删除
+              <Trash2 :size="16" class="icon-blue" /> 删除
             </el-button>
           </div>
         </div>

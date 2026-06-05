@@ -4,7 +4,7 @@
     <PageBanner fullwidth
       title="个人设置"
       description="完善个人信息，启途为你推荐更精准的职业方向"
-      icon="fa-cog"
+      :icon="'Settings'"
       variant="primary"
     />
 
@@ -15,7 +15,7 @@
         <!-- 👤 基础信息 -->
         <div class="set-card">
           <div class="set-card-header">
-            <i class="fas fa-user" style="color:#3D5A80;"></i>
+            <User :size="16" :color="'#3D5A80'" />
             <span>基础信息</span>
           </div>
           <div class="set-card-body">
@@ -24,10 +24,10 @@
               <div class="avatar-preview-wrap" @click="triggerAvatarInput">
                 <img v-if="avatarDataUrl" :src="avatarDataUrl" class="avatar-preview-img" />
                 <div v-else class="avatar-preview-placeholder">
-                  <i class="fas fa-user"></i>
+                  <User :size="16" class="icon-blue" />
                 </div>
                 <div class="avatar-overlay">
-                  <i class="fas fa-camera"></i>
+                  <Camera :size="16" class="icon-blue" />
                 </div>
               </div>
               <div class="avatar-info">
@@ -86,7 +86,7 @@
         <!-- 🎯 兴趣方向 -->
         <div class="set-card">
           <div class="set-card-header">
-            <i class="fas fa-bullseye" style="color:#C85A20;"></i>
+            <Crosshair :size="16" :color="'#C85A20'" />
             <span>兴趣方向 <span class="set-optional">选填</span></span>
           </div>
           <div class="set-card-body">
@@ -105,7 +105,7 @@
         <!-- 💡 学习困惑 -->
         <div class="set-card">
           <div class="set-card-header">
-            <i class="fas fa-lightbulb" style="color:#BFA895;"></i>
+            <Lightbulb :size="16" :color="'#BFA895'" />
             <span>学习困惑 <span class="set-optional">选填</span></span>
           </div>
           <div class="set-card-body">
@@ -124,7 +124,7 @@
         <!-- ⭐ 收藏职业 -->
         <div class="set-card" v-if="bookmarks.length">
           <div class="set-card-header">
-            <i class="fas fa-star" style="color:var(--accent);"></i>
+            <Star :size="16" :color="'var(--accent)'" />
             <span>收藏职业 <span class="set-badge">{{ bookmarks.length }}</span></span>
           </div>
           <div class="set-card-body">
@@ -141,9 +141,9 @@
                     text
                     type="warning"
                     @click.stop="goPath(b.career)"
-                  ><i class="fas fa-map"></i> 路线</el-button>
+                  ><Map :size="16" class="icon-blue" /> 路线</el-button>
                   <el-button size="small" text type="danger" @click.stop="store.removeBookmark(b.career)">
-                    <i class="fas fa-times"></i>
+                    <X :size="16" class="icon-blue" />
                   </el-button>
                 </div>
               </div>
@@ -154,7 +154,7 @@
         <!-- 📺 收藏视频 -->
         <div class="set-card" v-if="videoBookmarks.length">
           <div class="set-card-header">
-            <i class="fas fa-video" style="color:#8EA0B8;"></i>
+            <Video :size="16" :color="'#8EA0B8'" />
             <span>收藏视频 <span class="set-badge">{{ videoBookmarks.length }}</span></span>
           </div>
           <div class="set-card-body">
@@ -166,15 +166,15 @@
                 <div class="vbm-info">
                   <div class="vbm-title" :title="v.title">{{ v.title?.slice(0, 28) }}{{ v.title?.length > 28 ? '…' : '' }}</div>
                   <div class="vbm-meta">
-                    <span v-if="v.career"><i class="fas fa-tag"></i> {{ v.career }}</span>
-                    <span v-if="v.author"><i class="fas fa-user"></i> {{ v.author?.slice(0, 10) }}</span>
+                    <span v-if="v.career"><Tag :size="16" class="icon-blue" /> {{ v.career }}</span>
+                    <span v-if="v.author"><User :size="16" class="icon-blue" /> {{ v.author?.slice(0, 10) }}</span>
                   </div>
                   <div class="vbm-actions">
                     <el-button size="small" text type="primary" :href="v.url" target="_blank" tag="a" rel="noopener noreferrer">
-                      <i class="fas fa-external-link-alt"></i> 观看
+                      <ExternalLink :size="16" class="icon-blue" /> 观看
                     </el-button>
                     <el-button size="small" text type="danger" @click="store.removeVideoBookmark(v.bvid)">
-                      <i class="fas fa-times"></i>
+                      <X :size="16" class="icon-blue" />
                     </el-button>
                   </div>
                 </div>
@@ -186,10 +186,10 @@
         <!-- 右栏空状态 -->
         <div class="set-card set-empty" v-if="!bookmarks.length && !videoBookmarks.length">
           <div class="set-card-body" style="text-align:center;padding:30px 0;">
-            <i class="fas fa-star" style="font-size:36px;color:#8EA0B8;margin-bottom:10px;display:block;"></i>
+            <Star :size="36" :color="'#8EA0B8'" style="margin-bottom:10px;display:block;" />
             <p style="color:#8EA0B8;font-size:14px;">还没有收藏的内容</p>
             <p style="color:#BFA895;font-size:13px;">去探索职业方向，收藏感兴趣的内容吧</p>
-            <router-link to="/career" class="set-go-btn">去探索 <i class="fas fa-arrow-right"></i></router-link>
+            <router-link to="/career" class="set-go-btn">去探索 <ArrowRight :size="16" class="icon-blue" /></router-link>
           </div>
         </div>
       </div>
@@ -198,10 +198,10 @@
     <!-- ═══ 底部操作按钮 ═══ -->
     <div class="settings-actions">
       <el-button type="primary" size="large" @click="save" :loading="saving" round>
-        <i class="fas fa-save"></i> 保存设置
+        <Save :size="16" class="icon-blue" /> 保存设置
       </el-button>
       <el-button size="large" @click="logout" plain round>
-        <i class="fas fa-sign-out-alt"></i> 退出登录
+        <LogOut :size="16" class="icon-blue" /> 退出登录
       </el-button>
     </div>
 

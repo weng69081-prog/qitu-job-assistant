@@ -3,7 +3,7 @@
     <!-- ═══ 头部：返回 + 岗位名称 + 收藏按钮 ═══ -->
     <div class="detail-topbar">
       <button class="btn-back" @click="$router.back()">
-        <i class="fas fa-arrow-left"></i>
+        <ArrowLeft :size="16" class="icon-blue" />
         <span>返回</span>
       </button>
       <div class="detail-topbar-center">
@@ -17,7 +17,7 @@
         @click="toggleBookmark"
         :title="isBookmarked ? '取消收藏' : '收藏此岗位'"
       >
-        <i :class="isBookmarked ? 'fas fa-star' : 'far fa-star'"></i>
+        <Star :size="16" class="icon-blue" :class="isBookmarked ? 'fas fa-star' : 'far fa-star'" />
       </el-button>
     </div>
 
@@ -59,7 +59,7 @@
           >
             <div class="wf-num" :style="{background: ladderColors[i % ladderColors.length]}">{{ i + 1 }}</div>
             <div class="wf-content">{{ step }}</div>
-            <div class="wf-arrow" v-if="i < (careerData.work_flow?.length || 0) - 1"><i class="fas fa-chevron-down"></i></div>
+            <div class="wf-arrow" v-if="i < (careerData.work_flow?.length || 0) - 1"><ChevronDown :size="16" class="icon-blue" /></div>
           </div>
         </div>
       </section>
@@ -118,21 +118,69 @@
       <!-- ═══ 模块5：适配人群&避坑提示 ═══ -->
       <section class="card detail-section">
         <div class="section-header">
-          <h3 class="section-title"><i class="fas fa-users"></i> 适配人群 &amp; 避坑提示</h3>
+          <h3 class="section-title"><Users :size="16" class="icon-blue" /> 适配人群 &amp; 避坑提示</h3>
         </div>
         <div class="tip-block suitable">
-          <div class="tip-icon"><i class="fas fa-check-circle" style="color:#059669"></i></div>
+          <div class="tip-icon"><CheckCircle :size="16" :color="'#059669'" /></div>
           <div>
             <strong>适合这样的你</strong>
             <p>{{ careerData.suitable_audience || '暂无' }}</p>
           </div>
         </div>
         <div class="tip-block avoid">
-          <div class="tip-icon"><i class="fas fa-exclamation-triangle" style="color:#C85A20"></i></div>
+          <div class="tip-icon"><TriangleAlert :size="16" :color="'#C85A20'" /></div>
           <div>
             <strong>避坑提示</strong>
             <p>{{ careerData.avoid_tips || '暂无' }}</p>
           </div>
+        </div>
+      </section>
+
+      <!-- ═══ ⚡ AI 智能分析 ═══ -->
+      <section class="card detail-section ai-analysis-section">
+        <div class="section-header">
+          <h3 class="section-title"><Bot :size="16" class="icon-blue" /> AI 智能分析</h3>
+          <span class="section-badge">MiMo</span>
+        </div>
+        <div v-if="aiLoading" class="loading-state" style="padding:16px 0">
+          <i class="fas fa-spinner fa-spin"></i> 正在用 AI 分析…
+        </div>
+        <template v-else-if="aiAnalysis.summary">
+          <div class="ai-summary">
+            <div class="ai-label"><i class="fas fa-quote-left"></i> 一句话概括</div>
+            <p class="ai-summary-text">{{ aiAnalysis.summary }}</p>
+          </div>
+          <div class="ai-grid">
+            <div class="ai-item">
+              <div class="ai-item-icon"><CheckCircle :size="16" class="icon-blue" /></div>
+              <div class="ai-item-content">
+                <div class="ai-item-label">为什么适合你</div>
+                <p>{{ aiAnalysis.suitable_reason }}</p>
+              </div>
+            </div>
+            <div class="ai-item">
+              <div class="ai-item-icon"><Laptop :size="16" class="icon-blue" /></div>
+              <div class="ai-item-content">
+                <div class="ai-item-label">日常工作</div>
+                <p>{{ aiAnalysis.daily_work }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="ai-growth">
+            <div class="ai-growth-title"><i class="fas fa-signal"></i> AI 推荐的成长路径</div>
+            <div class="ai-growth-steps">
+              <div v-for="(step, i) in aiAnalysis.growth_path" :key="i" class="ai-growth-step">
+                <div class="ai-step-dot" :style="{background: ['#3D5A80','#BFA895','#C85A20'][i % 3]}"></div>
+                <span>{{ step }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="ai-footer">
+            <i class="fas fa-microchip"></i> 由 MiMo AI 基于你的专业背景生成
+          </div>
+        </template>
+        <div v-else class="ai-empty">
+          <Bot :size="16" class="icon-blue" /> AI 分析加载失败，请稍后重试
         </div>
       </section>
 
@@ -144,7 +192,7 @@
         <div class="video-filter-bar">
           <el-radio-group v-model="videoSort" size="small" @change="loadVideos">
             <el-radio-button value="hot"><i class="fas fa-fire"></i> 热门</el-radio-button>
-            <el-radio-button value="new"><i class="fas fa-clock"></i> 最新</el-radio-button>
+            <el-radio-button value="new"><Clock :size="16" class="icon-blue" /> 最新</el-radio-button>
           </el-radio-group>
         </div>
         <div v-if="videoLoading" class="loading-state" style="padding:20px 0"><i class="fas fa-spinner fa-spin"></i> 正在搜索B站视频…</div>
@@ -157,15 +205,15 @@
               <div class="dv-overlay"><i class="fas fa-play-circle"></i> 去B站学习</div>
             </div>
             <div class="dv-cover dv-cover-placeholder" v-else @click="openVideo(v)">
-              <div class="dv-placeholder-icon"><i class="fas fa-film"></i></div>
+              <div class="dv-placeholder-icon"><Film :size="16" class="icon-blue" /></div>
               <span class="dv-placeholder-title">{{ cleanTitle(v.title).slice(0, 10) || '入门视频' }}</span>
             </div>
             <!-- 信息 -->
             <div class="dv-info">
               <div class="dv-title" :title="cleanTitle(v.title)">{{ cleanTitle(v.title) }}</div>
               <div class="dv-meta">
-                <span v-if="v.author"><i class="fas fa-user"></i> {{ v.author }}</span>
-                <span v-if="v.play"><i class="fas fa-play"></i> {{ formatCount(v.play) }}</span>
+                <span v-if="v.author"><User :size="16" class="icon-blue" /> {{ v.author }}</span>
+                <span v-if="v.play"><Play :size="16" class="icon-blue" /> {{ formatCount(v.play) }}</span>
                 <el-button
                   size="small"
                   circle
@@ -173,7 +221,7 @@
                   @click.stop="toggleVideoBookmark(v)"
                   class="dv-star-btn"
                 >
-                  <i :class="store.isVideoBookmarked(v.bvid) ? 'fas fa-star' : 'far fa-star'"></i>
+                  <Star :size="16" class="icon-blue" :class="store.isVideoBookmarked(v.bvid) ? 'fas fa-star' : 'far fa-star'" />
                 </el-button>
               </div>
               <a :href="v.url" target="_blank" rel="noopener noreferrer" class="dv-link" @click.stop="store.recordVideoClick(careerData.career)">
@@ -223,17 +271,17 @@
               <div class="sem-tasks">
                 <div v-for="(task, ti) in sem.tasks" :key="ti" class="task-item" @click="toggleTask(sem.phase, ti)">
                   <span class="task-cb">
-                    <i :class="getTaskDone(sem.phase, ti) ? 'fas fa-check-circle' : 'far fa-square'" :style="{color: getTaskDone(sem.phase, ti) ? '#059669' : '#94a3b8'}"></i>
+<component :is="getTaskDone(sem.phase, ti) ? 'CheckCircle' : 'Square'" :size="16" :color="getTaskDone(sem.phase, ti) ? '#059669' : '#94a3b8'" />
                   </span>
                   <span :class="['task-text', { done: getTaskDone(sem.phase, ti) }]">{{ task }}</span>
                 </div>
               </div>
-              <div class="sem-tips" v-if="sem.tips"><i class="fas fa-lightbulb"></i> {{ sem.tips }}</div>
+              <div class="sem-tips" v-if="sem.tips"><Lightbulb :size="16" class="icon-blue" /> {{ sem.tips }}</div>
               <!-- 📺 该阶段推荐视频 -->
               <div class="sem-videos">
                 <div class="sem-video-toggle" @click="togglePhaseVideos(idx)">
                   <span><i class="fas fa-tv"></i> 推荐学习视频</span>
-                  <span class="sem-video-arrow"><i :class="expandedPhaseIdx === idx ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i> {{ expandedPhaseIdx === idx ? '收起' : '展开' }}</span>
+                  <span class="sem-video-arrow"><ChevronUp :size="16" class="icon-blue" :class="expandedPhaseIdx === idx ? 'fas fa-chevron-up' : 'fas fa-chevron-down'" /> {{ expandedPhaseIdx === idx ? '收起' : '展开' }}</span>
                 </div>
                 <div v-if="expandedPhaseIdx === idx" class="sem-video-list">
                   <div v-if="phaseVideoLoading[idx]" class="sem-video-loading"><i class="fas fa-spinner fa-spin"></i> 搜索视频中…</div>
@@ -246,8 +294,8 @@
                     <div class="sv-info">
                       <div class="sv-title" :title="cleanTitle(v.title)">{{ cleanTitle(v.title) }}</div>
                       <div class="sv-meta">
-                        <span v-if="v.author"><i class="fas fa-user"></i> {{ v.author }}</span>
-                        <span v-if="v.play"><i class="fas fa-play"></i> {{ formatCount(v.play) }}</span>
+                        <span v-if="v.author"><User :size="16" class="icon-blue" /> {{ v.author }}</span>
+                        <span v-if="v.play"><Play :size="16" class="icon-blue" /> {{ formatCount(v.play) }}</span>
                       </div>
                       <div class="sv-actions">
                         <a :href="v.url" target="_blank" rel="noopener noreferrer" class="sv-link"><i class="fas fa-external-link-alt"></i> 去B站学习</a>
@@ -258,7 +306,7 @@
                           @click.stop="togglePhaseVideoBookmark(v)"
                           class="sv-star"
                         >
-                          <i :class="store.isVideoBookmarked(v.bvid) ? 'fas fa-star' : 'far fa-star'"></i>
+                          <Star :size="16" class="icon-blue" :class="store.isVideoBookmarked(v.bvid) ? 'fas fa-star' : 'far fa-star'" />
                         </el-button>
                       </div>
                     </div>
@@ -273,10 +321,10 @@
       <!-- ═══ AI生成内容反馈 ═══ -->
       <section class="card detail-section" v-if="careerData.ai_generated">
         <div class="section-header">
-          <h3 class="section-title"><i class="fas fa-robot"></i> AI生成内容</h3>
+          <h3 class="section-title"><Bot :size="16" class="icon-blue" /> AI生成内容</h3>
         </div>
         <div class="ai-feedback-banner">
-          <p><i class="fas fa-info-circle"></i> 该职业信息由AI生成，仅供参考。如果内容<strong>不准确</strong>或需要<strong>补充</strong>，可以重新生成完善。</p>
+          <p><Info :size="16" class="icon-blue" /> 该职业信息由AI生成，仅供参考。如果内容<strong>不准确</strong>或需要<strong>补充</strong>，可以重新生成完善。</p>
           <div class="ai-feedback-btns">
             <el-button size="small" type="warning" plain @click="sendFeedback('不准确')"><i class="fas fa-times-circle"></i> 内容不准确</el-button>
             <el-button size="small" type="primary" plain @click="sendFeedback('需要补充')"><i class="fas fa-plus-circle"></i> 需要补充</el-button>
@@ -288,7 +336,7 @@
       <!-- ═══ 收藏后底部提示 ═══ -->
       <div class="detail-footer" v-if="!isBookmarked">
         <el-button type="primary" size="large" class="footer-bookmark-btn" @click="toggleBookmark">
-          <i class="fas fa-star"></i> 收藏此岗位，立即生成专属成长路线
+          <Star :size="16" class="icon-blue" /> 收藏此岗位，立即生成专属成长路线
         </el-button>
       </div>
 
@@ -306,15 +354,18 @@ import { useRoute, useRouter } from 'vue-router'
 import { useCareerStore } from '../stores/career'
 import axios from 'axios'
 
-const API = 'http://localhost:8000/api'
+const API = '/api'
 const route = useRoute()
 const router = useRouter()
 const store = useCareerStore()
 
 const careerData = ref({})
 const loading = ref(true)
+const aiAnalysis = ref({})
+const aiLoading = ref(false)
 
-// 视频推荐
+// 视频推荐 + 本地缓存
+const videoCache = {}
 const videoList = ref([])
 const videoLoading = ref(false)
 const videoSort = ref('hot')
@@ -322,12 +373,18 @@ const videoSort = ref('hot')
 async function loadVideos() {
   const name = careerData.value.career
   if (!name) return
+  const cacheKey = `${name}::${videoSort.value}`
+  if (videoCache[cacheKey]) {
+    videoList.value = videoCache[cacheKey]
+    return
+  }
   videoLoading.value = true
   try {
     const resp = await axios.get(`${API}/bilibili/search`, {
       params: { career: name, sort: videoSort.value }
     })
     videoList.value = resp.data.videos || []
+    videoCache[cacheKey] = videoList.value
   } catch {
     videoList.value = []
   } finally {
@@ -357,7 +414,7 @@ function onCoverError(e, v) {
   const parent = e.target.parentElement
   if (parent) {
     parent.classList.add('dv-cover-placeholder')
-    parent.innerHTML = `<div class="dv-placeholder-icon"><i class="fas fa-film"></i></div><span class="dv-placeholder-title">${(v.title || '').slice(0, 10) || '入门视频'}</span>`
+    parent.innerHTML = `<div class="dv-placeholder-icon"><Film :size="16" class="icon-blue" /></div><span class="dv-placeholder-title">${(v.title || '').slice(0, 10) || '入门视频'}</span>`
   }
 }
 
@@ -532,6 +589,13 @@ onMounted(async () => {
     careerData.value = res.data
     // 自动加载视频推荐
     loadVideos()
+    // 异步加载 AI 分析（不阻塞页面）
+    aiLoading.value = true
+    axios.get(`${API}/career/ai-analysis`, {
+      params: { career: name, major: '计算机科学与技术', city: '郑州', education: '本科' }
+    }).then(resp => {
+      if (resp.data.summary) aiAnalysis.value = resp.data
+    }).catch(() => {}).finally(() => { aiLoading.value = false })
     // 如果已收藏，直接加载保存的成长路线
     if (store.isBookmarked(careerData.value.career)) {
       await loadSavedPath()
@@ -851,6 +915,133 @@ onMounted(async () => {
 }
 .footer-bookmark-btn i {
   margin-right: 4px;
+}
+
+/* ═══ AI 智能分析模块 ═══ */
+.ai-analysis-section {
+  border: 1px solid rgba(61, 90, 128, 0.15);
+  border-left: 4px solid #3D5A80;
+}
+.section-badge {
+  font-size: 11px;
+  background: linear-gradient(135deg, #3D5A80, #2C4460);
+  color: #fff;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.ai-summary {
+  background: linear-gradient(135deg, #f0f2f6, #e8ecf2);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.ai-label {
+  font-size: 12px;
+  color: #3D5A80;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.ai-label i {
+  margin-right: 4px;
+}
+.ai-summary-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a2e;
+  line-height: 1.6;
+  margin: 0;
+}
+.ai-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.ai-item {
+  background: #f8f9fb;
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.ai-item-icon {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #3D5A80, #2C4460);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 14px;
+}
+.ai-item-label {
+  font-size: 12px;
+  color: #8EA0B8;
+  font-weight: 600;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.ai-item-content p {
+  margin: 0;
+  font-size: 13px;
+  color: #333;
+  line-height: 1.5;
+}
+.ai-growth {
+  background: linear-gradient(135deg, #fdf6ef, #faf0e6);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.ai-growth-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #BFA895;
+  margin-bottom: 10px;
+}
+.ai-growth-title i {
+  margin-right: 4px;
+}
+.ai-growth-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ai-growth-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #444;
+  line-height: 1.4;
+}
+.ai-step-dot {
+  width: 10px;
+  height: 10px;
+  min-width: 10px;
+  border-radius: 50%;
+}
+.ai-footer {
+  font-size: 11px;
+  color: #8EA0B8;
+  text-align: right;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+}
+.ai-footer i {
+  margin-right: 4px;
+}
+.ai-empty {
+  text-align: center;
+  padding: 20px;
+  color: #8EA0B8;
+  font-size: 13px;
 }
 
 /* ── 视频推荐模块 ── */

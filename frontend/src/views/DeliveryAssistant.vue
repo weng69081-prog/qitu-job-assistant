@@ -5,7 +5,7 @@
       <PageBanner fullwidth
         title="求职投递助手"
         description="智能匹配岗位、一键投递、追踪面试全流程进度"
-        icon="fa-paper-plane"
+        :icon="'Send'"
         variant="primary"
       />
       <img src="/src/assets/delivery-cat.png" class="banner-cat" alt="小橘投递">
@@ -16,25 +16,25 @@
     <section class="zone-header">
       <div class="user-info-bar card">
         <div class="info-item">
-          <i class="fas fa-map-marker-alt info-icon"></i>
+          <MapPin :size="16" class="icon-blue" />
           <span class="info-label">意向城市</span>
           <span class="info-value">{{ userProfile.city || '未设置' }}</span>
         </div>
         <div class="info-divider"></div>
         <div class="info-item">
-          <i class="fas fa-bullseye info-icon"></i>
+          <Crosshair :size="16" class="icon-blue" />
           <span class="info-label">目标岗位</span>
           <span class="info-value">{{ userProfile.job_targets || '未设置' }}</span>
         </div>
         <div class="info-divider"></div>
         <div class="info-item">
-          <i class="fas fa-coins info-icon"></i>
+          <Coins :size="16" class="icon-blue" />
           <span class="info-label">期望薪资</span>
           <span class="info-value">{{ userProfile.salary || '未设置' }}</span>
         </div>
         <div class="info-divider"></div>
         <div class="info-item">
-          <i class="fas fa-tags info-icon"></i>
+          <Tags :size="16" class="icon-blue" />
           <span class="info-label">技能标签</span>
           <span class="info-value tag-value">{{ userProfile.skills || '未设置' }}</span>
         </div>
@@ -50,14 +50,14 @@
         :class="{ active: activeTab === 'recommend' }"
         @click="switchTab('recommend')"
       >
-        <i class="fas fa-star"></i> 推荐岗位
+        <Star :size="16" class="icon-blue" /> 推荐岗位
       </div>
       <div
         class="tab-item"
         :class="{ active: activeTab === 'myapps' }"
         @click="switchTab('myapps')"
       >
-        <i class="fas fa-clipboard-check"></i> 我的投递
+        <ClipboardCheck :size="16" class="icon-blue" /> 我的投递
         <span v-if="myAppsCount > 0" class="tab-badge">{{ myAppsCount }}</span>
       </div>
     </div>
@@ -70,7 +70,7 @@
     <section class="zone-filter">
       <div class="filter-bar">
         <div class="filter-group">
-          <span class="filter-label"><i class="fas fa-building"></i> 公司规模</span>
+          <span class="filter-label"><Building2 :size="16" class="icon-blue" /> 公司规模</span>
           <el-select v-model="filters.company_size" placeholder="不限" clearable style="width:105px" @change="loadJobs">
             <el-option label="小型" value="小型" />
             <el-option label="中型" value="中型" />
@@ -79,7 +79,7 @@
           </el-select>
         </div>
         <div class="filter-group">
-          <span class="filter-label"><i class="fas fa-briefcase"></i> 岗位类型</span>
+          <span class="filter-label"><Briefcase :size="16" class="icon-blue" /> 岗位类型</span>
           <el-select v-model="filters.job_type" placeholder="不限" clearable style="width:105px" @change="loadJobs">
             <el-option label="技术" value="技术" />
             <el-option label="产品" value="产品" />
@@ -90,13 +90,13 @@
           </el-select>
         </div>
         <div class="filter-group">
-          <span class="filter-label"><i class="fas fa-city"></i> 城市</span>
+          <span class="filter-label"><Building2 :size="16" class="icon-blue" /> 城市</span>
           <el-select v-model="filters.city" placeholder="不限" clearable style="width:115px" @change="loadJobs">
             <el-option v-for="c in filterOptions.cities" :key="c" :label="c" :value="c" />
           </el-select>
         </div>
         <div class="filter-group">
-          <span class="filter-label"><i class="fas fa-coins"></i> 薪资</span>
+          <span class="filter-label"><Coins :size="16" class="icon-blue" /> 薪资</span>
           <el-select v-model="filters.salary_range" placeholder="不限" clearable style="width:115px" @change="loadJobs">
             <el-option label="8K以下" value="0-8000" />
             <el-option label="8K-15K" value="8000-15000" />
@@ -106,7 +106,7 @@
           </el-select>
         </div>
         <div class="filter-group">
-          <span class="filter-label"><i class="fas fa-clock"></i> 发布时间</span>
+          <span class="filter-label"><Clock :size="16" class="icon-blue" /> 发布时间</span>
           <el-select v-model="filters.publish_time" placeholder="不限" clearable style="width:115px" @change="loadJobs">
             <el-option label="今天" value="today" />
             <el-option label="近3天" value="3days" />
@@ -118,20 +118,20 @@
 
       <div class="bulk-actions">
         <el-button size="small" @click="selectAll" :type="allSelected ? 'warning' : 'default'">
-          <i class="fas fa-check-double"></i>
+          <CheckCheck :size="16" class="icon-blue" />
           全选 {{ selectedCount ? `(${selectedCount})` : '' }}
         </el-button>
         <el-button size="small" @click="invertSelect">
-          <i class="fas fa-exchange-alt"></i> 反选
+          <ArrowLeftRight :size="16" class="icon-blue" /> 反选
         </el-button>
         <el-button size="small" @click="clearSelect">
-          <i class="fas fa-eraser"></i> 清空
+          <Eraser :size="16" class="icon-blue" /> 清空
         </el-button>
         <el-button type="primary" size="small" @click="batchApply" :disabled="!selectedCount">
-          <i class="fas fa-rocket"></i> 批量投递
+          <Rocket :size="16" class="icon-blue" /> 批量投递
         </el-button>
         <el-button type="success" size="small" @click="batchAddToList" :disabled="!selectedCount">
-          <i class="fas fa-plus-circle"></i> 加入投递清单
+          <PlusCircle :size="16" class="icon-blue" /> 加入投递清单
         </el-button>
       </div>
     </section>
@@ -141,12 +141,12 @@
          ══════════════════════════════════════════════════════════ -->
     <section class="zone-jobs">
       <div v-if="loading" class="loading-state">
-        <i class="fas fa-spinner fa-pulse" style="font-size:28px;margin-bottom:12px"></i>
+        <Loader :size="28" class="icon-blue" style="margin-bottom:12px" />
         <p>正在加载岗位数据...</p>
       </div>
 
       <div v-else-if="!jobs.length" class="empty-state">
-        <i class="fas fa-search empty-icon"></i>
+        <Search :size="16" class="icon-blue" />
         <p>暂无匹配岗位，试试调整筛选条件</p>
         <p class="empty-hint">切换筛选条件或扩大搜索范围</p>
       </div>
@@ -172,7 +172,7 @@
                 >
                 <div>
                   <div class="company-name">{{ job.company_name }}</div>
-                  <span class="company-size-tag"><i class="fas fa-layer-group"></i> {{ job.company_size }}</span>
+                  <span class="company-size-tag"><Layers :size="16" class="icon-blue" /> {{ job.company_size }}</span>
                 </div>
               </div>
               <div class="job-title">{{ job.job_title }}</div>
@@ -180,30 +180,30 @@
 
             <div class="card-meta">
               <span class="meta-item">
-                <i class="fas fa-map-marker-alt"></i>
+                <MapPin :size="16" class="icon-blue" />
                 {{ job.city }}{{ job.address ? '·' + job.address.replace(job.city, '') : '' }}
               </span>
               <span class="meta-item">
-                <i class="fas fa-coins"></i> {{ job.salary_text }}
+                <Coins :size="16" class="icon-blue" /> {{ job.salary_text }}
               </span>
               <span class="meta-item">
-                <i class="fas fa-calendar-alt"></i> {{ job.publish_time }}
+                <CalendarDays :size="16" class="icon-blue" /> {{ job.publish_time }}
               </span>
             </div>
 
             <div class="card-footer">
               <el-button size="small" type="primary" plain @click.stop="showDetail(job)">
-                <i class="fas fa-info-circle"></i> 查看详情
+                <Info :size="16" class="icon-blue" /> 查看详情
               </el-button>
               <el-button size="small" plain @click.stop="openWebsite(job.company_website)">
-                <i class="fas fa-building"></i> 公司官网
+                <Building2 :size="16" class="icon-blue" /> 公司官网
               </el-button>
               <el-button
                 size="small"
                 :type="inTracking(job.id) ? 'success' : 'default'"
                 @click.stop="addToTracking(job)"
               >
-                <i :class="inTracking(job.id) ? 'fas fa-check-circle' : 'fas fa-plus-circle'"></i>
+                <CheckCircle :size="16" class="icon-blue" :class="inTracking(job.id) ? 'fas fa-check-circle' : 'fas fa-plus-circle'" />
                 {{ inTracking(job.id) ? '已加入' : '加入清单' }}
               </el-button>
             </div>
@@ -234,7 +234,7 @@
       destroy-on-close
     >
       <div v-if="detailLoading" class="loading-state">
-        <i class="fas fa-spinner fa-pulse" style="font-size:24px;margin-bottom:10px"></i>
+        <Loader :size="24" class="icon-blue" style="margin-bottom:10px" />
         <p>AI正在解析岗位信息...</p>
       </div>
 
@@ -242,7 +242,7 @@
         <!-- 板块1：企业基础信息 -->
         <div class="detail-block card">
           <div class="detail-block-header">
-            <i class="fas fa-building"></i>
+            <Building2 :size="16" class="icon-blue" />
             企业基础信息
           </div>
           <div class="detail-block-body">
@@ -253,11 +253,11 @@
             <p class="company-intro">{{ analysisResult.company_summary || detailJob.company_intro }}</p>
             <div class="info-grid">
               <div class="info-grid-item">
-                <label><i class="fas fa-tag"></i> 岗位全称</label>
+                <label><Tag :size="16" class="icon-blue" /> 岗位全称</label>
                 <span>{{ analysisResult.job_full_title }}</span>
               </div>
               <div class="info-grid-item">
-                <label><i class="fas fa-map-pin"></i> 工作地点</label>
+                <label><MapPin :size="16" class="icon-blue" /> 工作地点</label>
                 <span>{{ analysisResult.location_detail }}</span>
               </div>
             </div>
@@ -267,45 +267,45 @@
         <!-- 板块2：岗位核心解读 -->
         <div class="detail-block card">
           <div class="detail-block-header">
-            <i class="fas fa-bullseye"></i>
+            <Crosshair :size="16" class="icon-blue" />
             岗位核心解读
           </div>
           <div class="detail-block-body">
             <div class="skill-section">
               <div class="skill-group">
-                <label><i class="fas fa-tools"></i> 硬性技能要求</label>
+                <label><Wrench :size="16" class="icon-blue" /> 硬性技能要求</label>
                 <div class="skill-tags">
                   <el-tag
                     v-for="s in analysisResult.hard_skills" :key="s" size="small"
                     :type="analysisResult.matched_skills?.includes(s) ? 'success' : 'danger'"
                   >
                     {{ s }}
-                    <i v-if="analysisResult.matched_skills?.includes(s)" class="fas fa-check-circle" style="margin-left:3px"></i>
-                    <i v-else class="fas fa-times-circle" style="margin-left:3px"></i>
+                    <CheckCircle :size="16" v-if="analysisResult.matched_skills?.includes(s)" class="icon-blue" style="margin-left:3px" />
+                    <XCircle :size="16" class="icon-blue" style="margin-left:3px" />
                   </el-tag>
                 </div>
               </div>
               <div class="skill-group">
-                <label><i class="fas fa-hand-peace"></i> 软性要求</label>
+                <label><Hand :size="16" class="icon-blue" /> 软性要求</label>
                 <div class="skill-tags">
                   <el-tag v-for="s in analysisResult.soft_skills" :key="s" size="small">{{ s }}</el-tag>
                 </div>
               </div>
               <div class="skill-group">
-                <label><i class="fas fa-star"></i> 加分技能</label>
+                <label><Star :size="16" class="icon-blue" /> 加分技能</label>
                 <div class="skill-tags">
                   <el-tag v-for="s in analysisResult.preferred_skills" :key="s" size="small" type="warning">{{ s }}</el-tag>
                 </div>
               </div>
               <div v-if="analysisResult.matched_skills?.length" class="skill-group match-group">
-                <label><i class="fas fa-check-circle" style="color:var(--primary)"></i> 已匹配技能</label>
+                <label><CheckCircle :size="16" :color="'var(--primary)'" /> 已匹配技能</label>
                 <div class="skill-tags">
                   <el-tag v-for="s in analysisResult.matched_skills" :key="s" size="small" type="success">{{ s }}</el-tag>
                 </div>
               </div>
               <div v-if="analysisResult.missing_skills?.length" class="skill-group miss-group">
                 <label>
-                  <i class="fas fa-times-circle" style="color:var(--accent)"></i> 缺失技能
+                  <XCircle :size="16" :color="'var(--accent)'" /> 缺失技能
                   <span class="miss-hint">（点击可前往笔试练习）</span>
                 </label>
                 <div class="skill-tags">
@@ -313,7 +313,7 @@
                     v-for="s in analysisResult.missing_skills" :key="s" size="small" type="danger"
                     style="cursor:pointer" @click="goExam(s)"
                   >
-                    {{ s }} <i class="fas fa-pen"></i>
+                    {{ s }} <Pen :size="16" class="icon-blue" />
                   </el-tag>
                 </div>
               </div>
@@ -324,25 +324,25 @@
         <!-- 板块3：面试专项汇总 -->
         <div class="detail-block card">
           <div class="detail-block-header">
-            <i class="fas fa-microphone"></i>
+            <Mic :size="16" class="icon-blue" />
             面试专项汇总
           </div>
           <div class="detail-block-body">
             <div class="info-grid">
               <div class="info-grid-item">
-                <label><i class="fas fa-sort-numeric-up-alt"></i> 面试轮次</label>
+                <label><ArrowUpNarrowWide :size="16" class="icon-blue" /> 面试轮次</label>
                 <span>{{ analysisResult.interview_rounds }}</span>
               </div>
               <div class="info-grid-item">
-                <label><i class="fas fa-video"></i> 面试形式</label>
+                <label><Video :size="16" class="icon-blue" /> 面试形式</label>
                 <span>{{ analysisResult.interview_form }}</span>
               </div>
             </div>
             <div class="skill-group" style="margin-top:12px">
-              <label><i class="fas fa-star"></i> 历年面试重点</label>
+              <label><Star :size="16" class="icon-blue" /> 历年面试重点</label>
               <ul class="focus-list">
                 <li v-for="(f, i) in analysisResult.interview_focus" :key="i">
-                  <i class="fas fa-circle" style="font-size:6px;color:var(--primary);margin-right:6px"></i>
+                  <Circle :size="6" :color="'var(--primary)'" style="margin-right:6px" />
                   {{ f }}
                 </li>
               </ul>
@@ -353,29 +353,29 @@
         <!-- 板块4：投递须知 -->
         <div class="detail-block card">
           <div class="detail-block-header">
-            <i class="fas fa-clipboard-list"></i>
+            <ClipboardList :size="16" class="icon-blue" />
             投递须知
           </div>
           <div class="detail-block-body">
             <p class="deadline-highlight">
-              <i class="fas fa-clock"></i> 截止时间：<strong>{{ analysisResult.deadline }}</strong>
+              <Clock :size="16" class="icon-blue" /> 截止时间：<strong>{{ analysisResult.deadline }}</strong>
             </p>
             <p v-if="analysisResult.has_exam" class="exam-warning">
-              <i class="fas fa-exclamation-triangle"></i> 该岗位含有笔试环节，建议提前准备
+              <TriangleAlert :size="16" class="icon-blue" /> 该岗位含有笔试环节，建议提前准备
             </p>
             <div v-if="analysisResult.resume_tips?.length" class="resume-tips">
-              <label><i class="fas fa-lightbulb"></i> 简历建议</label>
+              <label><Lightbulb :size="16" class="icon-blue" /> 简历建议</label>
               <ul class="tips-list">
                 <li v-for="(tip, i) in analysisResult.resume_tips" :key="i">
-                  <i class="fas fa-circle" style="font-size:5px;color:var(--text-muted);margin-right:6px"></i>
+                  <Circle :size="5" :color="'var(--text-muted)'" style="margin-right:6px" />
                   {{ tip }}
                 </li>
               </ul>
             </div>
             <p class="assessment-text">
-              <i class="fas fa-quote-left" style="margin-right:4px"></i>
+              <Quote :size="16" class="icon-blue" style="margin-right:4px" />
               {{ analysisResult.overall_assessment }}
-              <i class="fas fa-quote-right" style="margin-left:4px"></i>
+              <Quote :size="16" class="icon-blue" style="margin-left:4px" />
             </p>
           </div>
         </div>
@@ -383,13 +383,13 @@
 
       <template #footer>
         <el-button @click="detailVisible = false">
-          <i class="fas fa-times"></i> 关闭
+          <X :size="16" class="icon-blue" /> 关闭
         </el-button>
         <el-button type="primary" @click="goApplyPage">
-          <i class="fas fa-rocket"></i> 跳转官方招聘页
+          <Rocket :size="16" class="icon-blue" /> 跳转官方招聘页
         </el-button>
         <el-button type="success" @click="goInterview">
-          <i class="fas fa-microphone"></i> 前往面试练习
+          <Mic :size="16" class="icon-blue" /> 前往面试练习
         </el-button>
       </template>
     </el-dialog>
@@ -434,19 +434,19 @@
       <!-- 筛选栏 -->
       <div class="filter-bar myapps-filter">
         <div class="filter-group">
-          <span class="filter-label"><i class="fas fa-tag"></i> 进度状态</span>
+          <span class="filter-label"><Tag :size="16" class="icon-blue" /> 进度状态</span>
           <el-select v-model="myFilters.status" placeholder="全部状态" clearable style="width:130px" @change="loadMyApps">
             <el-option v-for="s in myFilterOpts.statuses" :key="s" :label="s" :value="s" />
           </el-select>
         </div>
         <div class="filter-group">
-          <span class="filter-label"><i class="fas fa-layer-group"></i> 公司类型</span>
+          <span class="filter-label"><Layers :size="16" class="icon-blue" /> 公司类型</span>
           <el-select v-model="myFilters.company_size" placeholder="不限" clearable style="width:110px" @change="loadMyApps">
             <el-option v-for="s in myFilterOpts.company_sizes" :key="s" :label="s" :value="s" />
           </el-select>
         </div>
         <div class="filter-group">
-          <span class="filter-label"><i class="fas fa-clock"></i> 投递时间</span>
+          <span class="filter-label"><Clock :size="16" class="icon-blue" /> 投递时间</span>
           <el-select v-model="myFilters.date_range" placeholder="不限" clearable style="width:120px" @change="loadMyApps">
             <el-option label="近7天" value="7d" />
             <el-option label="近30天" value="30d" />
@@ -458,13 +458,13 @@
 
       <!-- 加载状态 -->
       <div v-if="myAppsLoading" class="loading-state" style="padding:50px 0">
-        <i class="fas fa-spinner fa-pulse" style="font-size:28px"></i>
+        <Loader :size="28" class="icon-blue" />
         <p style="margin-top:10px">加载投递记录...</p>
       </div>
 
       <!-- 空状态 -->
       <div v-else-if="!myAppsRecords.length" class="empty-state" style="padding:60px 0">
-        <i class="fas fa-inbox empty-icon" style="font-size:48px"></i>
+        <Inbox :size="48" class="icon-blue" />
         <p>暂无投递记录</p>
         <p class="empty-hint">在「推荐岗位」中点击「加入投递清单」或「查看详情」即可记录在这里</p>
       </div>
@@ -499,20 +499,20 @@
             </div>
             <div class="myapps-card-meta">
               <span v-if="rec.company_size" class="myapps-meta-item">
-                <i class="fas fa-building"></i> {{ rec.company_size }}
+                <Building2 :size="16" class="icon-blue" /> {{ rec.company_size }}
               </span>
               <span v-if="rec.industry" class="myapps-meta-item">
-                <i class="fas fa-tag"></i> {{ rec.industry }}
+                <Tag :size="16" class="icon-blue" /> {{ rec.industry }}
               </span>
               <span class="myapps-meta-item">
-                <i class="fas fa-calendar-alt"></i> {{ rec.apply_time }}
+                <CalendarDays :size="16" class="icon-blue" /> {{ rec.apply_time }}
               </span>
               <span v-if="rec.interview_time" class="myapps-meta-item">
-                <i class="fas fa-clock"></i> {{ rec.interview_time }}
+                <Clock :size="16" class="icon-blue" /> {{ rec.interview_time }}
               </span>
             </div>
             <div v-if="rec.notes" class="myapps-notes">
-              <i class="fas fa-pencil-alt"></i> {{ rec.notes }}
+              <Pencil :size="16" class="icon-blue" /> {{ rec.notes }}
             </div>
           </div>
         </div>
@@ -554,7 +554,7 @@
         <!-- 基础信息 -->
         <div class="detail-block card">
           <div class="detail-block-header">
-            <i class="fas fa-building"></i> 基本信息
+            <Building2 :size="16" class="icon-blue" /> 基本信息
           </div>
           <div class="detail-block-body">
             <div class="info-grid">
@@ -585,12 +585,12 @@
         <!-- 面试安排（仅 待面试/面试通过 时显示） -->
         <div v-if="['待面试', '面试通过'].includes(myAppDetail.status)" class="detail-block card">
           <div class="detail-block-header">
-            <i class="fas fa-calendar-check"></i> 面试安排
+            <CalendarCheck :size="16" class="icon-blue" /> 面试安排
           </div>
           <div class="detail-block-body">
             <div class="info-grid">
               <div class="info-grid-item">
-                <label><i class="fas fa-clock"></i> 面试时间</label>
+                <label><Clock :size="16" class="icon-blue" /> 面试时间</label>
                 <el-input
                   v-model="interviewForm.time"
                   placeholder="如：2026-06-15 14:00"
@@ -598,7 +598,7 @@
                 />
               </div>
               <div class="info-grid-item">
-                <label><i class="fas fa-map-pin"></i> 面试地点</label>
+                <label><MapPin :size="16" class="icon-blue" /> 面试地点</label>
                 <el-input
                   v-model="interviewForm.location"
                   placeholder="线上面试/具体地址"
@@ -608,7 +608,7 @@
             </div>
             <div style="margin-top:10px">
               <label style="font-size:12px;color:var(--text-muted);font-weight:500">
-                <i class="fas fa-comment"></i> HR反馈备注
+                <MessageSquare :size="16" class="icon-blue" /> HR反馈备注
               </label>
               <el-input
                 v-model="interviewForm.feedback"
@@ -625,10 +625,10 @@
               style="margin-top:12px"
               @click="saveInterview"
             >
-              <i class="fas fa-save"></i> 保存面试安排
+              <Save :size="16" class="icon-blue" /> 保存面试安排
             </el-button>
             <span v-if="interviewSaved" class="save-tip">
-              <i class="fas fa-check-circle" style="color:#67C23A"></i> 已保存
+              <CheckCircle :size="16" :color="'#67C23A'" /> 已保存
             </span>
           </div>
         </div>
@@ -636,7 +636,7 @@
         <!-- HR反馈 -->
         <div v-if="myAppDetail.hr_feedback" class="detail-block card">
           <div class="detail-block-header">
-            <i class="fas fa-comment-dots"></i> HR反馈
+            <MessageSquare :size="16" class="icon-blue" /> HR反馈
           </div>
           <div class="detail-block-body">
             <p style="color:var(--text-body);font-size:13px;line-height:1.6">{{ myAppDetail.hr_feedback }}</p>
@@ -646,10 +646,10 @@
 
       <template #footer>
         <el-button @click="myAppDetailVisible = false">
-          <i class="fas fa-times"></i> 关闭
+          <X :size="16" class="icon-blue" /> 关闭
         </el-button>
         <el-button type="primary" @click="changeMyAppStatus(myAppDetail)">
-          <i class="fas fa-edit"></i> 更新进度状态
+          <Pen :size="16" class="icon-blue" /> 更新进度状态
         </el-button>
       </template>
     </el-dialog>
@@ -694,7 +694,7 @@
       <template #footer>
         <el-button @click="statusChangeVisible = false">取消</el-button>
         <el-button type="primary" @click="confirmStatusChange" :disabled="!selectedNewStatus">
-          <i class="fas fa-check"></i> 确认更新
+          <Check :size="16" class="icon-blue" /> 确认更新
         </el-button>
       </template>
     </el-dialog>
@@ -705,18 +705,18 @@
     <section class="zone-tracking">
       <div class="section-header" style="margin-bottom:16px">
         <div class="section-title">
-          <i class="fas fa-clipboard-check"></i>
+          <ClipboardCheck :size="16" class="icon-blue" />
           我的投递记录
           <span class="tracking-badge" v-if="trackingRecords.length">{{ trackingRecords.length }}</span>
         </div>
       </div>
 
       <div v-if="trackingLoading" class="loading-state" style="padding:30px 0">
-        <i class="fas fa-spinner fa-pulse"></i>
+        <Loader :size="16" class="icon-blue" />
       </div>
 
       <div v-else-if="!trackingRecords.length" class="empty-state" style="padding:30px 0">
-        <i class="fas fa-inbox empty-icon" style="font-size:36px"></i>
+        <Inbox :size="36" class="icon-blue" />
         <p>暂无投递记录，加入岗位到清单后会自动显示在这里</p>
       </div>
 
@@ -739,13 +739,13 @@
         <el-table-column label="操作" min-width="210">
           <template #default="{ row }">
             <el-button size="small" text @click="openDetailById(row.job_id)">
-              <i class="fas fa-info-circle"></i> 查看岗位
+              <Info :size="16" class="icon-blue" /> 查看岗位
             </el-button>
             <el-button size="small" text type="primary" @click="goInterview">
-              <i class="fas fa-microphone"></i> 查看面经
+              <Mic :size="16" class="icon-blue" /> 查看面经
             </el-button>
             <el-button size="small" text type="danger" @click="deleteTracking(row)">
-              <i class="fas fa-trash-alt"></i> 删除
+              <Trash2 :size="16" class="icon-blue" /> 删除
             </el-button>
           </template>
         </el-table-column>

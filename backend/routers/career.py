@@ -5,7 +5,7 @@
 
 from fastapi import APIRouter, Query, Body
 import random, json, os as _os
-from routers.llm import chat
+from routers.llm import chat, generate_career_analysis
 from typing import Optional
 
 router = APIRouter(prefix="/api/career", tags=["职业探索"])
@@ -514,11 +514,20 @@ def explore(
     potential = [enrich(c) for c in careers[:8] if 50 <= c["match"] < 70]
     backup = [enrich(c) for c in careers[:8] if c["match"] < 50]
     
-    # ── AI 生成智能分析（可选）──
+# ── AI 生成智能分析（可选）──
     ai_analysis = None
     if use_ai:
-        pass  # 预留，等拿到讯飞API后再实现
-    
+        try:
+            top = careers[0] if careers else None
+            if top:
+                ai_analysis = generate_career_analysis(
+                    top["career"],
+                    {"major": major or major_category, "education": education, "city": city or "北京"}
+                )
+        except Exception:
+            import traceback; traceback.print_exc()
+            ai_analysis = {"summary": "AI分析暂不可用", "suitable_reason": "", "daily_work": "", "growth_path": []}
+
     return {
         "major_category": major_category,
         "major": major,
@@ -601,6 +610,27 @@ def career_detail(career_name: str, major_category: str = ""):
             {"level": "资深/专家（6年+）", "range": "30K-50K+"},
         ]
     return data
+
+
+@router.get("/ai-analysis")
+def ai_analysis(
+    career: str = "",
+    major: str = "",
+    education: str = "本科",
+    city: str = "北京",
+):
+    """AI 生成单个职业的智能分析（summary + 适合理由 + 日常工作 + 成长路径）"""
+    if not career:
+        return {"error": "缺少 career 参数"}
+    try:
+        result = generate_career_analysis(
+            career,
+            {"major": major or "相关专业", "education": education, "city": city or "北京"}
+        )
+        return result
+    except Exception as e:
+        return {"summary": "AI分析暂不可用", "suitable_reason": "", "daily_work": "", "growth_path": [], "error": str(e)}
+
 
 @router.get("/company-detail/{company_name}")
 def company_detail(company_name: str):

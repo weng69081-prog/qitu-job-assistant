@@ -4,6 +4,7 @@ import 'element-plus/dist/index.css'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
+import * as LucideIcons from 'lucide-vue-next'
 
 // ═══ 全局错误捕获 ═══
 window.addEventListener('error', (e) => {
@@ -49,6 +50,14 @@ app.config.errorHandler = (err, vm, info) => {
   }).catch(() => {})
   console.error('[Vue Error]', err, info)
 }
+
+// ═══ Lucide 图标全局注册 ═══
+for (const [name, component] of Object.entries(LucideIcons.icons || LucideIcons)) {
+  if (typeof component === 'object' || typeof component === 'function') {
+    app.component(name, component)
+  }
+}
+
 app.use(ElementPlus)
 app.use(createPinia())
 app.use(router)

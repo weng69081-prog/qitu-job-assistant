@@ -7,7 +7,7 @@
     <div class="banner-content">
       <div class="bc-left">
         <div class="banner-icon-wrap">
-          <i class="fas" :class="icon"></i>
+          <component :is="resolvedIcon" :size="18" />
         </div>
         <div class="banner-text">
           <h2 class="banner-title">{{ title }}</h2>
@@ -22,13 +22,17 @@
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   title: { type: String, required: true },
   description: { type: String, default: '' },
-  icon: { type: String, default: 'fa-circle' },
+  icon: { type: String, default: 'Circle' },
   variant: { type: String, default: 'primary' },
   fullwidth: { type: Boolean, default: false },
 })
+
+const resolvedIcon = computed(() => props.icon)
 </script>
 
 <style scoped>

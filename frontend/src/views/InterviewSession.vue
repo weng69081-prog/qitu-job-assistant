@@ -353,6 +353,25 @@
           <el-progress type="circle" :percentage="report.overall_score || 0" :width="130" :color="scoreColor(report.overall_score || 0)" />
           <h3>综合得分 {{ report.overall_score || 0 }}</h3>
         </div>
+        <!-- ─── 四维雷达图 ─── -->
+        <div class="radar-section" v-if="Object.keys(report.dimensions).length >= 4">
+          <div class="radar-wrap">
+            <svg viewBox="0 0 300 300" class="radar-svg">
+              <!-- 网格（20%/40%/60%/80%） -->
+              <polygon v-for="g in radarGrid" :key="g.key" :points="g.points" fill="none" stroke="#e0e4e8" stroke-width="1" />
+              <!-- 轴线 -->
+              <line v-for="a in radarAxes" :key="a.key" :x1="150" :y1="150" :x2="a.x" :y2="a.y" stroke="#d0d4d8" stroke-width="1" stroke-dasharray="4,3" />
+              <!-- 数据多边形 -->
+              <polygon :points="radarDataPoints" fill="rgba(61,90,128,0.15)" stroke="#3D5A80" stroke-width="2.5" stroke-linejoin="round" />
+              <!-- 数据锚点 -->
+              <circle v-for="n in radarNodes" :key="n.key" :cx="n.x" :cy="n.y" r="4.5" fill="#3D5A80" />
+              <!-- 维度标签 -->
+              <text v-for="l in radarLabels" :key="l.key" :x="l.x" :y="l.y" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#5a6a7d" font-weight="500">{{ l.label }}</text>
+              <!-- 分数标签 -->
+              <text v-for="s in radarScores" :key="s.key" :x="s.x" :y="s.y" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#8a9aad" font-weight="600">{{ s.score }}</text>
+            </svg>
+          </div>
+        </div>
         <div class="dimensions-grid" v-if="Object.keys(report.dimensions).length">
           <div v-for="(v, k) in report.dimensions" :key="k" class="dim-card">
             <div class="dim-header"><span>{{ k }}</span><b :style="{color:scoreColor(v.score||0)}">{{ v.score || 0 }}</b></div>
@@ -395,7 +414,7 @@ const store = useCareerStore()
 const $router = useRouter()
 
 // ==================== API Base ====================
-const API = 'http://localhost:8000/api'
+const API = '/api'
 
 // ==================== Setup State ====================
 const career = ref('')
@@ -844,6 +863,63 @@ const modeTagType = computed(() => {
 function scoreColor(v) {
   return v >= 80 ? '#67c23a' : v >= 60 ? '#e6a23c' : '#f56c6c'
 }
+
+// ==================== Radar Chart Computed ====================
+const cx = 150, cy = 150, R = 120
+const radarKeys = ['专业知识掌握度', '语言表达与逻辑', '临场应变能力', '岗位匹配度']
+const angles = [-Math.PI / 2, 0, Math.PI / 2, Math.PI] // top, right, bottom, left
+
+function polar(angle, r) {
+  return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) }
+}
+
+const radarGrid = computed(() => [20, 40, 60, 80].map(level => {
+  const pct = level / 100
+  const pts = angles.map(a => {
+    const p = polar(a, R * pct)
+    return `${p.x.toFixed(1)},${p.y.toFixed(1)}`
+  }).join(' ')
+  return { key: `grid-${level}`, points: pts }
+}))
+
+const radarAxes = computed(() => radarKeys.map((_, i) => {
+  const p = polar(angles[i], R)
+  return { key: `axis-${i}`, x: p.x.toFixed(1), y: p.y.toFixed(1) }
+}))
+
+const radarDataPoints = computed(() => {
+  const dims = report.dimensions || {}
+  return angles.map((a, i) => {
+    const k = radarKeys[i]
+    const score = (dims[k]?.score || 0) / 100
+    const p = polar(a, R * Math.min(score, 1))
+    return `${p.x.toFixed(1)},${p.y.toFixed(1)}`
+  }).join(' ')
+})
+
+const radarNodes = computed(() => {
+  const dims = report.dimensions || {}
+  return angles.map((a, i) => {
+    const k = radarKeys[i]
+    const score = (dims[k]?.score || 0) / 100
+    const p = polar(a, R * Math.min(score, 1))
+    return { key: `node-${i}`, x: p.x.toFixed(1), y: p.y.toFixed(1) }
+  })
+})
+
+const radarLabels = computed(() => radarKeys.map((k, i) => {
+  const p = polar(angles[i], R + 18)
+  return { key: `label-${i}`, label: k, x: p.x.toFixed(1), y: p.y.toFixed(1) }
+}))
+
+const radarScores = computed(() => {
+  const dims = report.dimensions || {}
+  return radarKeys.map((k, i) => {
+    const score = dims[k]?.score || 0
+    const p = polar(angles[i], R - 14)
+    return { key: `score-${i}`, score, x: p.x.toFixed(1), y: p.y.toFixed(1) }
+  })
+})
 
 function emotionTagType(e) {
   const m = { '开心': 'success', '自信': 'success', '平静': 'info', '困惑': 'warning', '紧张': 'danger', '焦虑': 'danger' }
@@ -1748,6 +1824,20 @@ onUnmounted(() => {
   max-width: 720px;
   margin: 0 auto;
   border: 1px solid var(--session-border);
+}
+/* ─── 四维雷达图 ─── */
+.radar-section {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0 0.5rem;
+}
+.radar-wrap {
+  width: 240px;
+  height: 240px;
+}
+.radar-svg {
+  width: 100%;
+  height: 100%;
 }
 .report-top-info {
   display: flex;

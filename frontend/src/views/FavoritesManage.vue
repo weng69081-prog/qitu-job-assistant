@@ -3,14 +3,14 @@
     <!-- ═══ 页面标题 ═══ -->
     <div class="section-header">
       <div class="section-title">
-        <i class="fas fa-star" style="color:var(--accent);"></i>
+        <Star :size="16" :color="'var(--accent)'" />
         收藏管理
       </div>
     </div>
 
     <!-- ═══ 搜索栏 ═══ -->
     <div class="fav-search-bar">
-      <i class="fas fa-search"></i>
+      <Search :size="16" class="icon-blue" />
       <input
         type="text"
         v-model="searchQuery"
@@ -18,7 +18,7 @@
         @input="onSearchChange"
       />
       <span v-if="searchQuery" class="fav-search-clear" @click="searchQuery='';onSearchChange()">
-        <i class="fas fa-times"></i>
+        <X :size="16" class="icon-blue" />
       </span>
     </div>
 
@@ -37,7 +37,7 @@
     </div>
 
     <!-- ═══ 加载态 ═══ -->
-    <div v-if="loading" class="loading-state"><i class="fas fa-spinner fa-spin"></i> 加载中…</div>
+    <div v-if="loading" class="loading-state"><Loader :size="16" class="icon-blue" /> 加载中…</div>
 
     <!-- ═══ 空态 ═══ -->
     <div v-else-if="!filteredItems.length" class="empty-state">
@@ -45,7 +45,7 @@
       <p v-if="activeTab === 'all'">还没有收藏任何内容</p>
       <p v-else>{{ tabs.find(t => t.key === activeTab)?.label }}还没有收藏</p>
       <p class="empty-hint">去职业探索或面试页收藏内容吧</p>
-      <router-link to="/career" class="fav-go-btn">去探索 <i class="fas fa-arrow-right"></i></router-link>
+      <router-link to="/career" class="fav-go-btn">去探索 <ArrowRight :size="16" class="icon-blue" /></router-link>
     </div>
 
     <!-- ═══ 收藏列表 ═══ -->
@@ -63,8 +63,8 @@
             <div class="fav-item-meta">{{ item.difficulty || '中等' }} · {{ item.salary || '' }}</div>
           </div>
           <div class="fav-item-actions">
-            <router-link :to="`/career/${encodeURIComponent(item.career)}`" class="fav-item-btn" title="查看详情"><i class="fas fa-eye"></i></router-link>
-            <button class="fav-item-btn danger" @click="removeCareer(item)" title="取消收藏"><i class="fas fa-times"></i></button>
+            <router-link :to="`/career/${encodeURIComponent(item.career)}`" class="fav-item-btn" title="查看详情"><Eye :size="16" class="icon-blue" /></router-link>
+            <button class="fav-item-btn danger" @click="removeCareer(item)" title="取消收藏"><X :size="16" class="icon-blue" /></button>
           </div>
         </template>
 
@@ -76,8 +76,8 @@
             <div class="fav-item-meta">{{ item.author || 'B站' }}<span v-if="item.career"> · {{ item.career }}</span></div>
           </div>
           <div class="fav-item-actions">
-            <a :href="item.url" target="_blank" class="fav-item-btn" title="观看"><i class="fas fa-external-link-alt"></i></a>
-            <button class="fav-item-btn danger" @click="removeVideo(item)" title="取消收藏"><i class="fas fa-times"></i></button>
+            <a :href="item.url" target="_blank" class="fav-item-btn" title="观看"><ExternalLink :size="16" class="icon-blue" /></a>
+            <button class="fav-item-btn danger" @click="removeVideo(item)" title="取消收藏"><X :size="16" class="icon-blue" /></button>
           </div>
         </template>
 
@@ -93,7 +93,7 @@
             </div>
           </div>
           <div class="fav-item-actions">
-            <button class="fav-item-btn danger" @click="removeInterview(item)" title="取消收藏"><i class="fas fa-times"></i></button>
+            <button class="fav-item-btn danger" @click="removeInterview(item)" title="取消收藏"><X :size="16" class="icon-blue" /></button>
           </div>
         </template>
 
@@ -108,7 +108,7 @@
             </div>
           </div>
           <div class="fav-item-actions">
-            <button class="fav-item-btn danger" @click="removeExam(item)" title="取消收藏"><i class="fas fa-times"></i></button>
+            <button class="fav-item-btn danger" @click="removeExam(item)" title="取消收藏"><X :size="16" class="icon-blue" /></button>
           </div>
         </template>
       </div>

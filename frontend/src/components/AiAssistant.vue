@@ -22,7 +22,7 @@
             <img :src="imgHeader" class="ai-header-icon" alt="小橘">
             <span>小橘 · 智能助手</span>
           </div>
-          <button class="ai-close" @click="visible = false"><i class="fas fa-minus"></i></button>
+          <button class="ai-close" @click="visible = false"><Minus :size="16" class="icon-blue" /></button>
         </div>
 
         <!-- 消息区 -->
@@ -32,7 +32,7 @@
                :class="msg.role === 'assistant' ? 'ai-msg-assistant' : 'ai-msg-user'">
             <div class="ai-msg-avatar">
               <img :src="imgMsg" class="ai-msg-img" alt="小橘" v-if="msg.role === 'assistant'">
-              <i class="fas fa-user" v-else></i>
+              <User :size="16" class="icon-blue" />
             </div>
             <div class="ai-msg-bubble">
               <div class="ai-msg-text" v-html="renderMarkdown(msg.content)"></div>
@@ -64,7 +64,7 @@
             :disabled="loading"
           />
           <button class="ai-send" @click="send" :disabled="loading || !inputText.trim()">
-            <i class="fas fa-paper-plane"></i>
+            <Send :size="16" class="icon-blue" />
           </button>
         </div>
       </div>

@@ -20,17 +20,17 @@
         </router-link>
         <!-- 水平导航（对比3：在topbar内水平排列） -->
         <nav class="topbar-nav">
-          <router-link to="/dashboard" class="tn-item" active-class="tn-active"><i class="fas fa-th-large"></i> 首页</router-link>
-          <router-link to="/career" class="tn-item" active-class="tn-active"><i class="fas fa-compass"></i> 职业探索</router-link>
-          <router-link to="/interview" class="tn-item" active-class="tn-active"><i class="fas fa-microphone"></i> 面试模拟</router-link>
-          <router-link to="/exam-practice" class="tn-item" active-class="tn-active"><i class="fas fa-pen"></i> 笔试</router-link>
-          <router-link to="/resume" class="tn-item" active-class="tn-active"><i class="fas fa-file-alt"></i> 简历</router-link>
-          <router-link to="/delivery-assistant" class="tn-item" active-class="tn-active"><i class="fas fa-paper-plane"></i> 投递</router-link>
+          <router-link to="/dashboard" class="tn-item" active-class="tn-active"><LayoutDashboard :size="16" class="icon-blue" /> 首页</router-link>
+          <router-link to="/career" class="tn-item" active-class="tn-active"><Compass :size="16" class="icon-blue" /> 职业探索</router-link>
+          <router-link to="/interview" class="tn-item" active-class="tn-active"><Mic :size="16" class="icon-blue" /> 面试模拟</router-link>
+          <router-link to="/exam-practice" class="tn-item" active-class="tn-active"><Pen :size="16" class="icon-blue" /> 笔试</router-link>
+          <router-link to="/resume" class="tn-item" active-class="tn-active"><FileText :size="16" class="icon-blue" /> 简历</router-link>
+          <router-link to="/delivery-assistant" class="tn-item" active-class="tn-active"><Send :size="16" class="icon-blue" /> 投递</router-link>
         </nav>
       </div>
       <div class="topbar-right">
         <div class="search-box">
-          <i class="fas fa-search"></i>
+          <Search :size="16" class="icon-blue" />
           <input
             type="text"
             v-model="searchQuery"
@@ -38,7 +38,7 @@
             @keyup.enter="doSearch"
           />
         </div>
-        <router-link to="/settings" class="settings-btn" title="设置"><i class="fas fa-cog"></i></router-link>
+        <router-link to="/settings" class="settings-btn" title="设置"><Settings :size="16" class="icon-blue" /></router-link>
         <div class="user-avatar" :style="avatarStyle">{{ (userDisplay.nickname || userDisplay.username || '同')[0] }}</div>
         <span class="user-name">{{ userDisplay.nickname || userDisplay.username || '同学' }}</span>
       </div>
@@ -476,4 +476,6 @@ ul { list-style:none; }
   .search-box { display:none; }
   .tn-item i { font-size:16px; }
 }
+.icon-blue { color: var(--pri); }
+.icon-blue svg { stroke: var(--pri); }
 </style>

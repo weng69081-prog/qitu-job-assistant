@@ -3,7 +3,7 @@
     <!-- ═══ 页面标题 ═══ -->
     <div class="section-header">
       <div class="section-title">
-        <i class="fas fa-chart-bar"></i>
+        <BarChart :size="16" class="icon-blue" />
         投递分析
       </div>
     </div>
@@ -12,7 +12,7 @@
     <!-- ═══ 收藏的职业 ═══ -->
     <div v-if="bookmarks.length" class="bookmark-band">
       <div class="bm-band-header">
-        <span class="bm-band-title"><i class="fas fa-star"></i> 我的收藏职业</span>
+        <span class="bm-band-title"><Star :size="16" class="icon-blue" /> 我的收藏职业</span>
       </div>
       <div class="bm-band-scroll">
         <el-tag
@@ -28,7 +28,7 @@
     <!-- ═══ 求职信息表单 ═══ -->
     <div class="card" style="padding:24px;margin-top:1rem">
       <div class="section-title" style="margin-bottom:1.25rem">
-        <i class="fas fa-bullseye"></i>
+        <Crosshair :size="16" class="icon-blue" />
         求职信息
       </div>
 
@@ -98,7 +98,7 @@
           @click="startAnalyze"
           :disabled="!targetCareers.length || analyzing"
         >
-          <i class="fas fa-rocket"></i>
+          <Rocket :size="16" class="icon-blue" />
           {{ analyzing ? '分析中…' : '开始分析' }}
         </button>
       </div>
@@ -108,16 +108,16 @@
     <div v-if="result" style="margin-top:1.5rem">
       <div class="card" style="padding:16px 20px;margin-bottom:1rem;border-left:3px solid var(--primary);">
         <div style="display:flex;align-items:center;gap:10px">
-          <i class="fas fa-check-circle" style="color:var(--primary);font-size:18px"></i>
+          <CheckCircle :size="18" :color="'var(--primary)'" />
           <span style="font-weight:600;color:var(--text-heading)">{{ result.summary }}</span>
         </div>
       </div>
 
       <div v-for="(tier, key) in result.tiers" :key="key" v-show="tier.items.length" class="tier-section">
         <div :class="['tier-header', 'tier-'+key]">
-          <i v-if="key==='high'" class="fas fa-thumbs-up"></i>
-          <i v-else-if="key==='potential'" class="fas fa-chart-line"></i>
-          <i v-else class="fas fa-archive"></i>
+          <ThumbsUp :size="16" v-if="key==='high'" class="icon-blue" />
+          <ChartLine :size="16" class="icon-blue" />
+          <Archive :size="16" class="icon-blue" />
           {{ tier.label }}
         </div>
         <div class="tier-desc">{{ tier.desc }}</div>
@@ -131,14 +131,14 @@
             <div class="mc-header">
               <strong>{{ co.name }}</strong>
               <span :class="['tag-pill', co.recruit_status.includes('进行')||co.recruit_status.includes('开放') ? 'green' : 'gray']">
-                <i class="fas fa-circle" style="font-size:6px;margin-right:4px"></i>
+                <Circle :size="6" class="icon-blue" style="margin-right:4px" />
                 {{ co.recruit_status }}
               </span>
             </div>
             <div class="mc-meta">
-              <i class="fas fa-tag"></i> {{ co.tier }}
-              <i class="fas fa-building" style="margin-left:8px"></i> {{ co.scale }}
-              <i class="fas fa-coins" style="margin-left:8px"></i> {{ co.campus_salary }}
+              <Tag :size="16" class="icon-blue" /> {{ co.tier }}
+              <Building2 :size="16" class="icon-blue" style="margin-left:8px" /> {{ co.scale }}
+              <Coins :size="16" class="icon-blue" style="margin-left:8px" /> {{ co.campus_salary }}
             </div>
             <div class="mc-desc">{{ co.description }}</div>
             <div class="mc-reason">
@@ -147,20 +147,20 @@
                 :key="r"
                 class="tag-pill orange"
                 style="margin:2px"
-              ><i class="fas fa-lightbulb"></i> {{ r.trim() }}</span>
+              ><Lightbulb :size="16" class="icon-blue" /> {{ r.trim() }}</span>
             </div>
             <div class="mc-match-bar">
               <div class="mc-bar-fill" :style="{width:co._rs+'%'}"></div>
             </div>
             <div class="mc-score">
-              <i class="fas fa-percentage"></i> {{ co._rs }}% 匹配
+              <Percent :size="16" class="icon-blue" /> {{ co._rs }}% 匹配
             </div>
           </div>
         </div>
       </div>
 
       <div v-if="!hasAny" class="empty-state">
-        <i class="fas fa-frown empty-icon"></i>
+        <Frown :size="16" class="icon-blue" />
         <p>未找到匹配的企业，试试放宽条件或换城市</p>
       </div>
     </div>

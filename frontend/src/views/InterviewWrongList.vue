@@ -9,7 +9,7 @@
     >
       <template #actions>
         <button class="banner-back-btn" @click="$router.back()">
-          <i class="fas fa-arrow-left"></i> 返回
+          <ArrowLeft :size="16" class="icon-blue" /> 返回
         </button>
       </template>
     </PageBanner>
@@ -17,14 +17,14 @@
     <!-- ═══ 紧凑统计条 ═══ -->
     <section class="stat-ribbon">
       <div class="stat-cell">
-        <div class="sc-icon"><i class="fas fa-circle-exclamation"></i></div>
+        <div class="sc-icon"><AlertCircle :size="16" class="icon-blue" /></div>
         <div class="sc-body">
           <span class="sc-num">{{ interviewWrongTotal }}</span>
           <span class="sc-label">总错题</span>
         </div>
       </div>
       <div class="stat-cell">
-        <div class="sc-icon sc-done"><i class="fas fa-check-circle"></i></div>
+        <div class="sc-icon sc-done"><CheckCircle :size="16" class="icon-blue" /></div>
         <div class="sc-body">
           <span class="sc-num">{{ masteredCount }}</span>
           <span class="sc-label">已掌握</span>
@@ -34,14 +34,14 @@
         </div>
       </div>
       <div class="stat-cell">
-        <div class="sc-icon sc-pending"><i class="fas fa-hourglass-half"></i></div>
+        <div class="sc-icon sc-pending"><Hourglass :size="16" class="icon-blue" /></div>
         <div class="sc-body">
           <span class="sc-num">{{ interviewWrongTotal - masteredCount }}</span>
           <span class="sc-label">待回顾</span>
         </div>
       </div>
       <div class="stat-cell stat-cell-highlight">
-        <div class="sc-icon"><i class="fas fa-arrow-trend-up"></i></div>
+        <div class="sc-icon"><TrendingUp :size="16" class="icon-blue" /></div>
         <div class="sc-body">
           <span class="sc-num">{{ masteryPct }}%</span>
           <span class="sc-label">掌握率</span>
@@ -60,13 +60,13 @@
           </button>
         </div>
         <button v-if="interviewWrong.length" class="btn-text-sm" @click="reviewAllPending" :disabled="interviewWrongTotal - masteredCount === 0">
-          <i class="fas fa-play"></i> 逐一回顾
+          <Play :size="16" class="icon-blue" /> 逐一回顾
         </button>
       </div>
 
       <!-- ═══ 加载态 ═══ -->
       <div v-if="wrongLoading" class="loading-state">
-        <i class="fas fa-spinner fa-spin"></i> 加载中…
+        <Loader :size="16" class="icon-blue" /> 加载中…
       </div>
 
       <!-- ═══ 错题列表 ═══ -->
@@ -77,15 +77,15 @@
             <div class="wc-badges">
               <span class="tag-pill" :class="diffPill(row.difficulty)">{{ row.difficulty || '中等' }}</span>
               <span class="tag-pill" :class="row.mastered ? 'green' : 'orange'">
-                <i :class="row.mastered ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                <CheckCircle :size="16" class="icon-blue" :class="row.mastered ? 'fas fa-check-circle' : 'fas fa-times-circle'" />
                 {{ row.mastered ? '已掌握' : '未掌握' }}
               </span>
             </div>
           </div>
           <div class="wc-meta">
-            <span class="meta-item"><i class="fas fa-layer-group"></i> {{ row.category || '通用' }}</span>
-            <span class="meta-item"><i class="fas fa-times-circle"></i> 答错 <b>{{ row.wrong_count }}</b> 次</span>
-            <span class="meta-item"><i class="fas fa-clock"></i> {{ row.last_wrong_at }}</span>
+            <span class="meta-item"><Layers :size="16" class="icon-blue" /> {{ row.category || '通用' }}</span>
+            <span class="meta-item"><XCircle :size="16" class="icon-blue" /> 答错 <b>{{ row.wrong_count }}</b> 次</span>
+            <span class="meta-item"><Clock :size="16" class="icon-blue" /> {{ row.last_wrong_at }}</span>
           </div>
           <div class="wc-preview">
             <div class="wp-row">
@@ -99,14 +99,14 @@
           </div>
           <div class="wc-actions">
             <button class="btn-outline btn-sm" @click="reviewWrong(row)">
-              <i class="fas fa-book-open"></i> 详细回顾
+              <BookOpen :size="16" class="icon-blue" /> 详细回顾
             </button>
             <button class="btn-outline btn-sm" :class="{ 'btn-mastered': row.mastered }"
               @click="masterInterviewWrong(row)" :disabled="row.mastered">
-              <i class="fas fa-check"></i> {{ row.mastered ? '已掌握' : '标记掌握' }}
+              <Check :size="16" class="icon-blue" /> {{ row.mastered ? '已掌握' : '标记掌握' }}
             </button>
             <button class="btn-outline btn-sm btn-danger" @click="deleteInterviewWrong(row)">
-              <i class="fas fa-trash-can"></i>
+              <Trash2 :size="16" class="icon-blue" />
             </button>
           </div>
         </div>
@@ -120,7 +120,7 @@
 
       <!-- ═══ 空态 ═══ -->
       <div v-else class="empty-state">
-        <div class="empty-icon-wrap"><i class="fas fa-check-circle empty-icon"></i></div>
+        <div class="empty-icon-wrap"><CheckCircle :size="16" class="icon-blue" /></div>
         <p class="empty-title">暂无面试错题</p>
         <p class="empty-hint">继续加油，保持学习！错题会自动记录</p>
       </div>
@@ -135,45 +135,45 @@
           <span class="tag-pill" :class="reviewItem.mastered ? 'green' : 'orange'">
             {{ reviewItem.mastered ? '✅ 已掌握' : '⏳ 待巩固' }}
           </span>
-          <span class="tag-pill gray"><i class="fas fa-layer-group"></i> {{ reviewItem.category || '通用' }}</span>
+          <span class="tag-pill gray"><Layers :size="16" class="icon-blue" /> {{ reviewItem.category || '通用' }}</span>
         </div>
 
         <div class="review-block">
           <div class="review-label">
-            <i class="fas fa-question-circle"></i> 题目
+            <CircleHelp :size="16" class="icon-blue" /> 题目
           </div>
           <div class="review-value">{{ reviewItem.question }}</div>
         </div>
 
         <div class="review-block" v-if="reviewItem.source">
-          <div class="review-label"><i class="fas fa-link"></i> 来源</div>
+          <div class="review-label"><Link :size="16" class="icon-blue" /> 来源</div>
           <div class="review-value review-source">{{ reviewItem.source }}</div>
         </div>
 
         <div class="review-block">
           <div class="review-label">
-            <i class="fas fa-user-edit"></i> 你的回答
+            <UserPen :size="16" class="icon-blue" /> 你的回答
           </div>
           <div class="review-value review-answer-wrong">{{ reviewItem.user_answer || '未记录' }}</div>
         </div>
 
         <div class="review-block">
           <div class="review-label">
-            <i class="fas fa-check-double"></i> 参考回答
+            <CheckCheck :size="16" class="icon-blue" /> 参考回答
           </div>
           <div class="review-value review-answer-correct">{{ reviewItem.correct_answer || reviewItem.sample_answer || '暂无' }}</div>
         </div>
 
         <div class="review-block" v-if="reviewItem.analysis">
           <div class="review-label">
-            <i class="fas fa-file-lines"></i> AI分析
+            <FileText :size="16" class="icon-blue" /> AI分析
           </div>
           <div class="review-value review-analysis">{{ reviewItem.analysis }}</div>
         </div>
 
         <div class="review-footer">
           <button class="btn-primary" @click="reviewVisible = false">
-            <i class="fas fa-check"></i> 关闭回顾
+            <Check :size="16" class="icon-blue" /> 关闭回顾
           </button>
         </div>
       </div>

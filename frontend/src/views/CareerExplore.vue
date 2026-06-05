@@ -5,7 +5,7 @@
       <PageBanner fullwidth
         title="职业探索"
         description="探索适合你的职业方向，了解岗位要求与发展路径"
-        icon="fa-compass"
+        :icon="'Compass'"
         variant="primary"
       />
       <img src="/src/assets/new-explore-cat.png" class="banner-cat" alt="小橘探路">
@@ -16,10 +16,10 @@
         <el-select v-model="selectedCategory" placeholder="选择专业大类" size="large" style="width:200px" @change="onCategoryChange">
           <el-option v-for="c in majorCategories" :key="c" :label="c" :value="c" />
         </el-select>
-        <span class="career-count"><i class="fas fa-briefcase"></i> 共 <b>{{ filteredCareers.length }}</b> 个岗位</span>
+        <span class="career-count"><Briefcase :size="16" class="icon-blue" /> 共 <b>{{ filteredCareers.length }}</b> 个岗位</span>
       </div>
       <div class="search-input-wrap">
-        <i class="fas fa-search search-input-icon"></i>
+        <Search :size="16" class="icon-blue" />
         <el-input
           v-model="searchQuery"
           placeholder="搜索岗位名称或关键词…"
@@ -32,7 +32,7 @@
     <!-- ═══ 筛选区：标签式多选 ═══ -->
     <div class="filter-bar">
       <div class="filter-group">
-        <span class="filter-label"><i class="fas fa-signal"></i> 入门难度</span>
+        <span class="filter-label"><Signal :size="16" class="icon-blue" /> 入门难度</span>
         <div class="filter-tags">
           <span
             v-for="d in difficultyOptions" :key="d"
@@ -43,7 +43,7 @@
         </div>
       </div>
       <div class="filter-group">
-        <span class="filter-label"><i class="fas fa-briefcase"></i> 工作类型</span>
+        <span class="filter-label"><Briefcase :size="16" class="icon-blue" /> 工作类型</span>
         <div class="filter-tags">
           <span
             v-for="t in workTypeOptions" :key="t"
@@ -54,7 +54,7 @@
         </div>
       </div>
       <div class="filter-group">
-        <span class="filter-label"><i class="fas fa-coins"></i> 薪资标签</span>
+        <span class="filter-label"><Coins :size="16" class="icon-blue" /> 薪资标签</span>
         <div class="filter-tags">
           <span
             v-for="s in salaryTagOptions" :key="s"
@@ -69,8 +69,8 @@
     <!-- ═══ 已收藏岗位专区 ═══ -->
     <div v-if="store.validBookmarks.length > 0" class="bookmark-band">
       <div class="bm-band-header">
-        <span class="bm-band-title"><i class="fas fa-star"></i> 已收藏岗位 <b>({{ store.validBookmarks.length }})</b></span>
-        <el-button text size="small" @click="$router.push('/settings')">管理收藏 <i class="fas fa-arrow-right"></i></el-button>
+        <span class="bm-band-title"><Star :size="16" class="icon-blue" /> 已收藏岗位 <b>({{ store.validBookmarks.length }})</b></span>
+        <el-button text size="small" @click="$router.push('/settings')">管理收藏 <ArrowRight :size="16" class="icon-blue" /></el-button>
       </div>
       <div class="bm-band-scroll">
         <div
@@ -81,7 +81,7 @@
         >
           <div class="bm-band-top">
             <span class="bm-band-name">{{ b.career }}</span>
-            <span class="bm-band-badge" v-if="store.hasGeneratedPath(b.career)" title="已生成成长路线"><i class="fas fa-map"></i></span>
+            <span class="bm-band-badge" v-if="store.hasGeneratedPath(b.career)" title="已生成成长路线"><Map :size="16" class="icon-blue" /></span>
           </div>
           <div class="bm-band-meta">{{ b.difficulty }} · {{ b.salary }}</div>
         </div>
@@ -89,27 +89,27 @@
     </div>
 
     <!-- ═══ 主体：网格布局岗位卡片 ═══ -->
-    <div v-if="loading" class="loading-state"><i class="fas fa-spinner fa-spin"></i> 加载中…</div>
+    <div v-if="loading" class="loading-state"><Loader :size="16" class="icon-blue" /> 加载中…</div>
     <div v-else-if="aiSearchLoading" class="empty-state">
       <div class="ai-searching">
-        <span class="empty-icon"><i class="fas fa-robot"></i></span>
+        <span class="empty-icon"><Bot :size="16" class="icon-blue" /></span>
         <p style="font-size:1.2rem;margin-bottom:0.5rem">正在为你补充该职业信息，请稍候…</p>
         <p class="empty-hint">AI正在生成 <b>{{ searchQuery }}</b> 的详细资料</p>
         <el-progress :percentage="80" :stroke-width="4" style="max-width:300px;margin:1rem auto" />
       </div>
     </div>
     <div v-else-if="filteredCareers.length === 0 && !searchQuery" class="empty-state">
-      <span class="empty-icon"><i class="fas fa-search-minus"></i></span>
+      <span class="empty-icon"><Search :size="16" class="icon-blue" /></span>
       <p>没有找到匹配的岗位</p>
       <p class="empty-hint">试试调整筛选条件或选择其他专业</p>
     </div>
     <div v-else-if="aiSearchError" class="empty-state">
-      <span class="empty-icon"><i class="fas fa-exclamation-triangle"></i></span>
+      <span class="empty-icon"><TriangleAlert :size="16" class="icon-blue" /></span>
       <p>搜索出错：{{ aiSearchError }}</p>
       <p class="empty-hint">请重试或换一个关键词</p>
     </div>
     <div v-else-if="filteredCareers.length === 0 && searchQuery" class="empty-state">
-      <span class="empty-icon"><i class="fas fa-search"></i></span>
+      <span class="empty-icon"><Search :size="16" class="icon-blue" /></span>
       <p>没搜到「{{ searchQuery }}」的结果</p>
       <p class="empty-hint">AI正在生成信息…</p>
     </div>
@@ -121,13 +121,13 @@
         :class="{ 'is-bookmarked': store.isBookmarked(c.career), 'ai-gen-card': c.ai_generated }"
         @click="goDetail(c.career)"
       >
-        <div class="card-ribbon" v-if="store.isBookmarked(c.career)"><i class="fas fa-star"></i> 已收藏</div>
+        <div class="card-ribbon" v-if="store.isBookmarked(c.career)"><Star :size="16" class="icon-blue" /> 已收藏</div>
         <div class="card-body">
           <div class="card-icon">{{ getIcon(c.career) }}</div>
           <div class="card-title-area">
             <div class="card-title-row">
               <strong class="card-name">{{ c.career }}</strong>
-              <span class="card-path-badge" v-if="store.hasGeneratedPath(c.career)" title="已生成成长路线"><i class="fas fa-map"></i></span>
+              <span class="card-path-badge" v-if="store.hasGeneratedPath(c.career)" title="已生成成长路线"><Map :size="16" class="icon-blue" /></span>
               <el-tag v-if="c.ai_generated" size="small" type="danger" class="new-tag">新</el-tag>
             </div>
             <span class="card-intro">{{ c.short_intro || '' }}</span>
@@ -139,7 +139,7 @@
               circle
               @click.stop="toggleBookmark(c)"
               :title="store.isBookmarked(c.career) ? '取消收藏' : '收藏岗位'"
-            ><i :class="store.isBookmarked(c.career) ? 'fas fa-star' : 'far fa-star'"></i></el-button>
+            ><Star :size="16" class="icon-blue" :class="store.isBookmarked(c.career) ? 'fas fa-star' : 'far fa-star'" /></el-button>
             <el-button
               size="small"
               type="primary"
@@ -147,14 +147,14 @@
               plain
               @click.stop="scrollToVideos(c.career)"
               title="入门学习视频"
-            ><i class="fas fa-tv"></i></el-button>
+            ><Monitor :size="16" class="icon-blue" /></el-button>
           </div>
         </div>
         <div class="card-tags">
-          <span class="tag-pill" :class="difficultyType(c.difficulty) === 'success' ? 'green' : difficultyType(c.difficulty) === 'warning' ? 'orange' : difficultyType(c.difficulty) === 'danger' ? 'red' : 'gray'"><i class="fas fa-signal"></i> {{ c.difficulty }}</span>
-          <span class="tag-pill blue"><i class="fas fa-coins"></i> {{ c.salary_tag || c.salary }}</span>
-          <span class="tag-pill green"><i class="fas fa-briefcase"></i> {{ c.work_type || '技术类' }}</span>
-          <span v-if="c.keywords" v-for="kw in (c.keywords || []).slice(0,2)" :key="kw" class="tag-pill gray"><i class="fas fa-tag"></i> {{ kw }}</span>
+          <span class="tag-pill" :class="difficultyType(c.difficulty) === 'success' ? 'green' : difficultyType(c.difficulty) === 'warning' ? 'orange' : difficultyType(c.difficulty) === 'danger' ? 'red' : 'gray'"><Signal :size="16" class="icon-blue" /> {{ c.difficulty }}</span>
+          <span class="tag-pill blue"><Coins :size="16" class="icon-blue" /> {{ c.salary_tag || c.salary }}</span>
+          <span class="tag-pill green"><Briefcase :size="16" class="icon-blue" /> {{ c.work_type || '技术类' }}</span>
+          <span v-if="c.keywords" v-for="kw in (c.keywords || []).slice(0,2)" :key="kw" class="tag-pill gray"><Tag :size="16" class="icon-blue" /> {{ kw }}</span>
         </div>
       </div>
     </div>
@@ -165,20 +165,20 @@
     <div class="card video-recommend-section" ref="videoSection">
       <div class="section-header">
         <div class="section-title">
-          <i class="fas fa-tv"></i>
+          <Monitor :size="16" class="icon-blue" />
           <span>职业入门学习视频推荐</span>
           <span v-if="selectedVideoCareer" class="section-title-badge">{{ selectedVideoCareer }}</span>
         </div>
         <div class="video-section-controls">
           <el-radio-group v-model="videoSort" size="small" @change="loadVideos(selectedVideoCareer)">
-            <el-radio-button value="hot"><i class="fas fa-fire"></i> 热门</el-radio-button>
-            <el-radio-button value="new"><i class="fas fa-star"></i> 最新</el-radio-button>
+            <el-radio-button value="hot"><Flame :size="16" class="icon-blue" /> 热门</el-radio-button>
+            <el-radio-button value="new"><Star :size="16" class="icon-blue" /> 最新</el-radio-button>
           </el-radio-group>
         </div>
       </div>
 
       <!-- 视频卡片加载状态 -->
-      <div v-if="videoLoading" class="loading-state"><i class="fas fa-spinner fa-spin"></i> 正在搜索B站视频…</div>
+      <div v-if="videoLoading" class="loading-state"><Loader :size="16" class="icon-blue" /> 正在搜索B站视频…</div>
 
       <!-- 视频卡片网格 -->
       <div v-else-if="videoList.length > 0" class="video-grid">
@@ -192,11 +192,11 @@
             <img :src="v.pic" :alt="v.title" @error="onCoverError($event, v)" />
             <span class="video-duration" v-if="v.duration">{{ v.duration }}</span>
             <div class="video-cover-overlay">
-              <span class="overlay-play"><i class="fas fa-play"></i> 去B站学习</span>
+              <span class="overlay-play"><Play :size="16" class="icon-blue" /> 去B站学习</span>
             </div>
           </div>
           <div class="video-cover video-cover-placeholder" v-else @click="openVideo(v)">
-            <span class="placeholder-icon"><i class="fas fa-film"></i></span>
+            <span class="placeholder-icon"><Film :size="16" class="icon-blue" /></span>
             <span class="placeholder-title">{{ v.title?.slice(0, 12) || '入门视频' }}</span>
           </div>
 
@@ -204,7 +204,7 @@
           <div class="video-info">
             <div class="video-title-row">
               <span class="video-title" :title="cleanTitle(v.title)">{{ cleanTitle(v.title) }}</span>
-              <el-tag v-if="store.isBookmarked(selectedVideoCareer)" size="small" type="warning" class="bookmark-video-tag"><i class="fas fa-star"></i> 收藏岗位专属</el-tag>
+              <el-tag v-if="store.isBookmarked(selectedVideoCareer)" size="small" type="warning" class="bookmark-video-tag"><Star :size="16" class="icon-blue" /> 收藏岗位专属</el-tag>
               <el-button
                 size="small"
                 circle
@@ -212,13 +212,13 @@
                 @click.stop="toggleVideoBookmark(v)"
                 class="video-star-btn"
                 :title="store.isVideoBookmarked(v.bvid) ? '取消收藏视频' : '收藏视频'"
-              ><i :class="store.isVideoBookmarked(v.bvid) ? 'fas fa-star' : 'far fa-star'"></i></el-button>
+              ><Star :size="16" class="icon-blue" :class="store.isVideoBookmarked(v.bvid) ? 'fas fa-star' : 'far fa-star'" /></el-button>
             </div>
             <div class="video-meta">
-              <span class="video-author" v-if="v.author"><i class="fas fa-user"></i> {{ v.author }}</span>
+              <span class="video-author" v-if="v.author"><User :size="16" class="icon-blue" /> {{ v.author }}</span>
               <span class="video-stats" v-if="v.play">
-                <span><i class="fas fa-play"></i> {{ formatCount(v.play) }}</span>
-                <span v-if="v.danmaku"> <i class="fas fa-comment"></i> {{ formatCount(v.danmaku) }}</span>
+                <span><Play :size="16" class="icon-blue" /> {{ formatCount(v.play) }}</span>
+                <span v-if="v.danmaku"> <MessageSquare :size="16" class="icon-blue" /> {{ formatCount(v.danmaku) }}</span>
               </span>
             </div>
             <p class="video-description" v-if="v.description">{{ v.description?.slice(0, 60) }}{{ v.description?.length > 60 ? '…' : '' }}</p>
@@ -229,7 +229,7 @@
               class="video-link-btn"
               @click.stop="onVideoClick(v)"
             >
-              去B站学习 <i class="fas fa-arrow-right"></i>
+              去B站学习 <ArrowRight :size="16" class="icon-blue" />
             </a>
           </div>
         </div>
@@ -237,7 +237,7 @@
 
       <!-- 空状态 -->
       <div v-else class="empty-state" style="padding:30px 0">
-        <span class="empty-icon"><i class="fas fa-video"></i></span>
+        <span class="empty-icon"><Video :size="16" class="icon-blue" /></span>
         <p>暂无推荐视频</p>
         <p class="empty-hint">先选择一个岗位查看推荐</p>
       </div>
@@ -252,7 +252,7 @@ import { useCareerStore } from '../stores/career'
 import axios from 'axios'
 import PageBanner from '../components/PageBanner.vue'
 
-const API = 'http://localhost:8000/api'
+const API = '/api'
 const router = useRouter()
 const store = useCareerStore()
 

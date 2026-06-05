@@ -13,10 +13,12 @@ from resume_generator import generate_resume_docx
 router = APIRouter(prefix="/api/resume", tags=["简历优化"])
 
 # ── 简历历史记录表 ──
-HISTORY_DB = "data/resume_history.db"
+from pathlib import Path
+_BASE = Path(__file__).resolve().parent.parent
+HISTORY_DB = str(_BASE / "data" / "resume_history.db")
 
 def init_history_db():
-    os.makedirs("data", exist_ok=True)
+    os.makedirs(str(_BASE / "data"), exist_ok=True)
     with sqlite3.connect(HISTORY_DB) as conn:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS resume_history (
@@ -159,20 +161,26 @@ def generate_with_template(data: TemplateGenerateRequest):
         lines.append(f"*需求：{data.requirements}*")
     lines.append("")
     if data.mode == "optimize" and data.resume_text:
-        lines.append(f"** 优化后的简历 **")
-        lines.append("")
-        for line in data.resume_text.strip().split("\n"):
-            lines.append(line)
-        lines.append("")
-        lines.append("---")
-        lines.append("")
-        lines.append(f"**{tpl['name']}模板 · 优化建议（待接入AI）**")
-        if data.requirements:
-            lines.append(f"- 根据需求：{data.requirements}")
-        lines.append("- 补充量化数据")
-        lines.append("- 使用行动动词")
+        # MiMo AI 智能优化
+        from routers.llm import chat
+        prompt = f"""你是一位资深HR简历优化专家。请根据以下信息，对候选人的简历进行深度优化。
+
+求职意向：{career}
+岗位需求：{data.requirements or '无特殊要求'}
+当前简历：
+{data.resume_text[:2500]}
+
+请执行以下操作：
+1. **深度优化简历内容** — 润色措辞、补充量化思路、突出亮点、删去冗余
+2. 保持原简历的格式结构（分段、标题等）
+3. 针对「{career}」岗位调整关键词和表述
+4. 末尾附上 **3-5条具体的优化建议**
+
+请先输出优化后的简历，空一行，然后输出「---」，再输出优化建议。每条建议以「- 」开头。"""
+        text = chat(prompt, system="你是有10年经验的HR总监，擅长简历优化和岗位匹配分析。", max_tokens=2000)
+        return {"resume": text, "template_id": data.template_id, "message": f"已基于「{tpl['name']}」模板+AI优化生成"}
     else:
-        lines.append(f"**请填写信息后生成——{tpl['name']}模板（待接入AI）**")
+        lines.append(f"**请填写信息后生成——{tpl['name']}模板**")
     return {"resume": "\n".join(lines), "template_id": data.template_id, "message": f"已基于「{tpl['name']}」模板生成"}
 
 

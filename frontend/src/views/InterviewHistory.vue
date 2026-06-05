@@ -4,9 +4,9 @@
     <div class="section-header">
       <div class="section-title">
         <el-button text @click="$router.back()" style="margin-right:8px;padding:0 4px;font-size:1rem">
-          <i class="fas fa-arrow-left"></i>
+          <ArrowLeft :size="16" class="icon-blue" />
         </el-button>
-        <i class="fas fa-history"></i>
+        <History :size="16" class="icon-blue" />
         面试历史记录
       </div>
     </div>
@@ -15,7 +15,7 @@
     <div class="card trend-card" v-if="trendData.labels.length">
       <div class="section-header" style="margin-bottom:16px;">
         <div class="section-title" style="font-size:0.95rem;">
-          <i class="fas fa-chart-line"></i>
+          <ChartLine :size="16" class="icon-blue" />
           分数趋势
         </div>
       </div>
@@ -31,7 +31,7 @@
 
     <!-- ═══ 面试会话列表 ═══ -->
     <div v-if="loading" class="loading-state">
-      <i class="fas fa-spinner fa-spin"></i> 加载中…
+      <Loader :size="16" class="icon-blue" /> 加载中…
     </div>
     <template v-else>
       <div
@@ -47,10 +47,10 @@
         <div class="sc-body">
           <div class="sc-job">{{ s.job || '未命名面试' }}</div>
           <div class="sc-meta">
-            <span class="meta-item"><i class="fas fa-file-alt"></i> {{ s.total_questions }}题</span>
-            <span class="meta-item"><i class="fas fa-arrow-up" style="color:#67c23a"></i> {{ s.highest_score }}</span>
-            <span class="meta-item"><i class="fas fa-arrow-down" style="color:#f56c6c"></i> {{ s.lowest_score }}</span>
-            <span class="meta-item"><i class="fas fa-calendar"></i> {{ s.date }}</span>
+            <span class="meta-item"><FileText :size="16" class="icon-blue" /> {{ s.total_questions }}题</span>
+            <span class="meta-item"><ArrowUp :size="16" :color="'#67c23a'" /> {{ s.highest_score }}</span>
+            <span class="meta-item"><ArrowDown :size="16" :color="'#f56c6c'" /> {{ s.lowest_score }}</span>
+            <span class="meta-item"><Calendar :size="16" class="icon-blue" /> {{ s.date }}</span>
           </div>
           <div class="sc-dims" v-if="Object.keys(s.dimensions || {}).length">
             <el-tag
@@ -62,10 +62,10 @@
             >{{ k }}:{{ v }}</el-tag>
           </div>
         </div>
-        <div class="sc-arrow"><i class="fas fa-chevron-right"></i></div>
+        <div class="sc-arrow"><ChevronRight :size="16" class="icon-blue" /></div>
       </div>
       <div v-if="!sessions.length" class="empty-state">
-        <i class="fas fa-inbox"></i> 暂无面试记录
+        <Inbox :size="16" class="icon-blue" /> 暂无面试记录
       </div>
     </template>
   </div>
@@ -76,7 +76,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
-const API = 'http://localhost:8000/api'
+const API = '/api'
 const $router = useRouter()
 
 const sessions = ref([])

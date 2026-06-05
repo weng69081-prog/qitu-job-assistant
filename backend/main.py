@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from database import engine, Base
-from routers import career, interview, resume, job_match, user, exam, bilibili, delivery, assistant
+from routers import career, interview, resume, user, exam, bilibili, delivery, assistant
 import json
 import os
 
@@ -50,7 +50,6 @@ async def clear_debug_logs():
 app.include_router(career.router)
 app.include_router(interview.router)
 app.include_router(resume.router)
-app.include_router(job_match.router)
 app.include_router(user.router)
 app.include_router(exam.router)
 app.include_router(bilibili.router)

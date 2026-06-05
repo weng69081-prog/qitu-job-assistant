@@ -3,25 +3,25 @@
     <!-- ═══ 顶部：路线切换 ═══ -->
     <div class="section-header">
       <div class="section-title">
-        <i class="fas fa-map-signs"></i>
+        <Signpost :size="16" class="icon-blue" />
         <span>成长路线规划</span>
       </div>
       <el-button class="btn-outline" size="small" @click="$router.back()">
-        <i class="fas fa-arrow-left"></i> 返回
+        <ArrowLeft :size="16" class="icon-blue" /> 返回
       </el-button>
     </div>
 
     <div class="path-top-bar">
       <el-select v-model="selectedRoute" placeholder="选择路线" size="large" style="width:280px" @change="onRouteChange">
         <el-option label="通用基础路线（课内必学）" value="main">
-          <span><i class="fas fa-book" style="margin-right:6px;color:var(--primary)"></i>通用基础路线（课内必学）</span>
+          <span><Book :size="16" :color="'var(--primary)'" style="margin-right:6px;" />通用基础路线（课内必学）</span>
         </el-option>
         <el-option
           v-if="bookmarkedCareers.length > 0"
           :label="`${bookmarkedCareers.length}个收藏岗位专属分支`"
           value="branch"
         >
-          <span><i class="fas fa-star" style="margin-right:6px;color:#e6a23c"></i>{{ bookmarkedCareers.length }}个收藏岗位专属分支</span>
+          <span><Star :size="16" :color="'#e6a23c'" style="margin-right:6px;" />{{ bookmarkedCareers.length }}个收藏岗位专属分支</span>
         </el-option>
       </el-select>
       <!-- 整体进度 -->
@@ -32,13 +32,13 @@
     </div>
 
     <p class="path-hint" v-if="selectedRoute === 'branch'">
-      <i class="fas fa-star" style="color:#e6a23c;margin-right:4px"></i>
+      <Star :size="16" :color="'#e6a23c'" style="margin-right:4px" />
       已在通用路线基础上追加收藏岗位的专属分支任务
     </p>
 
     <!-- ═══ 主体：学期时间轴 ═══ -->
     <div v-if="loading" class="loading-state">
-      <i class="fas fa-spinner fa-pulse" style="margin-right:8px"></i>加载中…
+      <Loader :size="16" class="icon-blue" style="margin-right:8px" />加载中…
     </div>
     <div v-else class="semester-timeline">
       <div
@@ -56,7 +56,7 @@
           <div class="sem-header">
             <span class="sem-phase">{{ sem.phase }}</span>
             <span class="sem-goal" v-if="sem.goals">
-              <i class="fas fa-bullseye" style="margin-right:4px;color:var(--primary)"></i>{{ sem.goals }}
+              <Crosshair :size="16" :color="'var(--primary)'" style="margin-right:4px;" />{{ sem.goals }}
             </span>
           </div>
 
@@ -73,7 +73,7 @@
           <!-- 必修课程清单 -->
           <div class="sem-block" v-if="sem.courses?.length">
             <div class="block-label">
-              <i class="fas fa-book" style="margin-right:6px;color:var(--primary)"></i>必修课程
+              <Book :size="16" :color="'var(--primary)'" style="margin-right:6px;" />必修课程
             </div>
             <div class="course-tags">
               <span class="tag-pill blue" v-for="c in sem.courses" :key="c">{{ c }}</span>
@@ -83,7 +83,7 @@
           <!-- 可打卡必做任务（主干） -->
           <div class="sem-block">
             <div class="block-label">
-              <i class="fas fa-check-circle" style="margin-right:6px;color:#059669"></i>必做任务
+              <CheckCircle :size="16" :color="'#059669'" style="margin-right:6px;" />必做任务
             </div>
             <div class="task-list">
               <div
@@ -93,8 +93,8 @@
                 @click="toggleTask(sem.phase, 'main', ti)"
               >
                 <span class="task-checkbox">
-                  <i v-if="getTaskDone(sem.phase, 'main', ti)" class="fas fa-check-circle" style="color:#059669"></i>
-                  <i v-else class="far fa-square" style="color:var(--text-muted)"></i>
+                  <CheckCircle :size="16" :color="'#059669'" v-if="getTaskDone(sem.phase, 'main', ti)" />
+                  <Square :size="16" :color="'var(--text-muted)'" />
                 </span>
                 <span :class="['task-text', {done: getTaskDone(sem.phase, 'main', ti)}]">{{ task }}</span>
               </div>
@@ -104,7 +104,7 @@
           <!-- 岗位专属补充任务（仅分支路线时显示） -->
           <div class="sem-block branch-block" v-if="branchTasks[sem.phase]?.length">
             <div class="block-label">
-              <i class="fas fa-star" style="margin-right:6px;color:#e6a23c"></i>收藏岗位专属补充任务
+              <Star :size="16" :color="'#e6a23c'" style="margin-right:6px;" />收藏岗位专属补充任务
             </div>
             <div class="task-list">
               <div
@@ -114,8 +114,8 @@
                 @click="toggleTask(sem.phase, 'branch', ti)"
               >
                 <span class="task-checkbox">
-                  <i v-if="getTaskDone(sem.phase, 'branch', ti)" class="fas fa-check-circle" style="color:#059669"></i>
-                  <i v-else class="far fa-square" style="color:var(--text-muted)"></i>
+                  <CheckCircle :size="16" :color="'#059669'" v-if="getTaskDone(sem.phase, 'branch', ti)" />
+                  <Square :size="16" :color="'var(--text-muted)'" />
                 </span>
                 <span :class="['task-text', {done: getTaskDone(sem.phase, 'branch', ti)}]">{{ task.text }}</span>
               </div>
@@ -124,7 +124,7 @@
 
           <!-- 学习建议 -->
           <div class="sem-tips" v-if="sem.tips">
-            <i class="fas fa-lightbulb tips-icon" style="color:#e6a23c"></i>
+            <Lightbulb :size="16" :color="'#e6a23c'" />
             <span>{{ sem.tips }}</span>
           </div>
         </div>
@@ -139,7 +139,7 @@ import { useRoute } from 'vue-router'
 import { useCareerStore } from '../stores/career'
 import axios from 'axios'
 
-const API = 'http://localhost:8000/api'
+const API = '/api'
 const route = useRoute()
 const store = useCareerStore()
 

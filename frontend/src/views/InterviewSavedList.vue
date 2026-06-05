@@ -4,12 +4,12 @@
     <PageBanner fullwidth
       title="面试收藏夹"
       description="收藏值得反复练习的面试题目，随时回顾，稳步提升"
-      icon="fa-star"
+      :icon="'Star'"
       variant="primary"
     >
       <template #actions>
         <button class="banner-back-btn" @click="$router.back()">
-          <i class="fas fa-arrow-left"></i> 返回
+          <ArrowLeft :size="16" class="icon-blue" /> 返回
         </button>
       </template>
     </PageBanner>
@@ -17,28 +17,28 @@
     <!-- ═══ 紧凑统计条 ═══ -->
     <section class="stat-ribbon">
       <div class="stat-cell">
-        <div class="sc-icon"><i class="fas fa-star"></i></div>
+        <div class="sc-icon"><Star :size="16" class="icon-blue" /></div>
         <div class="sc-body">
           <span class="sc-num">{{ interviewSavedTotal }}</span>
           <span class="sc-label">总收藏</span>
         </div>
       </div>
       <div class="stat-cell">
-        <div class="sc-icon sc-cat"><i class="fas fa-layer-group"></i></div>
+        <div class="sc-icon sc-cat"><Layers :size="16" class="icon-blue" /></div>
         <div class="sc-body">
           <span class="sc-num">{{ categoryCount }}</span>
           <span class="sc-label">覆盖方向</span>
         </div>
       </div>
       <div class="stat-cell">
-        <div class="sc-icon sc-date"><i class="fas fa-calendar-day"></i></div>
+        <div class="sc-icon sc-date"><CalendarDays :size="16" class="icon-blue" /></div>
         <div class="sc-body">
           <span class="sc-num sc-date-num">{{ latestDay }}</span>
           <span class="sc-label">最近收藏</span>
         </div>
       </div>
       <div class="stat-cell" v-if="noteCount">
-        <div class="sc-icon sc-note"><i class="fas fa-pencil"></i></div>
+        <div class="sc-icon sc-note"><Pencil :size="16" class="icon-blue" /></div>
         <div class="sc-body">
           <span class="sc-num">{{ noteCount }}</span>
           <span class="sc-label">有备注</span>
@@ -50,12 +50,12 @@
     <section class="zone-list">
       <!-- 加载态 -->
       <div v-if="savedLoading" class="loading-state">
-        <i class="fas fa-spinner fa-spin"></i> 加载中…
+        <Loader :size="16" class="icon-blue" /> 加载中…
       </div>
 
       <!-- 空态 -->
       <div v-else-if="!interviewSaved.length" class="empty-state">
-        <div class="empty-icon-wrap"><i class="fas fa-star empty-icon"></i></div>
+        <div class="empty-icon-wrap"><Star :size="16" class="icon-blue" /></div>
         <p class="empty-title">暂无面试收藏</p>
         <p class="empty-hint">在面试过程中可以收藏感兴趣的题目，方便日后回顾练习</p>
       </div>
@@ -67,22 +67,22 @@
             <div class="sc-question">{{ item.question }}</div>
             <div class="sc-badges">
               <span class="tag-pill" :class="diffPillClass(item.difficulty)">{{ item.difficulty || '中等' }}</span>
-              <span v-if="item.category" class="tag-pill gray"><i class="fas fa-layer-group"></i> {{ item.category }}</span>
+              <span v-if="item.category" class="tag-pill gray"><Layers :size="16" class="icon-blue" /> {{ item.category }}</span>
             </div>
           </div>
           <div class="sc-meta">
-            <span class="meta-item" v-if="item.source"><i class="fas fa-link"></i> {{ item.source }}</span>
-            <span class="meta-item"><i class="fas fa-clock"></i> {{ item.created_at }}</span>
+            <span class="meta-item" v-if="item.source"><Link :size="16" class="icon-blue" /> {{ item.source }}</span>
+            <span class="meta-item"><Clock :size="16" class="icon-blue" /> {{ item.created_at }}</span>
           </div>
           <div class="sc-note" v-if="item.note">
-            <i class="fas fa-pencil"></i> {{ item.note }}
+            <Pencil :size="16" class="icon-blue" /> {{ item.note }}
           </div>
           <div class="sc-actions">
             <button class="btn-outline btn-sm btn-primary-outline" @click="practiceItem(item)">
-              <i class="fas fa-play"></i> 练习此题
+              <Play :size="16" class="icon-blue" /> 练习此题
             </button>
             <button class="btn-outline btn-sm btn-danger" @click="deleteInterviewSaved(item)">
-              <i class="fas fa-trash-can"></i> 取消收藏
+              <Trash2 :size="16" class="icon-blue" /> 取消收藏
             </button>
           </div>
         </div>

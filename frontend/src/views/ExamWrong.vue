@@ -3,29 +3,29 @@
     <!-- ═══════ 页面标题 ═══════ -->
     <div class="section-header">
       <div class="section-title">
-        <i class="fas fa-xmark"></i>
+        <X :size="16" class="icon-blue" />
         笔试错题本
         <span class="badge">{{ stats.total }} 题</span>
       </div>
       <button class="btn-outline" style="padding:6px 16px" @click="goBack">
-        <i class="fas fa-arrow-left"></i> 返回
+        <ArrowLeft :size="16" class="icon-blue" /> 返回
       </button>
     </div>
 
     <!-- ═══════ 统计概览 ═══════ -->
     <div class="grid-3" style="margin-bottom:20px">
       <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-list"></i></div>
+        <div class="stat-icon"><List :size="16" class="icon-blue" /></div>
         <div class="stat-num">{{ stats.total }}</div>
         <div class="stat-label">总错题数</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div class="stat-icon"><Clock :size="16" class="icon-blue" /></div>
         <div class="stat-num" style="color:#d97706">{{ stats.unmastered }}</div>
         <div class="stat-label">未掌握</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-icon"><CheckCircle :size="16" class="icon-blue" /></div>
         <div class="stat-num" style="color:#059669">{{ stats.mastered }}</div>
         <div class="stat-label">已掌握</div>
       </div>
@@ -35,7 +35,7 @@
     <div class="filter-bar" style="background:var(--bg-card);padding:14px 16px;border-radius:var(--radius-md);border:1px solid var(--border);margin-bottom:20px">
       <div style="display:flex;flex-wrap:wrap;gap:10px;width:100%">
         <div class="filter-group" style="flex:2;min-width:200px">
-          <span class="filter-label"><i class="fas fa-briefcase"></i> 岗位</span>
+          <span class="filter-label"><Briefcase :size="16" class="icon-blue" /> 岗位</span>
           <el-select
             v-model="filterCareer"
             placeholder="全部岗位"
@@ -63,7 +63,7 @@
           </el-select>
         </div>
         <div class="filter-group" style="flex:1.5;min-width:160px">
-          <span class="filter-label"><i class="fas fa-tag"></i> 考点</span>
+          <span class="filter-label"><Tag :size="16" class="icon-blue" /> 考点</span>
           <el-select
             v-model="filterCategory"
             placeholder="全部考点"
@@ -80,7 +80,7 @@
           </el-select>
         </div>
         <div class="filter-group" style="flex:1;min-width:120px">
-          <span class="filter-label"><i class="fas fa-signal"></i> 难度</span>
+          <span class="filter-label"><Signal :size="16" class="icon-blue" /> 难度</span>
           <el-select
             v-model="filterDifficulty"
             placeholder="全部难度"
@@ -93,7 +93,7 @@
           </el-select>
         </div>
         <div class="filter-group" style="flex:1;min-width:120px">
-          <span class="filter-label"><i class="fas fa-flag"></i> 状态</span>
+          <span class="filter-label"><Flag :size="16" class="icon-blue" /> 状态</span>
           <el-select
             v-model="filterStatus"
             placeholder="全部状态"
@@ -109,16 +109,16 @@
 
     <!-- ═══════ 加载中 ═══════ -->
     <div v-if="loading" class="loading-state">
-      <i class="fas fa-spinner fa-pulse" style="margin-right:8px"></i>加载中…
+      <Loader :size="16" class="icon-blue" style="margin-right:8px" />加载中…
     </div>
 
     <!-- ═══════ 空状态 ═══════ -->
     <div v-else-if="items.length === 0" class="empty-state">
-      <span class="empty-icon"><i class="fas fa-check-double"></i></span>
+      <span class="empty-icon"><CheckCheck :size="16" class="icon-blue" /></span>
       <p>暂无错题，继续保持！</p>
       <p class="empty-hint">再接再厉，全对通关</p>
       <button class="btn-outline" style="margin-top:14px;padding:6px 20px" @click="goBack">
-        <i class="fas fa-arrow-left"></i> 返回笔试练习
+        <ArrowLeft :size="16" class="icon-blue" /> 返回笔试练习
       </button>
     </div>
 
@@ -128,17 +128,17 @@
         <!-- 标签行 -->
         <div class="wc-badges">
           <span class="tag-pill blue">
-            <i class="fas fa-tag"></i> {{ typeLabel(item.question_type) }}
+            <Tag :size="16" class="icon-blue" /> {{ typeLabel(item.question_type) }}
           </span>
           <span v-if="item.knowledge_point" class="tag-pill gray">
-            <i class="fas fa-bookmark"></i> {{ item.knowledge_point }}
+            <Bookmark :size="16" class="icon-blue" /> {{ item.knowledge_point }}
           </span>
           <span class="tag-pill" :class="diffPill(item.difficulty)">
             <i class="fas" :class="diffIcon(item.difficulty)"></i>
             {{ difficultyLabel(item.difficulty) }}
           </span>
           <span class="tag-pill" :class="item.mastered ? 'green' : 'orange'">
-            <i class="fas" :class="item.mastered ? 'fa-check-circle' : 'fa-clock'"></i>
+            <CheckCircle :size="16" class="icon-blue" :class="item.mastered ? 'fa-check-circle' : 'fa-clock'" />
             {{ item.mastered ? '已掌握' : '未掌握' }}
           </span>
         </div>
@@ -149,12 +149,12 @@
         <!-- 答案区 -->
         <div class="answer-section">
           <div class="answer-row">
-            <i class="fas fa-check-circle" style="color:#059669;font-size:13px"></i>
+            <CheckCircle :size="13" :color="'#059669'" />
             <span class="answer-label">正确答案：</span>
             <span class="answer-value correct">{{ item.correct_answer }}</span>
           </div>
           <div class="answer-row">
-            <i class="fas fa-times-circle" style="color:#dc2626;font-size:13px"></i>
+            <XCircle :size="13" :color="'#dc2626'" />
             <span class="answer-label">我的答案：</span>
             <span class="answer-value wrong">{{ item.user_answer }}</span>
           </div>
@@ -164,7 +164,7 @@
         <el-collapse class="analysis-collapse">
           <el-collapse-item name="analysis">
             <template #title>
-              <i class="fas fa-book-open" style="margin-right:6px;color:var(--primary)"></i>
+              <BookOpen :size="16" :color="'var(--primary)'" style="margin-right:6px;" />
               <span style="font-size:13px;color:var(--primary);font-weight:500">查看解析</span>
             </template>
             <div class="analysis-content">{{ item.analysis || '暂无解析' }}</div>
@@ -179,14 +179,14 @@
             :class="{ 'is-mastered': item.mastered }"
             :disabled="item.mastered"
             @click="markMastered(item)">
-            <i class="fas" :class="item.mastered ? 'fa-check-circle' : 'fa-check'"></i>
+            <CheckCircle :size="16" class="icon-blue" :class="item.mastered ? 'fa-check-circle' : 'fa-check'" />
             {{ item.mastered ? '已掌握' : '标记已掌握' }}
           </button>
           <button class="btn-primary" style="padding:5px 14px;font-size:12px" @click="openReanswer(item)">
-            <i class="fas fa-rotate-right"></i> 重做此题
+            <RotateCw :size="16" class="icon-blue" /> 重做此题
           </button>
           <button class="btn-outline" style="padding:5px 14px;font-size:12px;border-color:#fecaca;color:#dc2626" @click="confirmRemove(item)">
-            <i class="fas fa-trash-can"></i> 移除记录
+            <Trash2 :size="16" class="icon-blue" /> 移除记录
           </button>
         </div>
       </div>
@@ -228,13 +228,13 @@
               class="judge-item"
               :class="reanswerJudgeClass('对')"
               @click="submitReanswer('对')">
-              <i class="fas fa-check-circle" style="margin-right:4px"></i> 对
+              <CheckCircle :size="16" class="icon-blue" style="margin-right:4px" /> 对
             </div>
             <div
               class="judge-item"
               :class="reanswerJudgeClass('错')"
               @click="submitReanswer('错')">
-              <i class="fas fa-times-circle" style="margin-right:4px"></i> 错
+              <XCircle :size="16" class="icon-blue" style="margin-right:4px" /> 错
             </div>
           </div>
         </div>
@@ -247,11 +247,11 @@
             :closable="false"
             show-icon />
           <div v-if="!reanswerResult && reanswerCorrect" class="feedback-correct">
-            <i class="fas fa-check-circle" style="margin-right:4px"></i>
+            <CheckCircle :size="16" class="icon-blue" style="margin-right:4px" />
             正确答案：<b>{{ reanswerCorrect }}</b>
           </div>
           <div v-if="reanswerAnalysis" class="analysis-box">
-            <h4><i class="fas fa-book-open"></i> 解析</h4>
+            <h4><BookOpen :size="16" class="icon-blue" /> 解析</h4>
             <p>{{ reanswerAnalysis }}</p>
           </div>
         </div>
@@ -500,7 +500,7 @@ async function submitReanswer(selected) {
   if (reanswerResult.value !== null) return
   reanswerSelected.value = selected
   try {
-    const { data } = await axios.post(`/api/exam/wrong-questions/${reanswerItem.value.id}/reanswer`, {
+    const { data } = await axios.post(`/api/exam/wrong-questions/reanswer/${reanswerItem.value.id}`, {
       user_answer: selected,
     })
     reanswerResult.value = data.correct

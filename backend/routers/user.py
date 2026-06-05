@@ -6,11 +6,13 @@ from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/user", tags=["user"])
 
-DB_PATH = "data/users.db"
+from pathlib import Path
+_BASE = Path(__file__).resolve().parent.parent
+DB_PATH = str(_BASE / "data" / "users.db")
 
 def init_db():
     import os
-    os.makedirs("data", exist_ok=True)
+    os.makedirs(str(_BASE / "data"), exist_ok=True)
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS users (

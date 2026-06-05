@@ -4,14 +4,14 @@
     <PageBanner fullwidth
       title="面试模拟"
       description="AI 面试官实时对话，模拟真实面试场景，多维评估报告"
-      icon="fa-microphone"
+      :icon="'Mic'"
       variant="primary"
     />
     <!-- ============================================================
          一、顶部标题区
          ============================================================ -->
     <section class="section-header">
-      <i class="fas fa-microphone header-icon"></i>
+      <Mic :size="16" class="icon-blue" />
       <h2 class="section-title">面试模拟</h2>
       <p class="header-desc">多模态 AI 模拟面试，语音 + 视频 + 表情分析，真实还原面试场景</p>
     </section>
@@ -20,26 +20,26 @@
          二、核心操作区（Hero Card）
          ============================================================ -->
     <section class="zone-core">
-      <div class="zone-label"><i class="fas fa-bolt"></i> 核心操作</div>
+      <div class="zone-label"><Zap :size="16" class="icon-blue" /> 核心操作</div>
       <div class="hero-card" @click="$router.push('/interview/session')">
         <div class="hero-bg-glow"></div>
         <img src="/src/assets/xiaoju-glasses.png" class="hero-cat" alt="小橘面试官">
         <div class="hero-content">
           <div class="hero-icon-block">
-            <i class="fas fa-video hero-main-icon"></i>
+            <Video :size="16" class="icon-blue" />
           </div>
           <div class="hero-text-block">
             <div class="hero-title">多模态 AI 模拟面试</div>
             <div class="hero-desc">AI 面试官实时对话 · 语音互动 · 摄像头录制 · 多维评估报告</div>
             <div class="hero-tags">
-              <span class="tag-pill"><i class="fas fa-microphone-alt"></i> 语音对话</span>
-              <span class="tag-pill"><i class="fas fa-camera"></i> 摄像头录制</span>
-              <span class="tag-pill"><i class="fas fa-chart-bar"></i> 多维评估</span>
+              <span class="tag-pill"><Mic :size="16" class="icon-blue" /> 语音对话</span>
+              <span class="tag-pill"><Camera :size="16" class="icon-blue" /> 摄像头录制</span>
+              <span class="tag-pill"><BarChart :size="16" class="icon-blue" /> 多维评估</span>
             </div>
           </div>
 <div class="hero-action-block">
             <span class="btn-primary hero-btn">开始面试</span>
-            <i class="fas fa-arrow-right hero-btn-arrow"></i>
+            <ArrowRight :size="16" class="icon-blue" />
           </div>
         </div>
       </div>
@@ -52,18 +52,18 @@
       <!-- 引导提示 -->
       <transition name="guide-fade">
         <div class="growth-guide" v-if="showGrowthGuide">
-          <i class="fas fa-lightbulb"></i> 这里可以领每日练习、看大厂面经
+          <Lightbulb :size="16" class="icon-blue" /> 这里可以领每日练习、看大厂面经
         </div>
       </transition>
 
       <!-- 区域头 -->
       <div class="zone-growth-header">
         <div class="zone-label" style="margin-bottom:0">
-          <i class="fas fa-seedling"></i> 成长辅助
+          <Sprout :size="16" class="icon-blue" /> 成长辅助
         </div>
         <div class="growth-toggle" @click="growthCollapsed = !growthCollapsed">
           <span>{{ growthCollapsed ? '展开' : '收起' }}</span>
-          <i class="fas fa-chevron-down toggle-arrow" :class="{ up: !growthCollapsed }"></i>
+          <ChevronDown :size="16" class="icon-blue" :class="{ up: !growthCollapsed }" />
         </div>
       </div>
 
@@ -72,16 +72,16 @@
         <div class="growth-left">
           <div class="card daily-task-card">
             <div class="daily-task-header">
-              <i class="fas fa-clipboard-list daily-task-icon"></i>
+              <ClipboardList :size="16" class="icon-blue" />
               <span class="daily-task-title">今日面试小任务</span>
             </div>
             <div class="daily-task-content">
               <div class="daily-task-name">{{ dailyTask.title }}</div>
               <div class="daily-task-desc">{{ dailyTask.desc }}</div>
-              <div class="daily-task-meta"><i class="fas fa-clock"></i> 预计 {{ dailyTask.time }}</div>
+              <div class="daily-task-meta"><Clock :size="16" class="icon-blue" /> 预计 {{ dailyTask.time }}</div>
             </div>
             <button class="btn-primary daily-task-btn" @click="$router.push(dailyTask.link)">
-              开始练习 <i class="fas fa-arrow-right"></i>
+              开始练习 <ArrowRight :size="16" class="icon-blue" />
             </button>
           </div>
         </div>
@@ -89,9 +89,9 @@
         <!-- 右侧：热门面经速览 -->
         <div class="growth-right">
           <div class="experience-header">
-            <span class="experience-title"><i class="fas fa-fire"></i> 热门面经速览</span>
+            <span class="experience-title"><Flame :size="16" class="icon-blue" /> 热门面经速览</span>
             <button class="btn-outline experience-refresh" @click="refreshExperiences">
-              <i class="fas fa-sync"></i> 换一批
+              <RefreshCw :size="16" class="icon-blue" /> 换一批
             </button>
           </div>
           <div class="experience-list">
@@ -103,7 +103,7 @@
             >
               <span class="tag-pill exp-tag" :style="{ background: exp.tagColor + '18', color: exp.tagColor }">{{ exp.tag }}</span>
               <span class="exp-title">{{ exp.title }}</span>
-              <i class="fas fa-chevron-right exp-arrow"></i>
+              <ChevronRight :size="16" class="icon-blue" />
             </div>
           </div>
         </div>
@@ -115,41 +115,41 @@
          ============================================================ -->
     <section class="zone-review">
       <div class="section-header" style="margin-bottom:1rem;padding:0;">
-        <i class="fas fa-history"></i>
+        <History :size="16" class="icon-blue" />
         <h3 class="section-title" style="font-size:1.1rem;">复盘工具</h3>
       </div>
       <div class="grid-3 review-cards">
         <!-- 面试历史记录 -->
         <div class="card stat-card review-card" @click="$router.push('/interview/history')">
           <div class="review-card-icon-wrap" style="background:var(--primary-bg)">
-            <i class="fas fa-chart-bar review-card-icon" style="color:var(--primary)"></i>
+            <BarChart :size="16" :color="'var(--primary)'" />
           </div>
           <div class="review-card-title">面试历史记录</div>
           <div class="review-card-stat">已完成 <b>{{ stats.total_interview_sessions }}</b> 次模拟</div>
           <div class="review-card-hint">历次问答、表情分析、成绩趋势</div>
-          <div class="review-card-cta">查看详情 <i class="fas fa-arrow-right"></i></div>
+          <div class="review-card-cta">查看详情 <ArrowRight :size="16" class="icon-blue" /></div>
         </div>
 
         <!-- 全部错题回顾 -->
         <div class="card stat-card review-card" @click="$router.push('/interview/wrong-questions')">
           <div class="review-card-icon-wrap" style="background:var(--accent-bg)">
-            <i class="fas fa-xmark review-card-icon" style="color:var(--accent)"></i>
+            <X :size="16" :color="'var(--accent)'" />
           </div>
           <div class="review-card-title">全部错题回顾</div>
           <div class="review-card-stat">共 <b>{{ interviewWrongTotal }}</b> 道待回顾</div>
           <div class="review-card-hint">重新练习、标记掌握、清除错题</div>
-          <div class="review-card-cta">查看详情 <i class="fas fa-arrow-right"></i></div>
+          <div class="review-card-cta">查看详情 <ArrowRight :size="16" class="icon-blue" /></div>
         </div>
 
         <!-- 我的收藏 -->
         <div class="card stat-card review-card" @click="$router.push('/interview/saved-questions')">
           <div class="review-card-icon-wrap" style="background:var(--accent-bg)">
-            <i class="fas fa-star review-card-icon" style="color:var(--accent)"></i>
+            <Star :size="16" :color="'var(--accent)'" />
           </div>
           <div class="review-card-title">我的收藏</div>
           <div class="review-card-stat">已收藏 <b>{{ interviewSavedTotal }}</b> 道题</div>
           <div class="review-card-hint">收藏的优质面试题，方便复习</div>
-          <div class="review-card-cta">查看详情 <i class="fas fa-arrow-right"></i></div>
+          <div class="review-card-cta">查看详情 <ArrowRight :size="16" class="icon-blue" /></div>
         </div>
       </div>
     </section>
@@ -159,12 +159,12 @@
          ============================================================ -->
     <section class="helper-section">
       <div class="helper-item" @click="showHelp = !showHelp">
-        <i class="fas fa-question-circle helper-icon"></i>
+        <CircleHelp :size="16" class="icon-blue" />
         <span>使用帮助</span>
       </div>
       <span class="helper-dot">·</span>
       <div class="helper-item" @click="showFeedback = !showFeedback">
-        <i class="fas fa-comment helper-icon"></i>
+        <MessageSquare :size="16" class="icon-blue" />
         <span>意见反馈</span>
       </div>
     </section>
@@ -172,7 +172,7 @@
     <!-- 使用帮助弹窗 -->
     <el-dialog v-model="showHelp" width="480px" destroy-on-close>
       <template #title>
-        <i class="fas fa-question-circle"></i> 使用帮助
+        <CircleHelp :size="16" class="icon-blue" /> 使用帮助
       </template>
       <div class="help-content">
         <div class="help-item">
@@ -202,7 +202,7 @@
     <!-- 意见反馈弹窗 -->
     <el-dialog v-model="showFeedback" width="480px" destroy-on-close>
       <template #title>
-        <i class="fas fa-comment"></i> 意见反馈
+        <MessageSquare :size="16" class="icon-blue" /> 意见反馈
       </template>
       <div class="feedback-content">
         <el-input v-model="feedbackText" type="textarea" :rows="5" placeholder="请描述你的建议或遇到的问题..." />

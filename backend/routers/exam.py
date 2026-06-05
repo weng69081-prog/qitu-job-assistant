@@ -466,11 +466,12 @@ def safe_json_loads(text, default=None):
 
 
 def get_mimo_api_key():
-    """获取MiMo API密钥，先读MIMO_API_KEY，再读API_KEY"""
-    key = os.getenv("MIMO_API_KEY")
-    if key:
-        return key
-    return os.getenv("API_KEY", "")
+    """获取MiMo API密钥，自高优先级向低优先级：MIMO_API_KEY → LLM_API_KEY → API_KEY"""
+    for k in ("MIMO_API_KEY", "LLM_API_KEY", "API_KEY"):
+        v = os.getenv(k)
+        if v:
+            return v
+    return ""
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -774,14 +775,51 @@ def generate_exam_questions(
     question_type: str = Query("", description="题型: single_choice/judge/multi_choice"),
     count: int = Query(10, ge=1, le=50, description="题目数量"),
     mode: str = Query("专项练习", description="练习模式"),
+    use_ai: bool = Query(False, description="强制仅使用AI出题"),
 ):
-    """核心出题接口：先查题库，不足时AI补充"""
+    """核心出题接口：先查题库，不足时AI补充。use_ai=true 直接AI出题"""
     db = SessionLocal()
     try:
         results = []
 
-        # 1. 查本地题库匹配（career + knowledge_point + difficulty + type）
-        if career and knowledge_point:
+        # ── use_ai=true：直接AI出题，跳过本地题库 ──
+        ai_mode = use_ai and bool(career)
+        if ai_mode:
+            import asyncio
+            loop = asyncio.new_event_loop()
+            try:
+                ai_result = loop.run_until_complete(
+                    generate_ai_questions(
+                        career=career,
+                        knowledge_point=knowledge_point or "综合知识",
+                        difficulty=difficulty or "medium",
+                        question_type=question_type or "single_choice",
+                        count=count,
+                    )
+                )
+                loop.close()
+                if "questions" in ai_result:
+                    results.extend([ExamQuestion(
+                        id=q["id"],
+                        category=q["knowledge_point"],
+                        difficulty=q["difficulty"],
+                        question_type=q["question_type"],
+                        question=q["question"],
+                        options_json=json.dumps(q["options"], ensure_ascii=False),
+                        answer=q["answer"],
+                        analysis=q["analysis"],
+                        source=career,
+                    ) for q in ai_result["questions"]])
+                elif "error" in ai_result:
+                    db.close()
+                    return {"error": ai_result["error"]}
+            except Exception as e:
+                loop.close()
+                db.close()
+                return {"error": f"AI出题失败: {str(e)}"}
+
+        # 1. 查本地题库匹配（非AI模式才执行）
+        if not ai_mode and career and knowledge_point:
             query = db.query(ExamQuestion).filter(
                 ExamQuestion.category == knowledge_point,
                 ExamQuestion.difficulty == difficulty if difficulty else True,
@@ -795,7 +833,7 @@ def generate_exam_questions(
             results.extend(local_questions)
 
         # 如果只传了career没有knowledge_point，从该岗位的考点中随机选
-        elif career and not knowledge_point:
+        elif not ai_mode and career and not knowledge_point:
             knowledge_map = get_career_knowledge(career)
             all_points = [kp["name"] for kp in knowledge_map["general"]]
             all_points += [kp["name"] for kp in knowledge_map["professional"]]
@@ -811,7 +849,7 @@ def generate_exam_questions(
             results.extend(local_questions)
 
         # 如果没传career，按原有方式随机出题
-        elif not career:
+        elif not ai_mode and not career:
             query = db.query(ExamQuestion)
             if knowledge_point:
                 query = query.filter(ExamQuestion.category == knowledge_point)

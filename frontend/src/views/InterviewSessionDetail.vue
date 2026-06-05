@@ -4,7 +4,7 @@
     <div class="section-header">
       <div class="section-title">
         <el-button text @click="$router.back()" class="back-btn">
-          <i class="fas fa-arrow-left"></i>
+          <ArrowLeft :size="16" class="icon-blue" />
           返回面试记录
         </el-button>
       </div>
@@ -12,7 +12,7 @@
 
     <!-- ═══ Loading ═══ -->
     <div v-if="loading" class="loading-state">
-      <i class="fas fa-spinner fa-spin"></i> 加载中…
+      <Loader :size="16" class="icon-blue" /> 加载中…
     </div>
 
     <template v-if="!loading && session">
@@ -31,28 +31,28 @@
         </div>
         <div class="core-stats-grid grid-2">
           <div class="stat-card">
-            <i class="fas fa-list-check stat-icon"></i>
+            <ListChecks :size="16" class="icon-blue" />
             <div class="stat-info">
               <span class="stat-value">{{ session.total_questions || 0 }}</span>
               <span class="stat-label">答题数</span>
             </div>
           </div>
           <div class="stat-card">
-            <i class="fas fa-trophy stat-icon stat-high"></i>
+            <Trophy :size="16" class="icon-blue" />
             <div class="stat-info">
               <span class="stat-value stat-high">{{ highestScore }}</span>
               <span class="stat-label">最高分</span>
             </div>
           </div>
           <div class="stat-card">
-            <i class="fas fa-arrow-down stat-icon stat-low"></i>
+            <ArrowDown :size="16" class="icon-blue" />
             <div class="stat-info">
               <span class="stat-value stat-low">{{ lowestScore }}</span>
               <span class="stat-label">最低分</span>
             </div>
           </div>
           <div class="stat-card">
-            <i class="fas fa-clock stat-icon"></i>
+            <Clock :size="16" class="icon-blue" />
             <div class="stat-info">
               <span class="stat-value">{{ relativeTime }}</span>
               <span class="stat-label">用时</span>
@@ -67,7 +67,7 @@
       <div class="card dim-analysis-card">
         <div class="section-header">
           <div class="section-title">
-            <i class="fas fa-chart-pie"></i>
+            <PieChart :size="16" class="icon-blue" />
             维度分析
           </div>
         </div>
@@ -138,7 +138,7 @@
             <span class="dim-bar-value" :style="{ color: barColor(val) }">{{ val.toFixed(1) }}</span>
           </div>
           <div v-if="Object.keys(dimensions).length === 0" class="empty-state">
-            <i class="fas fa-chart-simple"></i> 暂无维度数据
+            <BarChart :size="16" class="icon-blue" /> 暂无维度数据
           </div>
         </div>
 
@@ -146,17 +146,17 @@
         <div class="ring-charts-row">
           <div class="ring-chart-item">
             <div class="ring-chart" :style="ringGradient(75)"></div>
-            <span class="ring-chart-label"><i class="fas fa-microphone"></i> 语音评分</span>
+            <span class="ring-chart-label"><Mic :size="16" class="icon-blue" /> 语音评分</span>
             <span class="ring-chart-value">75</span>
           </div>
           <div class="ring-chart-item">
             <div class="ring-chart" :style="ringGradient(averageScore)"></div>
-            <span class="ring-chart-label"><i class="fas fa-message"></i> 回答评分</span>
+            <span class="ring-chart-label"><MessageSquare :size="16" class="icon-blue" /> 回答评分</span>
             <span class="ring-chart-value">{{ averageScore }}</span>
           </div>
           <div class="ring-chart-item">
             <div class="ring-chart" :style="ringGradient(averageScore, '#3D5A80')"></div>
-            <span class="ring-chart-label"><i class="fas fa-chart-simple"></i> 综合表现</span>
+            <span class="ring-chart-label"><BarChart :size="16" class="icon-blue" /> 综合表现</span>
             <span class="ring-chart-value">{{ averageScore }}</span>
           </div>
         </div>
@@ -168,14 +168,14 @@
       <div class="card qa-card">
         <div class="section-header">
           <div class="section-title">
-            <i class="fas fa-file-lines"></i>
+            <FileText :size="16" class="icon-blue" />
             答题详情
           </div>
           <span class="tag-pill tag-count">{{ qaItems.length }} 题</span>
         </div>
 
         <div v-if="qaItems.length === 0" class="empty-state">
-          <i class="fas fa-file-circle-exclamation"></i> 暂无详细记录
+          <FileWarning :size="16" class="icon-blue" /> 暂无详细记录
         </div>
 
         <div v-for="(qa, idx) in qaItems" :key="idx" class="qa-item">
@@ -183,35 +183,35 @@
             <div class="qa-left">
               <span class="qa-badge">Q{{ idx + 1 }}</span>
               <span class="qa-score-badge" :style="{ background: scoreBg(qa.score || 0) }">
-                <i class="fas fa-star"></i> {{ qa.score || 0 }}分
+                <Star :size="16" class="icon-blue" /> {{ qa.score || 0 }}分
               </span>
             </div>
           </div>
           <div class="qa-body">
             <div class="qa-question-section">
               <span class="qa-label">
-                <i class="fas fa-question-circle"></i> 题目
+                <CircleHelp :size="16" class="icon-blue" /> 题目
               </span>
               <div class="qa-text" :class="{ 'qa-collapsed': !expandedQA[idx + '-q'] }">
                 {{ qa.question || '暂无题目' }}
               </div>
               <button v-if="(qa.question || '').length > 100" class="qa-expand-btn" @click="toggleQA(idx + '-q')">
-                <i :class="expandedQA[idx + '-q'] ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+                <ChevronUp :size="16" class="icon-blue" :class="expandedQA[idx + '-q'] ? 'fas fa-chevron-up' : 'fas fa-chevron-down'" />
                 {{ expandedQA[idx + '-q'] ? '收起' : '展开' }}
               </button>
             </div>
             <div class="qa-answer-section">
               <span class="qa-label">
-                <i class="fas fa-comment-dots"></i> 回答
+                <MessageSquare :size="16" class="icon-blue" /> 回答
               </span>
               <div v-if="qa.answer" class="qa-text" :class="{ 'qa-collapsed': !expandedQA[idx + '-a'] }">
                 {{ qa.answer }}
               </div>
               <div v-else class="qa-empty-text">
-                <i class="fas fa-circle-info"></i> 暂无详细记录
+                <Info :size="16" class="icon-blue" /> 暂无详细记录
               </div>
               <button v-if="(qa.answer || '').length > 100" class="qa-expand-btn" @click="toggleQA(idx + '-a')">
-                <i :class="expandedQA[idx + '-a'] ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+                <ChevronUp :size="16" class="icon-blue" :class="expandedQA[idx + '-a'] ? 'fas fa-chevron-up' : 'fas fa-chevron-down'" />
                 {{ expandedQA[idx + '-a'] ? '收起' : '展开' }}
               </button>
             </div>
@@ -225,7 +225,7 @@
       <div class="card suggestion-card">
         <div class="section-header">
           <div class="section-title">
-            <i class="fas fa-lightbulb"></i>
+            <Lightbulb :size="16" class="icon-blue" />
             综合建议
           </div>
         </div>
@@ -233,37 +233,37 @@
         <div class="grid-3 analysis-cards-row">
           <div class="analysis-card analysis-strength">
             <div class="analysis-card-header">
-              <i class="fas fa-thumbs-up analysis-card-icon"></i>
+              <ThumbsUp :size="16" class="icon-blue" />
               <span class="analysis-card-title">优势亮点</span>
             </div>
             <ul class="analysis-list">
               <li v-for="(s, i) in strengths" :key="i">{{ s }}</li>
               <li v-if="strengths.length === 0" class="analysis-empty">
-                <i class="fas fa-minus"></i> 暂无数据
+                <Minus :size="16" class="icon-blue" /> 暂无数据
               </li>
             </ul>
           </div>
           <div class="analysis-card analysis-weakness">
             <div class="analysis-card-header">
-              <i class="fas fa-triangle-exclamation analysis-card-icon"></i>
+              <TriangleAlert :size="16" class="icon-blue" />
               <span class="analysis-card-title">待改进</span>
             </div>
             <ul class="analysis-list">
               <li v-for="(s, i) in weaknesses" :key="i">{{ s }}</li>
               <li v-if="weaknesses.length === 0" class="analysis-empty">
-                <i class="fas fa-minus"></i> 暂无数据
+                <Minus :size="16" class="icon-blue" /> 暂无数据
               </li>
             </ul>
           </div>
           <div class="analysis-card analysis-suggestion">
             <div class="analysis-card-header">
-              <i class="fas fa-wand-magic-sparkles analysis-card-icon"></i>
+              <WandSparkles :size="16" class="icon-blue" />
               <span class="analysis-card-title">改进建议</span>
             </div>
             <ul class="analysis-list">
               <li v-for="(s, i) in suggestions" :key="i">{{ s }}</li>
               <li v-if="suggestions.length === 0" class="analysis-empty">
-                <i class="fas fa-minus"></i> 暂无数据
+                <Minus :size="16" class="icon-blue" /> 暂无数据
               </li>
             </ul>
           </div>
@@ -274,7 +274,7 @@
           <div class="special-card">
             <div class="special-circle" :style="ringGradient(specialScores.emotion, '#3D5A80')">
               <div class="special-circle-inner">
-                <i class="fas fa-face-smile"></i>
+                <Smile :size="16" class="icon-blue" />
               </div>
             </div>
             <span class="special-label">情绪分析</span>
@@ -283,7 +283,7 @@
           <div class="special-card">
             <div class="special-circle" :style="ringGradient(specialScores.body, '#3D5A80')">
               <div class="special-circle-inner">
-                <i class="fas fa-person"></i>
+                <User :size="16" class="icon-blue" />
               </div>
             </div>
             <span class="special-label">肢体分析</span>
@@ -292,7 +292,7 @@
           <div class="special-card">
             <div class="special-circle" :style="ringGradient(specialScores.overall, '#3D5A80')">
               <div class="special-circle-inner">
-                <i class="fas fa-chart-bar"></i>
+                <BarChart :size="16" class="icon-blue" />
               </div>
             </div>
             <span class="special-label">整体分析</span>
@@ -301,7 +301,7 @@
           <div class="special-card">
             <div class="special-circle" :style="ringGradient(specialScores.comprehensive, '#3D5A80')">
               <div class="special-circle-inner">
-                <i class="fas fa-trophy"></i>
+                <Trophy :size="16" class="icon-blue" />
               </div>
             </div>
             <span class="special-label">综合表现</span>
@@ -320,7 +320,7 @@ import axios from 'axios'
 
 const route = useRoute()
 const router = useRouter()
-const API = 'http://localhost:8000/api'
+const API = '/api'
 
 const session = ref(null)
 const loading = ref(true)

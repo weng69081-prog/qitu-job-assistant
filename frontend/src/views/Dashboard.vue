@@ -12,8 +12,8 @@
             </div>
           </div>
           <div class="wb-right">
-            <router-link to="/career" class="wb-btn"><i class="fas fa-compass"></i> 探索职业</router-link>
-            <router-link to="/interview" class="wb-btn wb-btn-accent"><i class="fas fa-microphone"></i> 模拟面试</router-link>
+            <router-link to="/career" class="wb-btn"><Compass :size="16" class="icon-blue" /> 探索职业</router-link>
+            <router-link to="/interview" class="wb-btn wb-btn-accent"><Mic :size="16" class="icon-blue" /> 模拟面试</router-link>
           </div>
         </div>
         <!-- 趴边小橘猫 -->
@@ -26,7 +26,7 @@
       <!-- 统计卡片 -->
       <div class="stats-grid">
         <div class="stat-card" v-for="s in stats" :key="s.label">
-          <div class="stat-icon-bg" :style="{ background: s.bg }"><i class="fas" :class="s.icon"></i></div>
+          <div class="stat-icon-bg" :style="{ background: s.bg }"><component :is="s.lucide" :size="16" class="icon-blue" /></div>
           <div class="stat-info">
             <span class="stat-num">{{ s.num }}</span>
             <span class="stat-plus" v-if="s.suffix">+</span>
@@ -38,8 +38,8 @@
       <!-- ═══ 收藏内容汇总 ═══ -->
       <div class="fav-section">
         <div class="fav-header">
-          <span class="fav-title"><i class="fas fa-star" style="color:var(--accent);"></i> 收藏内容</span>
-          <router-link to="/favorites" class="fav-more">管理收藏 <i class="fas fa-chevron-right"></i></router-link>
+          <span class="fav-title"><Star :size="16" :color="'var(--accent)'" /> 收藏内容</span>
+          <router-link to="/favorites" class="fav-more">管理收藏 <ChevronRight :size="16" class="icon-blue" /></router-link>
         </div>
         <template v-if="careerBookmarks.length || videoBookmarks.length || interviewItems.length || examItems.length">
           <div class="fav-scroll">
@@ -53,8 +53,8 @@
               <div class="fav-card-top"></div>
               <div class="fav-card-body">
                 <div class="fav-badge-row">
-                  <span class="fav-badge-wrap"><i class="fas fa-star"></i></span>
-                  <span class="fav-arrow"><i class="fas fa-chevron-right"></i></span>
+                  <span class="fav-badge-wrap"><Star :size="16" class="icon-blue" /></span>
+                  <span class="fav-arrow"><ChevronRight :size="16" class="icon-blue" /></span>
                 </div>
                 <span class="fav-name">{{ b.career }}</span>
                 <div class="fav-meta-row">
@@ -73,8 +73,8 @@
               <div class="fav-card-top"></div>
               <div class="fav-card-body">
                 <div class="fav-badge-row">
-                  <span class="fav-badge-wrap"><i class="fas fa-film"></i></span>
-                  <span class="fav-arrow"><i class="fas fa-chevron-right"></i></span>
+                  <span class="fav-badge-wrap"><Film :size="16" class="icon-blue" /></span>
+                  <span class="fav-arrow"><ChevronRight :size="16" class="icon-blue" /></span>
                 </div>
                 <span class="fav-name">{{ (v.title || '').slice(0, 22) }}{{ (v.title || '').length > 22 ? '…' : '' }}</span>
                 <div class="fav-meta-row">
@@ -93,8 +93,8 @@
               <div class="fav-card-top"></div>
               <div class="fav-card-body">
                 <div class="fav-badge-row">
-                  <span class="fav-badge-wrap"><i class="fas fa-microphone"></i></span>
-                  <span class="fav-arrow"><i class="fas fa-chevron-right"></i></span>
+                  <span class="fav-badge-wrap"><Mic :size="16" class="icon-blue" /></span>
+                  <span class="fav-arrow"><ChevronRight :size="16" class="icon-blue" /></span>
                 </div>
                 <span class="fav-name">{{ (q.question || '').slice(0, 24) }}{{ (q.question || '').length > 24 ? '…' : '' }}</span>
                 <div class="fav-meta-row">
@@ -113,8 +113,8 @@
               <div class="fav-card-top"></div>
               <div class="fav-card-body">
                 <div class="fav-badge-row">
-                  <span class="fav-badge-wrap"><i class="fas fa-pen"></i></span>
-                  <span class="fav-arrow"><i class="fas fa-chevron-right"></i></span>
+                  <span class="fav-badge-wrap"><Pen :size="16" class="icon-blue" /></span>
+                  <span class="fav-arrow"><ChevronRight :size="16" class="icon-blue" /></span>
                 </div>
                 <span class="fav-name">{{ (q.question || q.title || '试题').slice(0, 22) }}{{ (q.question || '').length > 22 ? '…' : '' }}</span>
                 <div class="fav-meta-row">
@@ -126,7 +126,7 @@
           </div>
         </template>
         <div v-else class="fav-empty">
-          <i class="fas fa-star" style="color:#8EA0B8;font-size:20px;margin-right:6px;"></i>
+          <Star :size="20" :color="'#8EA0B8'" style="margin-right:6px;" />
           去职业探索或面试页收藏内容，就会出现在这里
         </div>
       </div>
@@ -136,7 +136,7 @@
         <!-- 左栏：最近活动 -->
         <div class="dash-card activity-card">
           <div class="dash-card-header">
-            <h3><i class="fas fa-clock" style="color:#3D5A80;"></i> 最近活动</h3>
+            <h3><Clock :size="16" :color="'#3D5A80'" /> 最近活动</h3>
           </div>
           <div class="activity-list" v-if="activities.length">
             <div class="activity-item" v-for="(a, i) in activities" :key="i">
@@ -148,7 +148,7 @@
             </div>
           </div>
           <div class="empty-state" v-else>
-            <span class="empty-icon"><i class="fas fa-inbox"></i></span>
+            <span class="empty-icon"><Inbox :size="16" class="icon-blue" /></span>
             <p>还没有活动记录</p>
             <p class="empty-hint">先去探索一个职业方向吧</p>
           </div>
@@ -158,12 +158,12 @@
         <div class="dash-right">
           <div class="dash-card todo-card">
             <div class="dash-card-header">
-              <h3><i class="fas fa-clipboard-list" style="color:#C85A20;"></i> 今日待办</h3>
+              <h3><ClipboardList :size="16" :color="'#C85A20'" /> 今日待办</h3>
             </div>
             <div class="todo-list" v-if="todos.length">
               <label class="todo-item" v-for="(t, i) in todos" :key="i">
                 <input type="checkbox" v-model="t.done" />
-                <i class="fas fa-check-circle" :class="{ checked: t.done }"></i>
+                <CheckCircle :size="16" class="icon-blue" :class="{ checked: t.done }" />
                 <span :class="{ done: t.done }">{{ t.text }}</span>
               </label>
             </div>
@@ -171,15 +171,15 @@
 
           <div class="dash-card quick-card">
             <div class="dash-card-header">
-              <h3><i class="fas fa-bolt" style="color:#BFA895;"></i> 快捷入口</h3>
+              <h3><Zap :size="16" :color="'#BFA895'" /> 快捷入口</h3>
             </div>
             <div class="quick-grid">
-              <router-link to="/career" class="quick-item"><i class="fas fa-compass"></i><span>职业探索</span></router-link>
-              <router-link to="/interview" class="quick-item"><i class="fas fa-microphone"></i><span>面试模拟</span></router-link>
-              <router-link to="/exam-practice" class="quick-item"><i class="fas fa-pen"></i><span>笔试练习</span></router-link>
-              <router-link to="/resume" class="quick-item"><i class="fas fa-file-alt"></i><span>简历优化</span></router-link>
-              <router-link to="/delivery-assistant" class="quick-item"><i class="fas fa-paper-plane"></i><span>投递助手</span></router-link>
-              <router-link to="/settings" class="quick-item"><i class="fas fa-cog"></i><span>设置</span></router-link>
+              <router-link to="/career" class="quick-item"><Compass :size="16" class="icon-blue" /><span>职业探索</span></router-link>
+              <router-link to="/interview" class="quick-item"><Mic :size="16" class="icon-blue" /><span>面试模拟</span></router-link>
+              <router-link to="/exam-practice" class="quick-item"><Pen :size="16" class="icon-blue" /><span>笔试练习</span></router-link>
+              <router-link to="/resume" class="quick-item"><FileText :size="16" class="icon-blue" /><span>简历优化</span></router-link>
+              <router-link to="/delivery-assistant" class="quick-item"><Send :size="16" class="icon-blue" /><span>投递助手</span></router-link>
+              <router-link to="/settings" class="quick-item"><Settings :size="16" class="icon-blue" /><span>设置</span></router-link>
             </div>
           </div>
         </div>
@@ -213,10 +213,10 @@ const interviewItems = ref([])
 const examItems = ref([])
 
 const stats = ref([
-  { icon: 'fa-compass', num: 0, suffix: true, label: '探索职业', bg: 'rgba(61,90,128,0.1)' },
-  { icon: 'fa-microphone', num: 0, suffix: true, label: '模拟面试', bg: 'rgba(200,90,32,0.1)' },
-  { icon: 'fa-file-alt', num: 0, suffix: true, label: '简历优化', bg: 'rgba(191,168,149,0.2)' },
-  { icon: 'fa-paper-plane', num: 0, suffix: true, label: '投递追踪', bg: 'rgba(142,160,184,0.2)' },
+  { lucide: 'Compass', num: 0, suffix: true, label: '探索职业', bg: 'rgba(37,99,235,0.08)' },
+  { lucide: 'Mic', num: 0, suffix: true, label: '模拟面试', bg: 'rgba(37,99,235,0.08)' },
+  { lucide: 'FileText', num: 0, suffix: true, label: '简历优化', bg: 'rgba(37,99,235,0.08)' },
+  { lucide: 'Send', num: 0, suffix: true, label: '投递追踪', bg: 'rgba(37,99,235,0.08)' },
 ])
 
 const activities = ref([])

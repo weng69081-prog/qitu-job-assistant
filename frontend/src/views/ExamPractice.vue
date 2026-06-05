@@ -5,10 +5,22 @@
       <PageBanner fullwidth
         title="笔试练习"
         description="海量题库 + AI 智能出题，针对性练习提升笔试通过率"
-        icon="fa-pen"
+        :icon="'Pen'"
         variant="primary"
       />
       <img src="/src/assets/exam-cat.png" class="banner-cat" alt="小橘笔试">
+    </div>
+    <!-- ═══ 笔试模式导航：专项练习 / 模拟考试 / 错题本 ═══ -->
+    <div class="exam-mode-nav">
+      <router-link to="/exam-practice" class="emn-item" active-class="emn-active">
+        <Book :size="16" class="icon-blue" /> 专项练习
+      </router-link>
+      <router-link to="/exam/session" class="emn-item" active-class="emn-active">
+        <FileText :size="16" class="icon-blue" /> 模拟考试
+      </router-link>
+      <router-link to="/exam/wrong" class="emn-item" active-class="emn-active">
+        <Redo :size="16" class="icon-blue" /> 错题重练
+      </router-link>
     </div>
     <!-- ═══════ 1. 筛选&选题区 ═══════ -->
     <div class="filter-section">
@@ -16,7 +28,7 @@
         <!-- 第一行：岗位 + 关键词搜索 + 模式切换 -->
         <div class="filter-row-1">
           <div class="filter-group" style="flex:2;min-width:200px">
-            <span class="filter-label"><i class="fas fa-bullseye"></i> 目标岗位</span>
+            <span class="filter-label"><Crosshair :size="16" class="icon-blue" /> 目标岗位</span>
             <el-select v-model="career" placeholder="选择岗位" filterable clearable style="width:100%"
               @change="onCareerChange">
               <el-option-group v-if="store.validBookmarks.length" label="⭐ 已收藏">
@@ -28,9 +40,9 @@
             </el-select>
           </div>
           <div class="filter-group" style="flex:1.5;min-width:160px">
-            <span class="filter-label"><i class="fas fa-search"></i> 关键词搜索</span>
+            <span class="filter-label"><Search :size="16" class="icon-blue" /> 关键词搜索</span>
             <el-input v-model="searchKeyword" placeholder="搜索题库..." clearable size="default">
-              <template #prefix><i class="fas fa-search" style="color:var(--text-muted)"></i></template>
+              <template #prefix><Search :size="16" :color="'var(--text-muted)'" /></template>
             </el-input>
           </div>
         </div>
@@ -38,15 +50,15 @@
         <!-- 第二行：模式 + 难度 + 题型 -->
         <div class="filter-row-2">
           <div class="filter-group" style="flex:2">
-            <span class="filter-label"><i class="fas fa-thumbtack"></i> 刷题模式</span>
+            <span class="filter-label"><Pin :size="16" class="icon-blue" /> 刷题模式</span>
             <el-radio-group v-model="mode" class="mode-radio-group">
-              <el-radio-button value="专项练习"><i class="fas fa-book"></i> 专项练习</el-radio-button>
-              <el-radio-button value="计时模考"><i class="fas fa-stopwatch"></i> 计时模考</el-radio-button>
-              <el-radio-button value="随机刷题"><i class="fas fa-dice"></i> 随机刷题</el-radio-button>
+              <el-radio-button value="专项练习"><Book :size="16" class="icon-blue" /> 专项练习</el-radio-button>
+              <el-radio-button value="计时模考"><Timer :size="16" class="icon-blue" /> 计时模考</el-radio-button>
+              <el-radio-button value="随机刷题"><Dice :size="16" class="icon-blue" /> 随机刷题</el-radio-button>
             </el-radio-group>
           </div>
           <div class="filter-group" style="flex:1;min-width:120px">
-            <span class="filter-label"><i class="fas fa-signal"></i> 难度</span>
+            <span class="filter-label"><Signal :size="16" class="icon-blue" /> 难度</span>
             <el-select v-model="difficulty" placeholder="不限" clearable style="width:100%">
               <el-option label="不限" value="all" />
               <el-option label="入门" value="easy" />
@@ -55,7 +67,7 @@
             </el-select>
           </div>
           <div class="filter-group" style="flex:1;min-width:120px">
-            <span class="filter-label"><i class="fas fa-list"></i> 题型</span>
+            <span class="filter-label"><List :size="16" class="icon-blue" /> 题型</span>
             <el-select v-model="questionType" placeholder="不限" clearable style="width:100%">
               <el-option label="不限" value="all" />
               <el-option label="单选题" value="single_choice" />
@@ -69,17 +81,17 @@
         <div class="filter-row-3">
           <div class="library-preview">
             <div class="preview-stat">
-              <span class="preview-label"><i class="fas fa-database"></i> 总题量</span>
+              <span class="preview-label"><Database :size="16" class="icon-blue" /> 总题量</span>
               <span class="preview-value">{{ libraryStats.total }}<small> 题</small></span>
             </div>
             <el-divider direction="vertical" />
             <div class="preview-stat">
-              <span class="preview-label"><i class="fas fa-clock"></i> 预估用时</span>
+              <span class="preview-label"><Clock :size="16" class="icon-blue" /> 预估用时</span>
               <span class="preview-value">{{ libraryStats.estimatedTime }}<small> min</small></span>
             </div>
             <el-divider direction="vertical" />
             <div class="preview-stat">
-              <span class="preview-label"><i class="fas fa-bullseye"></i> 历史正确率</span>
+              <span class="preview-label"><Crosshair :size="16" class="icon-blue" /> 历史正确率</span>
               <span class="preview-value" :style="{ color: libraryStats.historyAccuracy > 70 ? 'var(--primary)' : libraryStats.historyAccuracy > 40 ? 'var(--accent)' : 'var(--accent)' }">
                 {{ libraryStats.historyAccuracy }}<small>%</small>
               </span>
@@ -87,7 +99,7 @@
           </div>
           <button class="btn-primary" style="padding:10px 28px;font-size:0.95rem" @click="startPractice"
             :disabled="!career || loadingAI" :class="{ loading: loading }">
-            <i class="fas fa-rocket"></i>
+            <Rocket :size="16" class="icon-blue" />
             {{ loadingAI ? 'AI正在生成题库...' : loading ? '加载中...' : '开始刷题' }}
           </button>
         </div>
@@ -99,7 +111,7 @@
       <div class="dashboard-section" :class="{ 'is-stuck': isStuck }">
         <div class="section-header" style="margin-bottom:12px;padding:0">
           <div class="section-title" style="font-size:0.95rem">
-            <i class="fas fa-chart-bar"></i> 练习统计看板
+            <BarChart :size="16" class="icon-blue" /> 练习统计看板
           </div>
           <span class="section-more" style="font-size:0.72rem;color:var(--text-muted)">一页看尽近况</span>
         </div>
@@ -107,7 +119,7 @@
         <div class="dash-cards">
           <!-- 卡1：总刷题量 + 迷你趋势折线 -->
           <div class="stat-card dash-card-hover" @mouseenter="dashHover=0" @mouseleave="dashHover=-1">
-            <div class="stat-icon"><i class="fas fa-pen"></i></div>
+            <div class="stat-icon"><Pen :size="16" class="icon-blue" /></div>
             <div class="stat-num">{{ dashData.totalQuestions }}</div>
             <div class="stat-label">总刷题量</div>
             <div class="dc-mini-chart">
@@ -127,7 +139,7 @@
 
           <!-- 卡2：近7天正确率 + 环形进度 -->
           <div class="stat-card dash-card-hover" @mouseenter="dashHover=1" @mouseleave="dashHover=-1">
-            <div class="stat-icon"><i class="fas fa-bullseye"></i></div>
+            <div class="stat-icon"><Crosshair :size="16" class="icon-blue" /></div>
             <div class="stat-num">{{ dashData.weekAccuracy }}</div>
             <div class="stat-label">近7天正确率</div>
             <div class="dc-mini-chart chart-ring">
@@ -146,7 +158,7 @@
 
           <!-- 卡3：连续打卡天数 + 火焰图标 -->
           <div class="stat-card dash-card-hover" @mouseenter="dashHover=2" @mouseleave="dashHover=-1">
-            <div class="stat-icon"><i class="fas fa-fire" style="color:var(--accent)"></i></div>
+            <div class="stat-icon"><Flame :size="16" :color="'var(--accent)'" /></div>
             <div class="stat-num">{{ dashData.streakDays }}</div>
             <div class="stat-label">连续打卡</div>
             <div class="dc-mini-chart streak-vis">
@@ -154,13 +166,13 @@
                 :class="{ active: i <= dashData.streakDays, max: i === dashData.streakDays && dashData.streakDays > 0 }"
                 :style="{ opacity: i <= dashData.streakDays ? 0.4 + (i / 7) * 0.6 : 0.15 }">
               </div>
-              <span class="streak-suffix" v-if="dashData.streakDays > 0"><i class="fas fa-fire"></i> {{ dashData.streakDays }}天连击</span>
+              <span class="streak-suffix" v-if="dashData.streakDays > 0"><Flame :size="16" class="icon-blue" /> {{ dashData.streakDays }}天连击</span>
             </div>
           </div>
 
           <!-- 卡4：本周完成率 + 横向进度条 -->
           <div class="stat-card dash-card-hover" @mouseenter="dashHover=3" @mouseleave="dashHover=-1">
-            <div class="stat-icon"><i class="fas fa-running"></i></div>
+            <div class="stat-icon"><Footprints :size="16" class="icon-blue" /></div>
             <div class="stat-num">{{ dashData.weekCompletion }}</div>
             <div class="stat-label">本周完成率</div>
             <div class="dc-mini-chart completion-bar-wrap">
@@ -174,7 +186,7 @@
 
         <!-- 薄弱模块提示 -->
         <div class="dash-weak-tip" v-if="dashWeakModules.length">
-          <i class="fas fa-triangle-exclamation" style="margin-right:6px"></i>
+          <TriangleAlert :size="16" class="icon-blue" style="margin-right:6px" />
           近3天薄弱模块：<b>{{ dashWeakModules }}</b>
         </div>
       </div>
@@ -185,13 +197,13 @@
       <!-- ─── Tab 1: 刷题 ─── -->
       <el-tab-pane label="刷题" name="practice">
         <template #label>
-          <span><i class="fas fa-pen"></i> 刷题</span>
+          <span><Pen :size="16" class="icon-blue" /> 刷题</span>
         </template>
         <!-- 设置（选题数） -->
         <div v-if="practicePhase === 'setup'" class="practice-setup">
           <div class="card" style="padding:16px 20px">
             <div class="setup-inner">
-              <div class="setup-icon"><i class="fas fa-book" style="font-size:2.5rem;color:var(--primary)"></i></div>
+              <div class="setup-icon"><Book :size="2" :color="'var(--primary)'" /></div>
               <div class="setup-text">
                 <h3>准备好了吗？</h3>
                 <p v-if="career">当前选择：<strong>{{ career }}</strong> ｜ 模式：{{ mode }}</p>
@@ -208,7 +220,7 @@
                   </el-select>
                 </div>
                 <button class="btn-primary" @click="beginAnswering" :disabled="!career || !totalQuestions">
-                  <i class="fas fa-bullseye"></i> 开始作答
+                  <Crosshair :size="16" class="icon-blue" /> 开始作答
                 </button>
               </div>
             </div>
@@ -222,11 +234,11 @@
             <div class="status-left">
               <span class="status-progress">{{ currentIdx + 1 }} / {{ questions.length }}</span>
               <span class="status-mode">{{ mode }}</span>
-              <span class="status-timer" v-if="timerRunning"><i class="fas fa-stopwatch"></i> {{ formatTime(elapsedSeconds) }}</span>
+              <span class="status-timer" v-if="timerRunning"><Timer :size="16" class="icon-blue" /> {{ formatTime(elapsedSeconds) }}</span>
             </div>
             <div class="status-right">
-              <span class="status-accuracy"><i class="fas fa-check"></i> {{ correctCount }}/{{ answeredCount }}</span>
-              <button class="btn-outline" style="padding:4px 12px;font-size:0.8rem;color:var(--accent)" @click="confirmEndPractice"><i class="fas fa-stop"></i> 结束</button>
+              <span class="status-accuracy"><Check :size="16" class="icon-blue" /> {{ correctCount }}/{{ answeredCount }}</span>
+              <button class="btn-outline" style="padding:4px 12px;font-size:0.8rem;color:var(--accent)" @click="confirmEndPractice"><StopCircle :size="16" class="icon-blue" /> 结束</button>
             </div>
           </div>
 
@@ -243,14 +255,14 @@
               <span class="q-kp" v-if="currentQuestion.knowledge_point">{{ currentQuestion.knowledge_point }}</span>
               <div class="q-header-actions">
                 <button class="btn-outline" style="padding:2px 10px;font-size:0.78rem" :class="{ 'is-warning': isSaved(currentQuestion) }" @click="toggleSave(currentQuestion)">
-                  <i :class="[isSaved(currentQuestion) ? 'fas' : 'far', 'fa-star']"></i>
+                  <Star :size="16" class="icon-blue" :class="[isSaved(currentQuestion) ? 'fas' : 'far', 'fa-star']" />
                   {{ isSaved(currentQuestion) ? '已收藏' : '收藏' }}
                 </button>
                 <button class="btn-outline" style="padding:2px 10px;font-size:0.78rem;color:var(--accent)" v-if="isHard(currentQuestion)" @click="toggleHard(currentQuestion)">
-                  <i class="fas fa-circle" style="color:var(--accent)"></i> 已标难
+                  <Circle :size="16" :color="'var(--accent)'" /> 已标难
                 </button>
                 <button class="btn-outline" style="padding:2px 10px;font-size:0.78rem" v-else @click="toggleHard(currentQuestion)">
-                  <i class="far fa-circle"></i> 标难
+                  <Circle :size="16" class="icon-blue" /> 标难
                 </button>
               </div>
             </div>
@@ -287,18 +299,18 @@
               <div v-if="answered" class="q-analysis">
                 <el-divider />
                 <div class="analysis-header">
-                  <span v-if="isCorrect" class="result-correct"><i class="fas fa-check-circle"></i> 回答正确！</span>
-                  <span v-else class="result-wrong"><i class="fas fa-xmark-circle"></i> 回答错误</span>
+                  <span v-if="isCorrect" class="result-correct"><CheckCircle :size="16" class="icon-blue" /> 回答正确！</span>
+                  <span v-else class="result-wrong"><XCircle :size="16" class="icon-blue" /> 回答错误</span>
                   <span class="correct-answer" v-if="!isCorrect">正确答案：<strong>{{ currentQuestion.answer }}</strong></span>
                 </div>
                 <div class="analysis-body" v-if="currentQuestion.analysis">
-                  <div class="analysis-title"><i class="fas fa-book-open"></i> 解析</div>
+                  <div class="analysis-title"><BookOpen :size="16" class="icon-blue" /> 解析</div>
                   <p>{{ currentQuestion.analysis }}</p>
                 </div>
                 <!-- 个人笔记 -->
                 <div class="note-area">
                   <el-input v-model="noteText" placeholder="记笔记..." size="small" style="width:100%;margin-top:8px">
-                    <template #prefix><i class="fas fa-pen"></i></template>
+                    <template #prefix><Pen :size="16" class="icon-blue" /></template>
                   </el-input>
                 </div>
               </div>
@@ -306,11 +318,11 @@
 
             <!-- 导航按钮 -->
             <div class="q-nav" v-if="answered">
-              <button class="btn-outline" @click="prevQuestion" :disabled="currentIdx === 0"><i class="fas fa-arrow-left"></i> 上一题</button>
+              <button class="btn-outline" @click="prevQuestion" :disabled="currentIdx === 0"><ArrowLeft :size="16" class="icon-blue" /> 上一题</button>
               <button v-if="currentIdx < questions.length - 1" class="btn-primary" @click="nextQuestion">
-                下一题 <i class="fas fa-arrow-right"></i>
+                下一题 <ArrowRight :size="16" class="icon-blue" />
               </button>
-              <button v-else class="btn-primary" style="background:var(--primary)" @click="finishPractice"><i class="fas fa-chart-bar"></i> 查看报告</button>
+              <button v-else class="btn-primary" style="background:var(--primary)" @click="finishPractice"><BarChart :size="16" class="icon-blue" /> 查看报告</button>
             </div>
           </div>
 
@@ -333,7 +345,7 @@
         <!-- 报告 -->
         <div v-if="practicePhase === 'report'" class="practice-report">
           <div class="card" style="padding:24px 20px;text-align:center">
-            <div class="report-icon"><i class="fas fa-chart-bar" style="font-size:3rem;color:var(--primary)"></i></div>
+            <div class="report-icon"><BarChart :size="3" :color="'var(--primary)'" /></div>
             <div class="section-header" style="justify-content:center;margin-bottom:20px;padding:0">
               <div class="section-title" style="font-size:1.2rem">练习报告</div>
             </div>
@@ -355,7 +367,7 @@
               </div>
             </div>
             <div class="report-detail" v-if="reportErrors.length > 0">
-              <h3 style="font-size:0.95rem;margin-bottom:10px"><i class="fas fa-xmark" style="color:var(--accent)"></i> 错题回顾</h3>
+              <h3 style="font-size:0.95rem;margin-bottom:10px"><X :size="16" :color="'var(--accent)'" /> 错题回顾</h3>
               <div v-for="(e, i) in reportErrors" :key="i" class="report-error-item">
                 <div class="re-q">{{ i + 1 }}. {{ e.question }}</div>
                 <div class="re-answer">你的答案：<span class="wrong-text">{{ e.userAnswer }}</span></div>
@@ -363,8 +375,8 @@
               </div>
             </div>
             <div class="report-actions" style="margin-top:20px">
-              <button class="btn-outline" @click="resetPractice"><i class="fas fa-rotate"></i> 再来一次</button>
-              <button class="btn-primary" @click="goToWrongTab"><i class="fas fa-book"></i> 查看错题本</button>
+              <button class="btn-outline" @click="resetPractice"><RotateCw :size="16" class="icon-blue" /> 再来一次</button>
+              <button class="btn-primary" @click="goToWrongTab"><Book :size="16" class="icon-blue" /> 查看错题本</button>
             </div>
           </div>
         </div>
@@ -373,20 +385,20 @@
       <!-- ─── Tab 2: 错题本 ─── -->
       <el-tab-pane name="wrong">
         <template #label>
-          <span><i class="fas fa-book"></i> 错题本</span>
+          <span><Book :size="16" class="icon-blue" /> 错题本</span>
         </template>
         <div class="wrong-section" v-loading="wrongLoading">
           <div class="filter-bar" style="background:var(--bg-card);padding:14px 16px;border-radius:var(--radius-md);border:1px solid var(--border);margin-bottom:16px">
             <div style="display:flex;flex-wrap:wrap;gap:10px;width:100%">
               <div class="filter-group" style="flex:1;min-width:160px">
-                <span class="filter-label"><i class="fas fa-briefcase"></i> 岗位</span>
+                <span class="filter-label"><Briefcase :size="16" class="icon-blue" /> 岗位</span>
                 <el-select v-model="wrongCareerFilter" placeholder="全部岗位" clearable style="width:100%" @change="fetchWrong">
                   <el-option label="全部岗位" value="" />
                   <el-option v-for="c in allCareerNames" :key="c" :label="c" :value="c" />
                 </el-select>
               </div>
               <div class="filter-group" style="flex:1;min-width:120px">
-                <span class="filter-label"><i class="fas fa-flag"></i> 状态</span>
+                <span class="filter-label"><Flag :size="16" class="icon-blue" /> 状态</span>
                 <el-select v-model="wrongMasteredFilter" placeholder="全部" clearable style="width:100%" @change="fetchWrong">
                   <el-option label="全部" value="" />
                   <el-option label="未掌握" value="0" />
@@ -396,27 +408,27 @@
             </div>
           </div>
           <div class="empty-state" v-if="wrongQuestions.length === 0">
-            <div class="empty-icon"><i class="fas fa-face-smile"></i></div>
+            <div class="empty-icon"><Smile :size="16" class="icon-blue" /></div>
             <p>太棒了，没有错题！</p>
           </div>
           <div v-for="wq in wrongQuestions" :key="wq.id" class="wrong-item">
             <div class="wi-header">
-              <span class="wi-source"><i class="fas fa-briefcase"></i> {{ wq.career || '笔试' }}</span>
+              <span class="wi-source"><Briefcase :size="16" class="icon-blue" /> {{ wq.career || '笔试' }}</span>
               <span :class="['tag-pill', wq.difficulty === 'easy' ? 'tag-pill-green' : wq.difficulty === 'hard' ? 'tag-pill-red' : 'tag-pill-orange']">{{ diffLabel(wq.difficulty) }}</span>
               <span class="wi-status" :class="{ mastered: wq.mastered }">
-                <i :class="[wq.mastered ? 'fas fa-check-circle' : 'fas fa-xmark-circle']"></i>
+                <CheckCircle :size="16" class="icon-blue" :class="[wq.mastered ? 'fas fa-check-circle' : 'fas fa-xmark-circle']" />
                 {{ wq.mastered ? '已掌握' : '未掌握' }}
               </span>
-              <button class="btn-outline" style="margin-left:auto;padding:2px 10px;font-size:0.78rem" @click="reviewWrong(wq)"><i class="fas fa-rotate"></i> 重做</button>
+              <button class="btn-outline" style="margin-left:auto;padding:2px 10px;font-size:0.78rem" @click="reviewWrong(wq)"><RotateCw :size="16" class="icon-blue" /> 重做</button>
             </div>
             <div class="wi-question">{{ wq.question }}</div>
             <div class="wi-answers">
-              <span class="wi-wrong"><i class="fas fa-xmark"></i> 你的答案：<strong>{{ wq.user_answer }}</strong></span>
-              <span class="wi-correct"><i class="fas fa-check"></i> 正确答案：<strong>{{ wq.correct_answer }}</strong></span>
+              <span class="wi-wrong"><X :size="16" class="icon-blue" /> 你的答案：<strong>{{ wq.user_answer }}</strong></span>
+              <span class="wi-correct"><Check :size="16" class="icon-blue" /> 正确答案：<strong>{{ wq.correct_answer }}</strong></span>
             </div>
             <div class="wi-actions" style="margin-top:8px;display:flex;gap:8px">
-              <button class="btn-outline" style="padding:2px 10px;font-size:0.78rem;color:var(--primary)" @click="markMastered(wq)" v-if="!wq.mastered"><i class="fas fa-check-circle"></i> 标记已掌握</button>
-              <button class="btn-outline" style="padding:2px 10px;font-size:0.78rem;color:var(--accent)" @click="removeWrong(wq)"><i class="fas fa-trash"></i> 移除</button>
+              <button class="btn-outline" style="padding:2px 10px;font-size:0.78rem;color:var(--primary)" @click="markMastered(wq)" v-if="!wq.mastered"><CheckCircle :size="16" class="icon-blue" /> 标记已掌握</button>
+              <button class="btn-outline" style="padding:2px 10px;font-size:0.78rem;color:var(--accent)" @click="removeWrong(wq)"><Trash2 :size="16" class="icon-blue" /> 移除</button>
             </div>
           </div>
         </div>
@@ -425,13 +437,13 @@
       <!-- ─── Tab 3: 收藏夹 ─── -->
       <el-tab-pane name="saved">
         <template #label>
-          <span><i class="fas fa-star"></i> 收藏夹</span>
+          <span><Star :size="16" class="icon-blue" /> 收藏夹</span>
         </template>
         <div class="saved-section" v-loading="savedLoading">
           <div class="filter-bar" style="background:var(--bg-card);padding:14px 16px;border-radius:var(--radius-md);border:1px solid var(--border);margin-bottom:16px">
             <div style="display:flex;flex-wrap:wrap;gap:10px;width:100%;align-items:center">
               <div class="filter-group" style="flex:1;min-width:160px">
-                <span class="filter-label"><i class="fas fa-briefcase"></i> 岗位</span>
+                <span class="filter-label"><Briefcase :size="16" class="icon-blue" /> 岗位</span>
                 <el-select v-model="savedCareerFilter" placeholder="全部岗位" clearable style="width:100%" @change="fetchSaved">
                   <el-option label="全部岗位" value="" />
                   <el-option v-for="c in allCareerNames" :key="c" :label="c" :value="c" />
@@ -441,17 +453,17 @@
             </div>
           </div>
           <div class="empty-state" v-if="savedQuestions.length === 0">
-            <div class="empty-icon"><i class="fas fa-star"></i></div>
+            <div class="empty-icon"><Star :size="16" class="icon-blue" /></div>
             <p>还没有收藏题目，刷题时点收藏按钮即可</p>
           </div>
           <div v-for="sq in savedQuestions" :key="sq.id" class="saved-item">
             <div class="si-header">
-              <span class="si-source"><i class="fas fa-briefcase"></i> {{ sq.career || '笔试' }}</span>
+              <span class="si-source"><Briefcase :size="16" class="icon-blue" /> {{ sq.career || '笔试' }}</span>
               <span :class="['tag-pill', sq.difficulty === 'easy' ? 'tag-pill-green' : sq.difficulty === 'hard' ? 'tag-pill-red' : 'tag-pill-orange']">{{ diffLabel(sq.difficulty) }}</span>
-              <button class="btn-outline" style="margin-left:auto;padding:2px 10px;font-size:0.78rem;color:var(--accent)" @click="removeSaved(sq)"><i class="fas fa-trash"></i> 取消收藏</button>
+              <button class="btn-outline" style="margin-left:auto;padding:2px 10px;font-size:0.78rem;color:var(--accent)" @click="removeSaved(sq)"><Trash2 :size="16" class="icon-blue" /> 取消收藏</button>
             </div>
             <div class="si-question">{{ sq.question }}</div>
-            <div class="si-note" v-if="sq.note"><i class="fas fa-pen"></i> 备注：{{ sq.note }}</div>
+            <div class="si-note" v-if="sq.note"><Pen :size="16" class="icon-blue" /> 备注：{{ sq.note }}</div>
           </div>
         </div>
       </el-tab-pane>
@@ -462,14 +474,14 @@
       <el-collapse v-model="detailCollapseOpen" class="detail-collapse" @change="onDetailCollapseChange">
         <el-collapse-item title="详细数据分析（雷达图/错题分布/时段分析/成长对比）" name="stats">
           <template #title>
-            <span style="font-weight:600"><i class="fas fa-chart-bar" style="margin-right:8px"></i> 详细数据分析（雷达图/错题分布/时段分析/成长对比）</span>
+            <span style="font-weight:600"><BarChart :size="16" class="icon-blue" style="margin-right:8px" /> 详细数据分析（雷达图/错题分布/时段分析/成长对比）</span>
           </template>
           <div class="detail-stats-section">
             <!-- 趋势图 + 雷达图并列 -->
             <div class="chart-row-2">
               <div class="card" style="padding:0">
                 <div class="chart-header" style="padding:12px 16px;border-bottom:1px solid var(--border-light)">
-                  <span><i class="fas fa-chart-line"></i> 刷题量趋势</span>
+                  <span><ChartLine :size="16" class="icon-blue" /> 刷题量趋势</span>
                   <el-radio-group v-model="trendDays" size="small" @change="fetchTrend">
                     <el-radio-button :value="7">近7日</el-radio-button>
                     <el-radio-button :value="30">近30日</el-radio-button>
@@ -498,7 +510,7 @@
 
               <div class="card" style="padding:0">
                 <div class="chart-header" style="padding:12px 16px;border-bottom:1px solid var(--border-light)">
-                  <span><i class="fas fa-network-wired"></i> 能力分析</span>
+                  <span><Network :size="16" class="icon-blue" /> 能力分析</span>
                   <el-select v-model="radarCareer" size="small" placeholder="选择岗位" clearable style="width:140px" @change="fetchRadar">
                     <el-option v-for="c in allCareerNames" :key="c" :label="c" :value="c" />
                   </el-select>
@@ -528,7 +540,7 @@
             <div class="chart-row-2">
               <div class="card" style="padding:0">
                 <div class="chart-header" style="padding:12px 16px;border-bottom:1px solid var(--border-light)">
-                  <span><i class="fas fa-xmark" style="color:var(--accent)"></i> 错题分布（按知识点）</span>
+                  <span><X :size="16" :color="'var(--accent)'" /> 错题分布（按知识点）</span>
                 </div>
                 <div class="chart-body bar-body" style="padding:10px 16px" v-if="errorDistData.length > 0">
                   <div v-for="(ed, ei) in errorDistData.slice(0, 8)" :key="ei" class="bar-item" @click="goToWrongWithKp(ed.name)" style="cursor:pointer">
@@ -536,14 +548,14 @@
                     <div class="bar-track"><div class="bar-fill" :style="{ width: barPercent(ed.count) + '%' }"></div></div>
                     <div class="bar-value">{{ ed.count }}</div>
                   </div>
-                  <div v-if="errorDistData.length > 8" class="show-all-wrong" @click="goToWrongTab">查看全部 {{ errorDistData.length }} 个知识点 <i class="fas fa-arrow-right"></i></div>
+                  <div v-if="errorDistData.length > 8" class="show-all-wrong" @click="goToWrongTab">查看全部 {{ errorDistData.length }} 个知识点 <ArrowRight :size="16" class="icon-blue" /></div>
                 </div>
                 <div v-else class="empty-state" style="padding:30px 0"><p>暂无错题数据</p></div>
               </div>
 
               <div class="card" style="padding:0">
                 <div class="chart-header" style="padding:12px 16px;border-bottom:1px solid var(--border-light)">
-                  <span><i class="fas fa-clock"></i> 练习时段分布</span>
+                  <span><Clock :size="16" class="icon-blue" /> 练习时段分布</span>
                 </div>
                 <div class="chart-body pie-body" style="padding:10px 16px" v-if="timeDistData.length > 0">
                   <svg :viewBox="'0 0 280 200'" class="pie-svg">
@@ -571,7 +583,7 @@
             <!-- 成长对比 -->
             <div class="card" style="padding:0">
               <div class="chart-header" style="padding:12px 16px;border-bottom:1px solid var(--border-light)">
-                <span><i class="fas fa-chart-bar"></i> 成长对比</span>
+                <span><BarChart :size="16" class="icon-blue" /> 成长对比</span>
               </div>
               <div class="growth-body" style="padding:16px" v-if="growthData.this_week">
                 <div class="growth-comparison">
@@ -581,7 +593,7 @@
                     <div class="gw-accuracy">{{ growthData.last_week.accuracy }}%</div>
                   </div>
                   <div class="growth-vs">
-                    <div class="vs-arrow" :class="growthArrowClass"><i :class="['fas', growthArrowClass === 'up' ? 'fa-arrow-up' : growthArrowClass === 'down' ? 'fa-arrow-down' : 'fa-minus']"></i></div>
+                    <div class="vs-arrow" :class="growthArrowClass"><ArrowUp :size="16" class="icon-blue" :class="['fas', growthArrowClass === 'up' ? 'fa-arrow-up' : growthArrowClass === 'down' ? 'fa-arrow-down' : 'fa-minus']" /></div>
                     <div class="vs-text" :class="growthArrowClass">{{ growthChangeText }}</div>
                   </div>
                   <div class="growth-column this-week">
@@ -612,8 +624,8 @@
     <transition name="guide-fade">
       <div class="guide-overlay" v-if="showGuide" @click="dismissGuide">
         <div class="guide-card">
-          <div class="guide-close" @click.stop="dismissGuide"><i class="fas fa-xmark"></i></div>
-          <div class="guide-title"><i class="fas fa-bullseye"></i> 欢迎来到笔试练习</div>
+          <div class="guide-close" @click.stop="dismissGuide"><X :size="16" class="icon-blue" /></div>
+          <div class="guide-title"><Crosshair :size="16" class="icon-blue" /> 欢迎来到笔试练习</div>
           <div class="guide-body">
             <div class="guide-step">
               <span class="guide-num">1</span>
@@ -628,7 +640,7 @@
               <span>展开下方<strong>详细数据分析</strong>，看雷达图、错题分布和成长趋势</span>
             </div>
           </div>
-          <div class="guide-btn" @click.stop="dismissGuide">我明白了，开始练习 <i class="fas fa-arrow-right"></i></div>
+          <div class="guide-btn" @click.stop="dismissGuide">我明白了，开始练习 <ArrowRight :size="16" class="icon-blue" /></div>
         </div>
       </div>
     </transition>
@@ -1115,13 +1127,13 @@ async function toggleSave(q) {
   if (isSaved(q)) {
     try {
       const sq = savedQuestions.value.find(s => s.question_id === q.id)
-      if (sq) await axios.post('/api/exam/remove-saved', { saved_id: sq.id })
+      if (sq) await axios.delete(`/api/exam/saved-questions/${sq.id}`)
       ElMessage.success('已取消收藏')
       fetchSaved()
     } catch { ElMessage.error('操作失败') }
   } else {
     try {
-      await axios.post('/api/exam/save-question', {
+      await axios.post('/api/exam/saved-questions', {
         question_id: q.id,
         career: career.value,
         question: q.question,
@@ -1331,7 +1343,7 @@ function formatWrongForReview(wq) {
 
 async function markMastered(wq) {
   try {
-    await axios.post('/api/exam/mark-mastered', { wrong_id: wq.id })
+    await axios.put(`/api/exam/wrong-questions/${wq.id}/master`)
     ElMessage.success('已标记为掌握')
     fetchWrong()
   } catch { ElMessage.error('操作失败') }
@@ -1339,7 +1351,7 @@ async function markMastered(wq) {
 
 async function removeWrong(wq) {
   try {
-    await axios.post('/api/exam/remove-wrong', { wrong_id: wq.id })
+    await axios.delete(`/api/exam/wrong-questions/${wq.id}`)
     ElMessage.success('已移除')
     fetchWrong()
   } catch { ElMessage.error('操作失败') }
@@ -1360,7 +1372,7 @@ async function fetchSaved() {
 
 async function removeSaved(sq) {
   try {
-    await axios.post('/api/exam/remove-saved', { saved_id: sq.id })
+    await axios.delete(`/api/exam/saved-questions/${sq.id}`)
     ElMessage.success('已取消收藏')
     fetchSaved()
   } catch { ElMessage.error('操作失败') }
@@ -2088,6 +2100,37 @@ watch(career, () => {
 /* ─── 动画 ─── */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+/* ─── 笔试模式导航 ─── */
+.exam-mode-nav {
+  display: flex;
+  gap: 0;
+  margin: -1px 0 16px;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  border: 1px solid #e8ecf0;
+}
+.emn-item {
+  flex: 1;
+  text-align: center;
+  padding: 12px 0;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: #6b7a8f;
+  text-decoration: none;
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
+  position: relative;
+}
+.emn-item i { margin-right: 6px; }
+.emn-item:hover { color: #3D5A80; background: #f6f8fa; }
+.emn-active {
+  color: #3D5A80;
+  border-bottom-color: #3D5A80;
+  background: #f0f4f8;
+}
 
 /* ─── 响应式 ─── */
 @media (max-width: 768px) {

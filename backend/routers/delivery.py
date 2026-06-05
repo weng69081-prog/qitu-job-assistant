@@ -349,7 +349,7 @@ def seed_jobs():
 
 
 # ── AI 解析（调用小米 MiMo） ──
-AI_API_KEY = os.environ.get("MIMO_API_KEY", "sk-jzdhyrqfnzgsycjudgqfwddmlavevlgioqenndzcoocnhwkn")
+AI_API_KEY = os.environ.get("MIMO_API_KEY", "")
 AI_BASE = "https://api.xiaomimimo.com/v1"
 AI_MODEL = "mimo-v2-flash"
 

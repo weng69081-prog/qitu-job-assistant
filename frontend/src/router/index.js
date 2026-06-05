@@ -9,6 +9,8 @@ import InterviewHistory from '../views/InterviewHistory.vue'
 import InterviewWrongList from '../views/InterviewWrongList.vue'
 import InterviewSavedList from '../views/InterviewSavedList.vue'
 import ExamPractice from '../views/ExamPractice.vue'
+import ExamSession from '../views/ExamSession.vue'
+import ExamWrong from '../views/ExamWrong.vue'
 import ResumeOptimize from '../views/ResumeOptimize.vue'
 import JobMatch from '../views/JobMatch.vue'
 import DeliveryAssistant from '../views/DeliveryAssistant.vue'
@@ -35,8 +37,8 @@ const routes = [
   { path: '/interview/history/:id', component: InterviewSessionDetail, props: true },
   { path: '/interview/wrong-questions', component: InterviewWrongList, meta: { standalone: true } },
   { path: '/interview/saved-questions', component: InterviewSavedList, meta: { standalone: true } },
-  { path: '/exam/session', redirect: '/exam-practice' },
-  { path: '/exam/wrong', redirect: '/exam-practice' },
+  { path: '/exam/session', component: ExamSession },
+  { path: '/exam/wrong', component: ExamWrong },
   { path: '/exam-practice', component: ExamPractice },
   { path: '/resume', component: ResumeOptimize },
   { path: '/jobmatch', component: JobMatch },
@@ -44,6 +46,10 @@ const routes = [
   { path: '/favorites', component: FavoritesManage },
   { path: '/settings', component: Settings },
 ]
+
+// 404 兜底
+import NotFound from '../views/NotFound.vue'
+routes.push({ path: '/:pathMatch(.*)*', component: NotFound })
 
 const router = createRouter({
   history: createWebHistory(),

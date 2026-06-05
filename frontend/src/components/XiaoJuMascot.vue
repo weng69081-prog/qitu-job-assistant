@@ -1,7 +1,7 @@
 <template>
   <div class="xj" :style="{ width: s, height: s }">
     <div class="xj-inner">
-      <i class="fa-solid fa-cat"></i>
+      <Cat :size="32" color="#3D5A80" />
       <!-- 小橘签名 -->
       <span class="xj-label">小橘</span>
     </div>
@@ -37,7 +37,7 @@ const s = computed(() => typeof props.size === 'number' ? `${props.size}px` : pr
   background: rgba(61, 90, 128, 0.14);
   border-color: rgba(61, 90, 128, 0.35);
 }
-.xj-inner :deep(i) {
+.xj-inner :deep(Cat) {
   font-size: 1.6em;
   color: #3D5A80;
   line-height: 1;

@@ -3,14 +3,14 @@
     <!-- ═══════ 顶部栏 ═══════ -->
     <div class="exam-topbar">
       <el-button text @click="backToEntry">
-        <i class="fas fa-arrow-left"></i> 返回
+        <ArrowLeft :size="16" class="icon-blue" /> 返回
       </el-button>
       <span class="exam-title">
-        <i class="fas fa-pen"></i> 笔试专项练习
+        <Pen :size="16" class="icon-blue" /> 笔试专项练习
       </span>
       <span v-if="phase === 'doing'" class="topbar-end">
         <el-button size="small" type="danger" plain @click="confirmEndExam">
-          <i class="fas fa-stop-circle"></i> 结束
+          <StopCircle :size="16" class="icon-blue" /> 结束
         </el-button>
       </span>
     </div>
@@ -21,7 +21,7 @@
         <div class="setup-header">
           <div class="section-header">
             <h3 class="section-title">
-              <i class="fas fa-cog"></i> 笔试设置
+              <Settings :size="16" class="icon-blue" /> 笔试设置
             </h3>
           </div>
           <el-alert
@@ -36,7 +36,7 @@
           <!-- 第一层：目标岗位 -->
           <el-form-item label="目标岗位（必填）">
             <template #label>
-              <span><i class="fas fa-bullseye"></i> 目标岗位（必填）</span>
+              <span><Crosshair :size="16" class="icon-blue" /> 目标岗位（必填）</span>
             </template>
             <el-select
               v-model="career"
@@ -46,7 +46,7 @@
               filterable>
               <el-option-group v-if="store.validBookmarks.length" label="已收藏">
                 <template #label>
-                  <span><i class="fas fa-star" style="color:#e6a23c"></i> 已收藏</span>
+                  <span><Star :size="16" :color="'#e6a23c'" /> 已收藏</span>
                 </template>
                 <el-option
                   v-for="b in store.validBookmarks"
@@ -70,17 +70,17 @@
           <!-- 第二层：练习模式 -->
           <el-form-item label="练习模式">
             <template #label>
-              <span><i class="fas fa-thumbtack"></i> 练习模式</span>
+              <span><Pin :size="16" class="icon-blue" /> 练习模式</span>
             </template>
             <el-radio-group v-model="mode" class="mode-radio-group">
               <el-radio-button value="专项练习">
-                <i class="fas fa-book"></i> 专项练习
+                <Book :size="16" class="icon-blue" /> 专项练习
               </el-radio-button>
               <el-radio-button value="模拟卷练习">
-                <i class="fas fa-file-alt"></i> 模拟卷练习
+                <FileText :size="16" class="icon-blue" /> 模拟卷练习
               </el-radio-button>
               <el-radio-button value="错题重练">
-                <i class="fas fa-redo"></i> 错题重练
+                <Redo :size="16" class="icon-blue" /> 错题重练
               </el-radio-button>
             </el-radio-group>
           </el-form-item>
@@ -91,11 +91,11 @@
           <template v-if="mode === '专项练习'">
             <el-divider content-position="left">
               <span class="divider-title fa-green">
-                <i class="fas fa-circle" style="color:#52c41a;font-size:0.6rem;vertical-align:middle"></i> 通用能力题
+                <Circle :size="0" :color="'#52c41a'" style="vertical-align:middle" /> 通用能力题
               </span>
             </el-divider>
             <div v-if="generalKnowledgePoints.length === 0" class="no-kp-tip">
-              <i class="fas fa-info-circle"></i> 暂无通用能力考点数据，请先选择目标岗位
+              <Info :size="16" class="icon-blue" /> 暂无通用能力考点数据，请先选择目标岗位
             </div>
             <div v-for="kp in generalKnowledgePoints" :key="kp.id" class="kp-row">
               <el-checkbox v-model="selectedKnowledgePoints" :label="kp.name" :value="kp.name">
@@ -129,11 +129,11 @@
 
             <el-divider content-position="left">
               <span class="divider-title fa-blue">
-                <i class="fas fa-circle" style="color:#3D5A80;font-size:0.6rem;vertical-align:middle"></i> 专业能力题
+                <Circle :size="0" :color="'#3D5A80'" style="vertical-align:middle" /> 专业能力题
               </span>
             </el-divider>
             <div v-if="professionalKnowledgePoints.length === 0" class="no-kp-tip">
-              <i class="fas fa-info-circle"></i> 暂无专业能力考点数据，请先选择目标岗位
+              <Info :size="16" class="icon-blue" /> 暂无专业能力考点数据，请先选择目标岗位
             </div>
             <div v-for="kp in professionalKnowledgePoints" :key="kp.id" class="kp-row">
               <el-checkbox v-model="selectedKnowledgePoints" :label="kp.name" :value="kp.name">
@@ -195,11 +195,11 @@
           <template v-if="mode === '错题重练'">
             <div v-if="wrongStats" class="wrong-stats-card">
               <div class="wrong-stat-item">
-                <span class="stat-label"><i class="fas fa-exclamation-triangle"></i> 总错题数</span>
+                <span class="stat-label"><TriangleAlert :size="16" class="icon-blue" /> 总错题数</span>
                 <span class="stat-value">{{ wrongStats.total }}</span>
               </div>
               <div class="wrong-stat-item">
-                <span class="stat-label"><i class="fas fa-bookmark"></i> 未掌握</span>
+                <span class="stat-label"><Bookmark :size="16" class="icon-blue" /> 未掌握</span>
                 <span class="stat-value warn">{{ wrongStats.unmastered }}</span>
               </div>
             </div>
@@ -255,18 +255,18 @@
       <!-- 顶部状态栏（固定） -->
       <div class="exam-status-bar">
         <div class="status-left">
-          <i class="fas fa-list-ol"></i>
+          <ListOrdered :size="16" class="icon-blue" />
           第 <b>{{ currentIndex + 1 }}</b>/{{ questions.length }} 题
         </div>
         <div class="status-center">
-          <i class="fas fa-check-circle"></i>
+          <CheckCircle :size="16" class="icon-blue" />
           已答 <b>{{ answeredCount }}</b> 题
           <span class="status-divider">|</span>
-          <i class="fas fa-percent"></i>
+          <Percent :size="16" class="icon-blue" />
           正确率 <b :style="{color: accuracyColor}">{{ accuracyPercent }}%</b>
         </div>
         <div class="status-right">
-          <i class="fas fa-clock"></i>
+          <Clock :size="16" class="icon-blue" />
           {{ formatTime(timer) }}
           <el-button
             size="small"
@@ -274,7 +274,7 @@
             plain
             class="status-end-btn"
             @click="confirmEndExam">
-            <i class="fas fa-stop-circle"></i>
+            <StopCircle :size="16" class="icon-blue" />
           </el-button>
         </div>
       </div>
@@ -298,11 +298,11 @@
               </div>
             </div>
             <div class="loading-text">
-              <p><i class="fas fa-hourglass-half"></i> 正在为您生成 {{ career }} 方向的题目…</p>
+              <p><Hourglass :size="16" class="icon-blue" /> 正在为您生成 {{ career }} 方向的题目…</p>
               <p v-if="loadMsg" class="load-msg">{{ loadMsg }}</p>
               <p v-if="loadError" class="load-error">{{ loadError }}</p>
               <el-button v-if="loadError" type="primary" @click="retryLoad" style="margin-top:8px">
-                <i class="fas fa-redo"></i> 重试
+                <Redo :size="16" class="icon-blue" /> 重试
               </el-button>
             </div>
           </div>
@@ -320,21 +320,21 @@
                   <span
                     v-if="currentQuestion.knowledge_point"
                     class="tag-pill orange">
-                    <i class="fas fa-tag"></i>
+                    <Tag :size="16" class="icon-blue" />
                     {{ currentQuestion.knowledge_point }}
                   </span>
                   <span
                     v-if="currentQuestion.difficulty"
                     class="tag-pill"
                     :class="difficultyPillClass(currentQuestion.difficulty)">
-                    <i class="fas fa-signal"></i>
+                    <Signal :size="16" class="icon-blue" />
                     {{ difficultyLabel(currentQuestion.difficulty) }}
                   </span>
                 </div>
 
                 <!-- 题目标题 -->
                 <div class="q-heading">
-                  <i class="fas fa-question-circle"></i>
+                  <CircleHelp :size="16" class="icon-blue" />
                   题目 {{ currentIndex + 1 }}
                 </div>
 
@@ -352,7 +352,7 @@
                     <span class="opt-key">{{ opt.key }}.</span>
                     <span class="opt-text">{{ opt.value }}</span>
                     <span v-if="selectedOption === opt.key && !answerResult" class="opt-check-icon">
-                      <i class="fas fa-check-circle"></i>
+                      <CheckCircle :size="16" class="icon-blue" />
                     </span>
                   </div>
                 </div>
@@ -366,10 +366,8 @@
                     :class="multiOptionClass(opt.key)"
                     @click="toggleMultiSelect(opt.key)">
                     <span class="opt-checkbox">
-                      <i
-                        v-if="multiSelected.includes(opt.key)"
-                        class="fas fa-check-square checkbox-checked"></i>
-                      <i v-else class="far fa-square checkbox-empty"></i>
+                      <CheckSquare :size="16" v-if="multiSelected.includes(opt.key)" class="icon-blue" />
+                      <Square :size="16" class="icon-blue" />
                     </span>
                     <span class="opt-key">{{ opt.key }}.</span>
                     <span class="opt-text">{{ opt.value }}</span>
@@ -380,10 +378,10 @@
                       size="small"
                       :disabled="multiSelected.length === 0 || answerResult !== null"
                       @click="submitMultiAnswer">
-                      <i class="fas fa-check"></i> 确认提交
+                      <Check :size="16" class="icon-blue" /> 确认提交
                     </el-button>
                     <span v-if="multiSelected.length > 0" class="multi-hint">
-                      <i class="fas fa-layer-group"></i> 已选 {{ multiSelected.length }} 项
+                      <Layers :size="16" class="icon-blue" /> 已选 {{ multiSelected.length }} 项
                     </span>
                   </div>
                 </div>
@@ -395,13 +393,13 @@
                       class="judge-item"
                       :class="judgeClass('对')"
                       @click="submitAnswer('对')">
-                      <i class="fas fa-check"></i> 对
+                      <Check :size="16" class="icon-blue" /> 对
                     </div>
                     <div
                       class="judge-item"
                       :class="judgeClass('错')"
                       @click="submitAnswer('错')">
-                      <i class="fas fa-times"></i> 错
+                      <X :size="16" class="icon-blue" /> 错
                     </div>
                   </div>
                 </div>
@@ -414,16 +412,16 @@
                     :closable="false"
                     show-icon />
                   <div class="feedback-correct" v-if="answerResult.correct_answer">
-                    <i class="fas fa-check-circle"></i>
+                    <CheckCircle :size="16" class="icon-blue" />
                     正确答案：<b>{{ answerResult.correct_answer }}</b>
                   </div>
                   <div class="analysis-box" v-if="answerResult.analysis">
-                    <h4><i class="fas fa-book-open"></i> 解析</h4>
+                    <h4><BookOpen :size="16" class="icon-blue" /> 解析</h4>
                     <p>{{ answerResult.analysis }}</p>
                   </div>
                   <div class="analysis-box hint-box" v-if="currentQuestion.knowledge_point">
                     <p>
-                      <i class="fas fa-lightbulb"></i>
+                      <Lightbulb :size="16" class="icon-blue" />
                       本题为 <b>{{ career }}</b> 方向考点，考察 <b>{{ currentQuestion.knowledge_point }}</b>
                     </p>
                   </div>
@@ -436,7 +434,7 @@
                     :disabled="!answerResult"
                     :type="isSaved ? 'warning' : 'default'"
                     @click="saveCurrentQuestion">
-                    <i :class="isSaved ? 'fas fa-star' : 'far fa-star'"></i>
+                    <Star :size="16" class="icon-blue" :class="isSaved ? 'fas fa-star' : 'far fa-star'" />
                     {{ isSaved ? '已收藏' : '收藏此题' }}
                   </el-button>
                   <div class="q-actions-right">
@@ -446,7 +444,7 @@
                       size="small"
                       :disabled="!answerResult"
                       @click="nextQuestion">
-                      下一题 <i class="fas fa-arrow-right"></i>
+                      下一题 <ArrowRight :size="16" class="icon-blue" />
                     </el-button>
                     <el-button
                       v-if="currentIndex === questions.length - 1"
@@ -454,7 +452,7 @@
                       size="small"
                       :disabled="!answerResult"
                       @click="finishExam">
-                      <i class="fas fa-chart-bar"></i> 完成并查看报告
+                      <BarChart :size="16" class="icon-blue" /> 完成并查看报告
                     </el-button>
                   </div>
                 </div>
@@ -463,7 +461,7 @@
                 <el-collapse class="draft-collapse">
                   <el-collapse-item name="draft">
                     <template #title>
-                      <span><i class="fas fa-pencil-alt"></i> 草稿区</span>
+                      <span><Pencil :size="16" class="icon-blue" /> 草稿区</span>
                     </template>
                     <el-input
                       v-model="draftNote"
@@ -479,12 +477,12 @@
           <!-- 没题 -->
           <div v-if="!isLoading && !currentQuestion && !loadError" class="empty-state">
             <div class="empty-icon">
-              <i class="fas fa-inbox"></i>
+              <Inbox :size="16" class="icon-blue" />
             </div>
             <p style="font-size:1.2rem">暂无可用题目</p>
             <p>请调整筛选条件再试</p>
             <el-button type="primary" @click="backToReady" style="margin-top:12px">
-              <i class="fas fa-arrow-left"></i> 返回设置
+              <ArrowLeft :size="16" class="icon-blue" /> 返回设置
             </el-button>
           </div>
         </div>
@@ -493,7 +491,7 @@
         <aside class="exam-sidebar">
           <div class="sidebar-card">
             <div class="sidebar-title">
-              <i class="fas fa-th"></i> 答题卡
+              <Grid :size="16" class="icon-blue" /> 答题卡
             </div>
             <div class="sidebar-stats">
               <div class="sidebar-stat-item">
@@ -536,7 +534,7 @@
                 plain
                 @click="confirmEndExam"
                 style="width:100%">
-                <i class="fas fa-stop-circle"></i> 交卷
+                <StopCircle :size="16" class="icon-blue" /> 交卷
               </el-button>
             </div>
           </div>
@@ -549,40 +547,40 @@
       <div class="card report-card">
         <div class="report-header">
           <div class="report-emoji">
-            <i class="fas fa-trophy" style="color:#e6a23c;font-size:3rem"></i>
+            <Trophy :size="3" :color="'#e6a23c'" />
           </div>
           <h2>练习完成！</h2>
         </div>
         <div class="report-meta">
-          <span class="tag-pill blue"><i class="fas fa-briefcase"></i> {{ career }}</span>
-          <span class="tag-pill green"><i class="fas fa-tasks"></i> {{ mode }}</span>
+          <span class="tag-pill blue"><Briefcase :size="16" class="icon-blue" /> {{ career }}</span>
+          <span class="tag-pill green"><ListTodo :size="16" class="icon-blue" /> {{ mode }}</span>
         </div>
         <el-divider />
         <div class="report-stats grid-4">
           <div class="stat-card">
             <div class="stat-icon">
-              <i class="fas fa-file-alt"></i>
+              <FileText :size="16" class="icon-blue" />
             </div>
             <div class="stat-num">{{ questions.length }}</div>
             <div class="stat-label">总题数</div>
           </div>
           <div class="stat-card">
             <div class="stat-icon" style="color:#67c23a">
-              <i class="fas fa-check-circle"></i>
+              <CheckCircle :size="16" class="icon-blue" />
             </div>
             <div class="stat-num" style="color:#67c23a">{{ correctCount }}</div>
             <div class="stat-label">答对</div>
           </div>
           <div class="stat-card">
             <div class="stat-icon" :style="{color: accuracyColor}">
-              <i class="fas fa-percent"></i>
+              <Percent :size="16" class="icon-blue" />
             </div>
             <div class="stat-num" :style="{color: accuracyColor}">{{ accuracyPercent }}%</div>
             <div class="stat-label">正确率</div>
           </div>
           <div class="stat-card">
             <div class="stat-icon">
-              <i class="fas fa-hourglass-half"></i>
+              <Hourglass :size="16" class="icon-blue" />
             </div>
             <div class="stat-num">{{ timeSpent }}</div>
             <div class="stat-label">用时</div>
@@ -592,7 +590,7 @@
         <!-- 薄弱知识点 -->
         <div v-if="weakPoints.length > 0" class="weak-section">
           <el-divider content-position="left">
-            <span><i class="fas fa-chart-line" style="color:#e6a23c"></i> 薄弱知识点</span>
+            <span><ChartLine :size="16" :color="'#e6a23c'" /> 薄弱知识点</span>
           </el-divider>
           <div class="weak-list">
             <div v-for="(wp, wi) in weakPoints" :key="wi" class="weak-item">
@@ -605,13 +603,13 @@
 
         <div class="report-actions">
           <el-button type="primary" size="large" @click="doAnotherRound">
-            <i class="fas fa-redo"></i> 再来一组
+            <Redo :size="16" class="icon-blue" /> 再来一组
           </el-button>
           <el-button size="large" @click="goToWrongQuestions">
-            <i class="fas fa-list-ul"></i> 查看错题详情
+            <List :size="16" class="icon-blue" /> 查看错题详情
           </el-button>
           <el-button size="large" @click="backToReady">
-            <i class="fas fa-arrow-left"></i> 返回设置
+            <ArrowLeft :size="16" class="icon-blue" /> 返回设置
           </el-button>
         </div>
       </div>
@@ -1214,7 +1212,7 @@ async function submitAnswer(selected) {
     // 错题重练模式：提交 reanswer
     if (mode.value === '错题重练' && q.id) {
       try {
-        await axios.post(`/api/exam/wrong-questions/${q.id}/reanswer`, {
+        await axios.post(`/api/exam/wrong-questions/reanswer/${q.id}`, {
           is_correct: data.is_correct,
           user_answer: selected,
         })
