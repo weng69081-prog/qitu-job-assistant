@@ -377,49 +377,78 @@ function loadActivities() {
 .act-text { font-size: 14px; color: var(--text-body); }
 .act-time { font-size: 12px; color: var(--text-muted); }
 
-/* ═══ 便利贴待办（蓝色便签） ═══ */
+/* ═══ 便利贴待办（深蓝便签 + 折角） ═══ */
 .todo-stickynote {
-  background: #DBEAFE;
-  border-radius: var(--radius-md);
-  padding: 24px 20px 20px;
   position: relative;
+  background: var(--primary);
+  border-radius: 3px;
+  box-shadow: 2px 3px 6px rgba(37,99,235,0.15);
+  transform: rotate(-1deg);
+  transition: transform 0.3s;
   margin-bottom: 16px;
-  transform: rotate(-0.5deg);
-  box-shadow: 2px 3px 8px rgba(37,99,235,0.1);
+}
+.todo-stickynote:hover { transform: rotate(0deg) scale(1.02); }
+/* 折角 */
+.todo-stickynote::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  z-index: 5;
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 0 18px 18px 0;
+  border-color: transparent #1D4ED8 transparent transparent;
+  filter: drop-shadow(-1px 1px 1px rgba(0,0,0,0.06));
+  pointer-events: none;
 }
 .todo-pin {
   position: absolute;
   top: -6px;
   left: 50%;
-  margin-left: -8px;
-  width: 16px; height: 16px;
-  background: radial-gradient(circle at 35% 35%, #60A5FA, #2563EB);
+  margin-left: -5px;
+  z-index: 10;
+  width: 10px; height: 10px;
   border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  background: linear-gradient(135deg, #888, #bbb);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.3);
+  pointer-events: none;
+}
+.todo-header {
+  padding: 18px 18px 0;
 }
 .todo-header h4 {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--primary);
-  text-align: center;
-  margin-bottom: 14px;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
 }
-.todo-list { display: flex; flex-direction: column; gap: 10px; }
-.todo-item { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-size: 14px; color: var(--text-body); }
+/* 分隔线 */
+.todo-header::after {
+  content: '';
+  display: block;
+  height: 1px;
+  background: linear-gradient(to right, rgba(255,255,255,0.12) 90%, transparent 100%);
+}
+.todo-body { padding: 6px 18px 20px; }
+.todo-list { display: flex; flex-direction: column; gap: 2px; }
+.todo-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; cursor: pointer; user-select: none; font-size: 14px; color: #fff; }
 .todo-item input { display: none; }
 .todo-check {
-  width: 18px; height: 18px; border-radius: 4px;
-  border: 2px solid var(--primary);
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.5);
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; color: transparent; flex-shrink: 0;
+  font-size: 9px; color: transparent; flex-shrink: 0;
   transition: all 0.2s;
 }
 .todo-check.checked {
-  background: var(--primary);
-  color: #fff;
+  background: #fff;
+  color: var(--primary);
+  border-color: #fff;
 }
-.todo-item .done { text-decoration: line-through; color: var(--text-muted); }
-.todo-empty { text-align: center; font-size: 13px; color: var(--text-muted); padding: 20px 0; }
+.todo-item .done { text-decoration: line-through; opacity: 0.6; }
+.todo-empty { text-align: center; font-size: 13px; color: rgba(255,255,255,0.5); padding: 20px 0; }
 
 /* 快捷入口 */
 .quick-card { margin-top: 0; }
