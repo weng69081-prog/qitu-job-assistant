@@ -1,147 +1,133 @@
 <template>
   <div class="dashboard">
-    <!-- ═══ 全宽欢迎横幅（浅蓝清爽风格） ═══ -->
-    <div class="welcome-banner-wrap">
-      <div class="welcome-banner">
-        <div class="wb-inner">
-          <div class="wb-left">
-            <div class="wb-avatar">{{ initial }}</div>
-            <div>
-              <h2 class="wb-greeting">{{ greeting }}，{{ displayName }}</h2>
-              <p class="wb-subtitle">{{ subtitle }}</p>
-            </div>
-          </div>
-          <div class="wb-right">
-            <router-link to="/career" class="wb-btn">探索职业</router-link>
-            <router-link to="/interview" class="wb-btn wb-btn-primary">模拟面试</router-link>
-          </div>
+    <!-- ═══ 欢迎横幅（全宽撑满） ═══ -->
+    <div class="welcome">
+      <div>
+        <h1>{{ greeting }}，<span class="hl-name">{{ displayName }}</span></h1>
+      </div>
+      <div class="date">{{ todayStr }}</div>
+      <img src="/src/assets/xiaoju-on-banner.png" class="banner-cat" alt="小橘">
+    </div>
+
+    <!-- ═══ 热力 + 4统计 ═══ -->
+    <div class="heat-row">
+      <!-- 左：活跃足迹 -->
+      <div class="heat-left">
+        <div class="hl">活跃足迹</div>
+        <div class="heat-grid">
+          <div v-for="i in 196" :key="i" class="hs" :class="heatLevel(i)"></div>
         </div>
-        <!-- 趴边小橘猫 -->
-        <img src="/src/assets/xiaoju-on-banner.png" class="banner-cat" alt="小橘">
+        <div class="heat-foot">
+          <div class="hf-item"><span class="hf-num">{{ heatDaysMonth }}</span><span class="hf-lbl">天/本月</span></div>
+          <div class="hf-item"><span class="hf-num">{{ heatDaysStreak }}</span><span class="hf-lbl">天连续</span></div>
+          <div class="hf-item"><span class="hf-num">{{ heatWeekCount }}</span><span class="hf-lbl">次/本周</span></div>
+        </div>
+      </div>
+
+      <!-- 右：4统计 2×2 -->
+      <div class="heat-right">
+        <div class="s2-item" v-for="s in s2stats" :key="s.label">
+          <span class="s2-num">{{ s.num }}</span>
+          <span class="s2-lbl">{{ s.label }}</span>
+        </div>
       </div>
     </div>
 
-    <!-- ═══ 内容容器 ═══ -->
-    <div class="dash-container">
-      <!-- 统计卡片 -->
-      <div class="stats-grid">
-        <div class="stat-card" v-for="s in stats" :key="s.label">
-          <div class="stat-num">{{ s.num }}{{ s.suffix ? '+' : '' }}</div>
-          <div class="stat-label">{{ s.label }}</div>
+    <!-- ═══ 主网格 ═══ -->
+    <div class="main-grid">
+      <!-- 左列 -->
+      <div>
+        <div class="light-card">
+          <div class="lc-title">今日推荐</div>
+          <div class="rec-item">
+            <span class="ri">URL 到渲染：浏览器做了什么？</span>
+            <span class="rt">立即练习 ›</span>
+          </div>
+          <div class="rec-item"><span class="ri">HTTP 缓存策略详解</span><span class="rt">今天 · 新</span></div>
+          <div class="rec-item"><span class="ri">前端模块化发展史</span><span class="rt">明天截止</span></div>
+        </div>
+        <div class="light-card">
+          <div class="lc-title">操作记录</div>
+          <div class="op-item" v-for="(a, i) in activities" :key="i">
+            <span class="ot">{{ a.text }}</span>
+            <span class="ots">{{ a.time }}</span>
+          </div>
+          <div class="empty-state op-empty" v-if="!activities.length">
+            还没有操作记录
+          </div>
         </div>
       </div>
 
-      <!-- ═══ 收藏内容汇总 ═══ -->
-      <div class="fav-section">
-        <div class="fav-header">
-          <span class="fav-title">收藏内容</span>
-          <router-link to="/favorites" class="fav-more">管理收藏 ›</router-link>
-        </div>
-        <template v-if="careerBookmarks.length || videoBookmarks.length || interviewItems.length || examItems.length">
-          <div class="fav-scroll">
-            <!-- 收藏职业 -->
-            <router-link
-              v-for="b in careerBookmarks"
-              :key="b.career"
-              :to="`/career/${encodeURIComponent(b.career)}`"
-              class="fav-card"
-            >
-              <div class="fav-name">{{ b.career }}</div>
-              <div class="fav-meta">{{ b.difficulty || '中等' }} · {{ b.salary || '' }}</div>
-            </router-link>
-            <!-- 收藏视频 -->
-            <router-link
-              v-for="v in videoBookmarks"
-              :key="v.bvid"
-              :to="v.url || '/career'"
-              class="fav-card"
-            >
-              <div class="fav-name">{{ (v.title || '').slice(0, 20) }}{{ (v.title || '').length > 20 ? '…' : '' }}</div>
-              <div class="fav-meta">{{ v.author || 'B站' }}</div>
-            </router-link>
-            <!-- 面试题收藏 -->
-            <router-link
-              v-for="q in interviewItems"
-              :key="`iq-${q.id}`"
-              to="/favorites"
-              class="fav-card"
-            >
-              <div class="fav-name">{{ (q.question || '').slice(0, 22) }}{{ (q.question || '').length > 22 ? '…' : '' }}</div>
-              <div class="fav-meta">{{ q.difficulty || '中等' }}</div>
-            </router-link>
-            <!-- 笔试收藏 -->
-            <router-link
-              v-for="q in examItems"
-              :key="`eq-${q.id}`"
-              to="/favorites"
-              class="fav-card"
-            >
-              <div class="fav-name">{{ (q.question || q.title || '试题').slice(0, 20) }}{{ (q.question || '').length > 20 ? '…' : '' }}</div>
-              <div class="fav-meta">{{ q.category || '笔试' }}</div>
-            </router-link>
-          </div>
-        </template>
-        <div v-else class="fav-empty">
-          去职业探索或面试页收藏内容，就会出现在这里
-        </div>
-      </div>
-
-      <!-- 主体：两栏布局 -->
-      <div class="dash-main">
-        <!-- 左栏：最近活动 -->
-        <div class="dash-card activity-card">
-          <div class="dash-card-header">
-            <h3>最近活动</h3>
-          </div>
-          <div class="activity-list" v-if="activities.length">
-            <div class="activity-item" v-for="(a, i) in activities" :key="i">
-              <div class="act-dot" :style="{ background: a.color }"></div>
-              <div class="act-content">
-                <span class="act-text">{{ a.text }}</span>
-                <span class="act-time">{{ a.time }}</span>
+      <!-- 右列 -->
+      <div>
+        <!-- 便利贴 -->
+        <div class="sticky">
+          <div class="pin"></div>
+          <div class="sticky-scene">
+            <div class="sticky-flipper" :class="{ flipped: stickyFlipped }">
+              <!-- 正面：待办列表 -->
+              <div class="sticky-front">
+                <div class="st-title" @click="flipToBack">
+                  今日待办
+                </div>
+                <div class="st-line"></div>
+                <div id="todoList">
+                  <div v-for="t in todos" :key="t.id">
+                    <div class="st-item">
+                      <div class="st-cb" :class="{ done: t.done }" @click="toggleTodo(t.id)"></div>
+                      <span class="st-item-text" :class="{ done: t.done }" @click="flipToBack">{{ t.text }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="st-hint" @click="flipToBack">+ 添加待办</div>
+              </div>
+              <!-- 背面：添加待办 -->
+              <div class="sticky-back">
+                <div class="back-title">添加待办事项</div>
+                <div class="add-row">
+                  <div class="add-wrap">
+                    <input type="text" v-model="newTodoText" placeholder="输入新的待办..." @keydown.enter="addTodo" autocomplete="off">
+                    <button @click="addTodo">添加</button>
+                  </div>
+                </div>
+                <div class="back-list">
+                  <div class="empty-msg" v-if="!editingTodos.length">还没有待办，输入上方添加吧～</div>
+                  <div class="back-item" v-for="(t, idx) in editingTodos" :key="t.id">
+                    <span class="bi-del" @click="removeEditTodo(idx)">×</span>
+                    <span>{{ t.text }}</span>
+                  </div>
+                </div>
+                <div class="back-actions">
+                  <button class="back-save" @click="saveTodos">✓ 保存并返回</button>
+                </div>
               </div>
             </div>
           </div>
-          <div class="empty-state" v-else>
-            <p>还没有活动记录</p>
-            <p class="empty-hint">先去探索一个职业方向吧</p>
-          </div>
         </div>
 
-        <!-- 右栏：便利贴待办 + 快捷入口 -->
-        <div class="dash-right">
-          <div class="todo-stickynote">
-            <div class="todo-pin"></div>
-            <div class="todo-header">
-              <h4>今日待办</h4>
-            </div>
-            <div class="todo-body">
-              <div class="todo-list" v-if="todos.length">
-                <label class="todo-item" v-for="(t, i) in todos" :key="i">
-                  <input type="checkbox" v-model="t.done" />
-                  <span class="todo-check" :class="{ checked: t.done }">✓</span>
-                  <span :class="{ done: t.done }">{{ t.text }}</span>
-                </label>
-              </div>
-              <div class="todo-empty" v-else>没有待办~ 给自己加个任务吧</div>
-            </div>
+        <!-- 收藏 -->
+        <div class="light-card">
+          <div class="lc-title">
+            收藏
+            <router-link to="/favorites" class="lc-enter">进入 ›</router-link>
           </div>
-
-          <div class="dash-card quick-card">
-            <div class="dash-card-header">
-              <h3>快捷入口</h3>
-            </div>
-            <div class="quick-grid">
-              <router-link to="/career" class="quick-item"><span>职业探索</span></router-link>
-              <router-link to="/interview" class="quick-item"><span>面试模拟</span></router-link>
-              <router-link to="/exam-practice" class="quick-item"><span>笔试练习</span></router-link>
-              <router-link to="/resume" class="quick-item"><span>简历优化</span></router-link>
-              <router-link to="/delivery-assistant" class="quick-item"><span>投递助手</span></router-link>
-              <router-link to="/favorites" class="quick-item"><span>收藏</span></router-link>
-            </div>
+          <div class="fav-item" v-for="b in careerBookmarks.slice(0, 4)" :key="b.career">
+            <span class="fav-dot"></span>{{ b.career }}
+          </div>
+          <div class="fav-item" v-for="v in videoBookmarks.slice(0, 2)" :key="v.bvid">
+            <span class="fav-dot"></span>{{ (v.title || '').slice(0, 16) }}
+          </div>
+          <div class="empty-state fav-empty" v-if="!careerBookmarks.length && !videoBookmarks.length">
+            去探索收藏内容吧
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div>启途 · <span>QITU</span></div>
+      <div>向上生长，自有答案</div>
     </div>
   </div>
 </template>
@@ -152,13 +138,36 @@ import { useCareerStore } from '../stores/career'
 import axios from 'axios'
 
 const store = useCareerStore()
+
+// ── 用户信息 ──
 const now = new Date()
 const h = now.getHours()
 const greeting = h < 12 ? '早上好' : h < 18 ? '下午好' : '晚上好'
-const subtitle = '今天也要加油呀'
-
 const displayName = ref('同学')
 const initial = ref('同')
+const todayStr = now.toLocaleDateString('zh-CN', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase()
+
+// ── 热力图 ──
+const heatDaysMonth = 23
+const heatDaysStreak = 12
+const heatWeekCount = 8
+
+function heatLevel(i) {
+  const r = Math.random()
+  if (r < 0.35) return ''
+  if (r < 0.6) return 'l1'
+  if (r < 0.78) return 'l2'
+  if (r < 0.9) return 'l3'
+  return 'l4'
+}
+
+// ── 4统计 ──
+const s2stats = ref([
+  { num: 0, label: '个已探索' },
+  { num: 0, label: '次面试' },
+  { num: 0, label: '次优化' },
+  { num: 0, label: '平均分' },
+])
 
 // ── 收藏数据 ──
 const careerBookmarks = computed(() => {
@@ -167,23 +176,72 @@ const careerBookmarks = computed(() => {
 const videoBookmarks = computed(() => {
   try { return store.videoBookmarks.slice(0, 4) } catch { return [] }
 })
-const interviewItems = ref([])
-const examItems = ref([])
 
-const stats = ref([
-  { lucide: 'Compass', num: 0, suffix: true, label: '探索职业', bg: 'rgba(37,99,235,0.08)' },
-  { lucide: 'Mic', num: 0, suffix: true, label: '模拟面试', bg: 'rgba(37,99,235,0.08)' },
-  { lucide: 'FileText', num: 0, suffix: true, label: '简历优化', bg: 'rgba(37,99,235,0.08)' },
-  { lucide: 'Send', num: 0, suffix: true, label: '投递追踪', bg: 'rgba(37,99,235,0.08)' },
-])
-
+// ── 活动 ──
 const activities = ref([])
-const todos = ref([
-  { text: '探索一个感兴趣的职业方向', done: false },
-  { text: '完成一次模拟面试练习', done: false },
-  { text: '上传简历进行AI优化', done: false },
-])
 
+// ── 便利贴待办 ──
+const STORAGE_KEY = 'qitu_todos'
+const stickyFlipped = ref(false)
+const newTodoText = ref('')
+
+function getDefaultTodos() {
+  return [
+    { id: 'd1', text: '继续探索职业方向', done: true },
+    { id: 'd2', text: '完成今日面试题', done: false },
+    { id: 'd3', text: '优化简历项目', done: false },
+  ]
+}
+
+function loadTodos() {
+  try {
+    const data = localStorage.getItem(STORAGE_KEY)
+    return data ? JSON.parse(data) : getDefaultTodos()
+  } catch (e) { return getDefaultTodos() }
+}
+
+function saveTodosToStorage(t) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(t))
+}
+
+const todos = ref(loadTodos())
+const editingTodos = ref([])
+
+function toggleTodo(id) {
+  const t = todos.value.find(x => x.id === id)
+  if (t) {
+    t.done = !t.done
+    saveTodosToStorage(todos.value)
+  }
+}
+
+function flipToBack() {
+  editingTodos.value = todos.value.map(t => ({ ...t }))
+  stickyFlipped.value = true
+}
+
+function flipToFront() {
+  stickyFlipped.value = false
+}
+
+function addTodo() {
+  const text = newTodoText.value.trim()
+  if (!text) return
+  editingTodos.value.push({ id: 't' + Date.now(), text, done: false })
+  newTodoText.value = ''
+}
+
+function removeEditTodo(idx) {
+  editingTodos.value.splice(idx, 1)
+}
+
+function saveTodos() {
+  todos.value = editingTodos.value.map(t => ({ ...t }))
+  saveTodosToStorage(todos.value)
+  flipToFront()
+}
+
+// ── 初始化 ──
 onMounted(() => {
   const u = localStorage.getItem('user') || sessionStorage.getItem('user')
   if (u) {
@@ -193,59 +251,46 @@ onMounted(() => {
       initial.value = displayName.value[0]
     } catch (e) {}
   }
-  loadStats()
-  loadActivities()
-  loadSavedItems()
-})
 
-async function loadSavedItems() {
-  try {
-    const [ir, er] = await Promise.all([
-      axios.get('/api/interview/saved-questions', { params: { page: 1, page_size: 10 } }),
-      axios.get('/api/exam/saved-questions', { params: { page: 1, page_size: 10 } }),
-    ])
-    if (ir.data?.items) interviewItems.value = ir.data.items
-    if (er.data?.items) examItems.value = er.data.items
-  } catch { /* ignore */ }
-}
-
-function loadStats() {
+  // 加载统计
   const careers = JSON.parse(localStorage.getItem('explored_careers') || '[]')
   const sessions = JSON.parse(localStorage.getItem('interview_sessions') || '[]')
-  stats.value[0].num = careers.length
-  stats.value[1].num = sessions.length || 0
-}
+  s2stats.value[0].num = careers.length || 0
+  s2stats.value[1].num = sessions.length || 0
+  s2stats.value[2].num = 0
+  s2stats.value[3].num = 0
 
-function loadActivities() {
-  const careers = JSON.parse(localStorage.getItem('explored_careers') || '[]')
-  const sessions = JSON.parse(localStorage.getItem('interview_sessions') || '[]')
+  // 加载活动
   const acts = []
   careers.slice(-3).forEach(c => {
-    acts.push({ text: `探索了「${c.title || c}」职业方向`, time: '最近', color: '#2563EB' })
+    acts.push({ text: `探索了「${c.title || c}」职业方向`, time: '最近' })
   })
   sessions.slice(-2).forEach(s => {
-    acts.push({ text: `完成了「${s.title || '面试'}」模拟面试`, time: '最近', color: '#0EA5E9' })
+    acts.push({ text: `完成了「${s.title || '面试'}」模拟面试`, time: '最近' })
   })
   if (!acts.length) {
-    acts.push({ text: '欢迎来到启途！开始你的求职之旅', time: '刚刚', color: '#94A3B8' })
+    acts.push({ text: '欢迎来到启途！开始你的求职之旅', time: '刚刚' })
   }
   activities.value = acts
-}
+})
 </script>
 
 <style scoped>
-/* ═══ 全宽欢迎横幅（浅蓝清爽） ═══ */
-.welcome-banner-wrap {
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
-  margin-top: -24px;
-}
-.welcome-banner {
+.dashboard { overflow-x: hidden; }
+
+/* ═══ 欢迎横幅 ═══ */
+.welcome {
   background: var(--bg-light);
+  padding: 32px 32px;
+  margin: -24px -28px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   position: relative;
-  padding: 32px 0;
 }
-/* 趴边小橘猫 */
+.welcome h1 { font-size: 24px; color: var(--text-heading); font-weight: 400; }
+.welcome h1 .hl-name { color: var(--primary); }
+.welcome .date { font-size: 13px; color: var(--text-muted); letter-spacing: 0.05em; }
 .banner-cat {
   position: absolute;
   bottom: -5px;
@@ -255,145 +300,186 @@ function loadActivities() {
   pointer-events: none;
   z-index: 0;
 }
-.wb-inner {
-  width: 100%;
-  padding: 0 32px;
+
+/* ═══ 热力 ═══ */
+.heat-row {
+  display: flex;
+  background: var(--bg-light);
+  border-radius: 12px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  border: 1.5px dashed var(--border-dashed);
+}
+.heat-left {
+  flex: 1;
+  padding: 14px 0 14px 20px;
+  min-width: 0;
+}
+.hl {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 6px;
+  letter-spacing: 0.06em;
+}
+.heat-grid {
+  display: grid;
+  grid-template-columns: repeat(28, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+  gap: 3px;
+  max-width: 520px;
+}
+.hs {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: rgba(37,99,235,0.06);
+}
+.hs.l1 { background: rgba(37,99,235,0.15); }
+.hs.l2 { background: rgba(37,99,235,0.35); }
+.hs.l3 { background: rgba(37,99,235,0.6); }
+.hs.l4 { background: var(--primary); }
+.heat-foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+  padding-top: 8px;
+  position: relative;
+}
+.heat-foot::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% - 50px);
+  height: 1px;
+  background: rgba(37,99,235,0.10);
+}
+.hf-item { display: flex; align-items: baseline; gap: 4px; }
+.hf-num { font-size: 14px; font-weight: 700; color: var(--primary); }
+.hf-lbl { font-size: 11px; color: var(--text-muted); }
+
+/* 右：4统计 2×2 */
+.heat-right {
+  width: 240px;
+  flex-shrink: 0;
+  padding: 12px 16px 12px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  align-content: center;
+}
+.s2-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 3px;
+  background: rgba(255,255,255,0.65);
+  border-radius: 8px;
+  padding: 12px 6px 10px;
+}
+.s2-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1.1;
+}
+.s2-lbl {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ═══ 主网格 ═══ */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 16px;
+}
+.main-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.main-grid > div:first-child > .light-card:last-child {
+  flex: 1;
+}
+.light-card {
+  background: var(--bg-light);
+  border-radius: 12px;
+  padding: 18px;
+  border: 1.5px dashed var(--border-dashed);
+}
+.lc-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 10px;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.lc-enter {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--primary);
+  text-decoration: none;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+.lc-enter:hover { opacity: 1; }
+
+/* 今日推荐 */
+.rec-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: relative;
-  z-index: 1;
-  box-sizing: border-box;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(37,99,235,0.10);
 }
-.wb-left { display: flex; align-items: center; gap: 16px; }
-.wb-avatar {
-  width: 46px; height: 46px;
-  border-radius: 50%;
-  background: var(--primary);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; font-weight: 700; color: #fff;
-}
-.wb-greeting { font-size: 20px; font-weight: 700; color: var(--primary); }
-.wb-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
-.wb-right { display: flex; gap: 10px; }
-.wb-btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 9px 20px; border-radius: 8px;
-  background: #fff;
+.rec-item:last-child { border-bottom: none; }
+.rec-item .ri { font-size: 13px; color: var(--primary); }
+.rec-item .rt {
+  font-size: 11px;
+  font-weight: 700;
   color: var(--primary);
-  font-size: 13px; font-weight: 500;
-  border: 1.5px dashed var(--border-dashed);
-  transition: all 0.2s; text-decoration: none;
-  font-family: inherit;
-}
-.wb-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
-.wb-btn-primary {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
-}
-.wb-btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
-
-/* ═══ 内容容器 ═══ */
-.dash-container { width: 100%; padding-top: 24px; }
-
-/* ═══ 统计卡片（浅蓝底虚线边框 + 大数字） ═══ */
-.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-.stat-card {
-  background: var(--bg-light);
-  border-radius: var(--radius-md);
-  border: 1.5px dashed var(--border-dashed);
-  padding: 20px 16px;
-  text-align: center;
-  transition: all 0.25s;
-}
-.stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-.stat-num { font-size: 26px; font-weight: 800; color: var(--primary); }
-.stat-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
-
-/* ═══ 收藏内容汇总（横向滚动卡片条） ═══ */
-.fav-section { margin-bottom: 24px; }
-.fav-header {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 14px;
-}
-.fav-title { font-size: 15px; font-weight: 700; color: var(--text-heading); display: flex; align-items: center; gap: 6px; }
-.fav-more { font-size: 12px; color: var(--primary); display: flex; align-items: center; gap: 4px; }
-.fav-more:hover { opacity: 0.7; }
-.fav-scroll {
-  display: flex; gap: 12px; overflow-x: auto;
-  padding: 4px 0 10px;
-  scroll-snap-type: x mandatory;
-}
-.fav-scroll::-webkit-scrollbar { height: 4px; }
-.fav-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-.fav-card {
-  flex-shrink: 0;
-  scroll-snap-align: start;
-  min-width: 170px; max-width: 210px;
-  background: var(--bg-light);
-  border-radius: var(--radius-md);
-  border: 1.5px dashed var(--border-dashed);
-  padding: 14px 16px;
-  text-decoration: none;
-  transition: all 0.25s;
-  box-sizing: border-box;
-}
-.fav-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+  padding: 3px 10px;
+  border-radius: 4px;
   background: #fff;
-}
-.fav-name { font-size: 14px; font-weight: 600; color: var(--text-heading); line-height: 1.35; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.fav-meta { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.fav-empty {
-  background: var(--bg-light);
-  border-radius: var(--radius-md);
-  border: 1.5px dashed var(--border-dashed);
-  padding: 24px 20px; text-align: center; font-size: 14px; color: var(--text-muted);
+  white-space: nowrap;
 }
 
-/* ═══ 两栏主体 ═══ */
-.dash-main { display: grid; grid-template-columns: 1fr 340px; gap: 24px; }
-
-.dash-card {
-  background: var(--bg-light);
-  border-radius: var(--radius-md);
-  border: 1.5px dashed var(--border-dashed);
-  padding: 20px 22px;
+/* 操作记录 */
+.op-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(37,99,235,0.10);
 }
-.dash-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.dash-card-header h3 { font-size: 15px; font-weight: 700; color: var(--primary); }
+.op-item:last-child { border-bottom: none; }
+.op-item .ot { font-size: 13px; color: var(--primary); }
+.op-item .ots { font-size: 11px; color: var(--primary); opacity: 0.5; }
+.op-empty { padding: 12px 0 !important; font-size: 12px; }
 
-/* 活动列表 */
-.activity-list { display: flex; flex-direction: column; }
-.activity-item {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 10px 0; border-bottom: 1px solid var(--border);
-}
-.activity-item:last-child { border-bottom: none; }
-.act-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
-.act-content { display: flex; flex-direction: column; gap: 2px; }
-.act-text { font-size: 14px; color: var(--text-body); }
-.act-time { font-size: 12px; color: var(--text-muted); }
-
-/* ═══ 便利贴待办（深蓝便签 + 折角） ═══ */
-.todo-stickynote {
+/* ═══ 便利贴 ═══ */
+.sticky {
   position: relative;
   background: var(--primary);
   border-radius: 3px;
-  box-shadow: 2px 3px 6px rgba(37,99,235,0.15);
+  box-shadow: 2px 3px 6px rgba(37,99,235,0.15), 0 0 0 1px rgba(37,99,235,0.05);
   transform: rotate(-1deg);
   transition: transform 0.3s;
-  margin-bottom: 16px;
 }
-.todo-stickynote:hover { transform: rotate(0deg) scale(1.02); }
-/* 折角 */
-.todo-stickynote::before {
+.sticky:hover { transform: rotate(0deg) scale(1.02); }
+.sticky::before {
   content: '';
   position: absolute;
-  top: 0; right: 0;
-  z-index: 5;
+  top: 0; right: 0; z-index: 5;
   width: 0; height: 0;
   border-style: solid;
   border-width: 0 18px 18px 0;
@@ -401,12 +487,10 @@ function loadActivities() {
   filter: drop-shadow(-1px 1px 1px rgba(0,0,0,0.06));
   pointer-events: none;
 }
-.todo-pin {
+.pin {
   position: absolute;
-  top: -6px;
-  left: 50%;
-  margin-left: -5px;
-  z-index: 10;
+  top: -6px; left: 50%;
+  margin-left: -5px; z-index: 10;
   width: 10px; height: 10px;
   border-radius: 50%;
   background: linear-gradient(135deg, #888, #bbb);
@@ -414,69 +498,194 @@ function loadActivities() {
   border: 1px solid rgba(255,255,255,0.3);
   pointer-events: none;
 }
-.todo-header {
-  padding: 18px 18px 0;
+
+.sticky-scene { position: relative; perspective: 800px; }
+.sticky-flipper { position: relative; width: 100%; }
+
+.sticky-flipper.flipped .sticky-front {
+  transform: scale(0.88) rotateY(-6deg);
+  opacity: 0;
+  pointer-events: none;
 }
-.todo-header h4 {
+.sticky-flipper.flipped .sticky-back {
+  transform: scale(1) rotateY(0deg);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sticky-front {
+  position: relative;
+  padding: 18px 18px 20px;
+  z-index: 2;
+  min-height: 220px;
+  transform-origin: left center;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+.sticky-back {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  padding: 18px 18px 20px;
+  z-index: 1;
+  transform: scale(0.92) rotateY(4deg);
+  transform-origin: right center;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.st-line { height: 1px; background: linear-gradient(to right, rgba(255,255,255,0.12) 90%, transparent 100%); margin: 6px 0; }
+#todoList { max-height: 105px; overflow-y: auto; }
+#todoList::-webkit-scrollbar { width: 3px; }
+#todoList::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+
+.sticky-front .st-title {
   font-size: 13px;
-  font-weight: 700;
   color: rgba(255,255,255,0.75);
   letter-spacing: 0.04em;
   margin-bottom: 6px;
+  cursor: pointer;
+  user-select: none;
 }
-/* 分隔线 */
-.todo-header::after {
-  content: '';
-  display: block;
-  height: 1px;
-  background: linear-gradient(to right, rgba(255,255,255,0.12) 90%, transparent 100%);
-}
-.todo-body { padding: 6px 18px 20px; }
-.todo-list { display: flex; flex-direction: column; gap: 2px; }
-.todo-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; cursor: pointer; user-select: none; font-size: 14px; color: #fff; }
-.todo-item input { display: none; }
-.todo-check {
-  width: 14px; height: 14px; border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.5);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 9px; color: transparent; flex-shrink: 0;
-  transition: all 0.2s;
-}
-.todo-check.checked {
-  background: #fff;
-  color: var(--primary);
-  border-color: #fff;
-}
-.todo-item .done { text-decoration: line-through; opacity: 0.6; }
-.todo-empty { text-align: center; font-size: 13px; color: rgba(255,255,255,0.5); padding: 20px 0; }
 
-/* 快捷入口 */
-.quick-card { margin-top: 0; }
-.quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.quick-item {
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  padding: 14px 8px; border-radius: 10px;
-  background: #fff;
-  color: var(--text-body); font-size: 12px; font-weight: 500;
-  border: 1.5px dashed var(--border-dashed);
+.sticky-front .st-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 14px;
+  color: #fff;
+}
+.st-cb {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.6);
+  flex-shrink: 0;
+  cursor: pointer;
   transition: all 0.2s;
+}
+.st-cb:hover { border-color: #fff; background: rgba(255,255,255,0.1); }
+.st-cb.done {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.8);
+  position: relative;
+}
+.st-cb.done::after {
+  content: '✓';
+  position: absolute;
+  top: -4px; left: 2px;
+  font-size: 11px; color: #fff; font-weight: 700;
+  pointer-events: none;
+}
+.st-item-text { cursor: pointer; flex: 1; }
+.st-item-text.done { text-decoration: line-through; opacity: 0.5; }
+
+.sticky-front .st-hint {
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+  text-align: center;
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+}
+.sticky-front .st-hint:hover { color: rgba(255,255,255,0.6); }
+
+/* 背面 */
+.sticky-back .back-title {
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+.sticky-back .add-row { display: flex; gap: 0; margin-bottom: 10px; }
+.sticky-back .add-wrap { position: relative; width: 100%; }
+.sticky-back .add-row input {
+  flex: 1;
+  width: 100%;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 4px;
+  padding: 6px 52px 6px 8px;
   font-family: inherit;
+  font-size: 12px; color: #fff;
+  outline: none;
+  transition: border 0.2s;
 }
-.quick-item:hover { background: var(--primary); color: #fff; border-color: var(--primary); transform: translateY(-1px); }
+.sticky-back .add-row input::placeholder { color: rgba(255,255,255,0.35); }
+.sticky-back .add-row input:focus { border-color: rgba(255,255,255,0.6); }
+.sticky-back .add-wrap button {
+  position: absolute;
+  right: 3px; top: 3px; bottom: 3px;
+  background: rgba(255,255,255,0.2);
+  border: none; border-radius: 3px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 11px; padding: 0 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.sticky-back .add-wrap button:hover { background: rgba(255,255,255,0.3); }
+.sticky-back .back-list { max-height: 120px; overflow-y: auto; }
+.sticky-back .back-list::-webkit-scrollbar { width: 3px; }
+.sticky-back .back-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+.sticky-back .back-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 3px 0; font-size: 12px; color: rgba(255,255,255,0.85);
+}
+.sticky-back .bi-del {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  flex-shrink: 0; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: rgba(255,255,255,0.5);
+  transition: all 0.2s;
+}
+.sticky-back .bi-del:hover { border-color: rgba(255,255,255,0.8); color: #fff; }
+.sticky-back .back-actions { margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: center; }
+.sticky-back .back-save {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 4px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 6px 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.sticky-back .back-save:hover { background: rgba(255,255,255,0.35); }
+.sticky-back .empty-msg { font-size: 11px; color: rgba(255,255,255,0.35); text-align: center; padding: 10px 0; }
 
-/* 空状态 */
-.empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
-.empty-state p { font-size: 14px; margin-bottom: 4px; }
-.empty-hint { font-size: 13px; color: var(--text-muted); }
+/* 收藏 */
+.fav-item {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(37,99,235,0.10);
+  font-size: 13px;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.fav-item:last-child { border-bottom: none; }
+.fav-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--primary); flex-shrink: 0; }
+.fav-empty { padding: 12px 0 !important; font-size: 12px; }
 
-@media (max-width: 900px) {
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .dash-main { grid-template-columns: 1fr; }
-  .wb-inner { flex-direction: column; gap: 16px; align-items: flex-start; }
+/* Footer */
+.footer {
+  border-top: 1px solid rgba(37,99,235,0.10);
+  padding: 16px 0;
+  margin-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
 }
-@media (max-width: 480px) {
-  .stats-grid { grid-template-columns: 1fr; }
-  .wb-right { flex-direction: column; width: 100%; }
-  .wb-btn { width: 100%; justify-content: center; }
-}
+.footer span { color: var(--primary); font-weight: 700; }
+
+/* Empty state */
+.empty-state { text-align: center; color: var(--text-muted); }
 </style>
