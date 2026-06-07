@@ -1,131 +1,85 @@
 <template>
-  <div class="fav-page">
-    <!-- ═══ 欢迎横幅 ═══ -->
-    <div class="welcome">
-      <div>
-        <h1>{{ greeting }}，<span class="hl-name">{{ displayName }}</span></h1>
+  <div class="fm-center-page">
+    <div class="fm-card">
+    <!-- ═══ 返回按钮 ═══ -->
+    <button class="back-circle-btn" type="button" aria-label="返回上一页" @click="goBack">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+    </button>
+
+    <!-- ═══ 标题+小猫 ═══ -->
+    <div class="fm-header">
+      <img src="/src/assets/exam-cat.png" class="fm-cat" alt="" />
+      <h1 class="fm-title">我的收藏</h1>
+    </div>
+
+    <!-- ═══ 搜索栏 ═══ -->
+    <div class="search-section">
+      <div class="search-wrap">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input
+          v-model="searchText"
+          type="text"
+          class="search-input"
+          placeholder="搜索收藏的笔试题目…"
+          autocomplete="off"
+        />
       </div>
-      <div class="date">{{ todayStr }}</div>
-      <img src="/src/assets/xiaoju-on-banner.png" class="banner-cat" alt="小橘">
     </div>
 
-    <!-- ═══ 分类标签 ═══ -->
-    <div class="fav-tabs">
-      <span
-        v-for="tab in tabs"
-        :key="tab.key"
-        class="fav-tab"
-        :class="{ active: activeTab === tab.key }"
-        @click="activeTab = tab.key"
-      >
-        {{ tab.label }}
-        <span class="tab-count">{{ tab.count }}</span>
-      </span>
-    </div>
-
-    <!-- ═══ 加载态 ═══ -->
-    <div v-if="loading" class="loading-state">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
-      加载中…
-    </div>
-
-    <!-- ═══ 空态 ═══ -->
+    <!-- ═══ 空状态 / 列表 ═══ -->
+    <div v-if="loading" class="loading-state">加载中…</div>
     <div v-else-if="!filteredItems.length" class="empty-state">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-icon"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-      <p v-if="activeTab === 'all'">还没有收藏任何内容</p>
-      <p v-else>{{ tabs.find(t => t.key === activeTab)?.label }}还没有收藏</p>
-      <p class="empty-hint">去职业探索或面试页收藏内容吧</p>
-      <router-link to="/career" class="explore-btn">去探索 ›</router-link>
+      <p>{{ searchText ? '没有匹配的收藏' : '还没有收藏笔试题目' }}</p>
+      <p class="empty-hint">完成笔试练习后可收藏题目到这里</p>
+    </div>
+    <div v-else class="fav-list">
+<div v-for="(item, idx) in filteredItems" :key="item.id || idx" class="fav-item" @click="toggleItem(item.id || idx)">
+        <div class="fi-q">{{ item.question }}</div>
+        <div class="fi-meta">
+          <span class="fi-tag" v-if="item.career">{{ item.career }}</span>
+          <span class="fi-tag fi-tag-kp" v-if="item.category">{{ item.category }}</span>
+          <span class="fi-tag fi-tag-cnt" v-if="item.wrong_count > 0">错{{ item.wrong_count }}次</span>
+          <span class="fi-date" v-if="item.last_wrong_at">{{ item.last_wrong_at.slice(0,10) }}</span>
+        </div>
+        <!-- ═══ 展开详情 ═══ -->
+        <div v-if="(expandedId === item.id || expandedId === idx) && item.options" class="fi-detail">
+          <div class="fi-result" :class="item.user_answer === item.correct_answer ? 'fi-result-right' : 'fi-result-wrong'">
+            {{ item.user_answer === item.correct_answer ? '✓ 回答正确' : '✗ 回答错误' }}
+          </div>
+          <div class="fi-choice-row" v-if="item.user_answer && item.user_answer !== item.correct_answer">
+            <span class="fi-lbl">你的答案：</span><span class="fi-val fi-val-user">{{ item.user_answer }}. {{ getOptText(item.options, item.user_answer) }}</span>
+          </div>
+          <div class="fi-choice-row">
+            <span class="fi-lbl">正确答案：</span><span class="fi-val fi-val-correct">{{ item.correct_answer }}. {{ getOptText(item.options, item.correct_answer) }}</span>
+          </div>
+          <div class="fi-opt-list" v-if="item.options.length > 2">
+            <div v-for="opt in item.options" :key="opt.key" class="fi-opt"
+              :class="{ 'fi-opt-correct': opt.key === item.correct_answer, 'fi-opt-user': opt.key === item.user_answer && opt.key !== item.correct_answer }">
+              <span class="fi-opt-key">{{ opt.key }}.</span>
+              <span class="fi-opt-val">{{ opt.value }}</span>
+            </div>
+          </div>
+          <div v-if="item.analysis" class="fi-analysis">
+            <span class="fi-analysis-lbl">📖 解析</span>
+            <p>{{ item.analysis }}</p>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- ═══ 收藏列表 ═══ -->
-    <div v-else class="fav-list">
-      <div
-        v-for="item in filteredItems"
-        :key="item._id"
-        class="fav-item"
-      >
-        <!-- 职业收藏 -->
-        <template v-if="item._type === 'career'">
-          <div class="fav-type-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          </div>
-          <div class="fav-info" @click="goCareer(item)">
-            <div class="fav-title">{{ item.career }}</div>
-            <div class="fav-meta">{{ item.difficulty || '中等' }} · {{ item.salary || '' }}</div>
-          </div>
-          <div class="fav-actions">
-            <router-link :to="`/career/${encodeURIComponent(item.career)}`" class="fav-btn" title="查看详情">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            </router-link>
-            <button class="fav-btn danger" @click="removeCareer(item)" title="取消收藏">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-        </template>
-
-        <!-- 视频收藏 -->
-        <template v-else-if="item._type === 'video'">
-          <div class="fav-type-icon video">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-          </div>
-          <div class="fav-info" @click="goUrl(item.url)">
-            <div class="fav-title">{{ item.title || '未命名视频' }}</div>
-            <div class="fav-meta">{{ item.author || 'B站' }}<span v-if="item.career"> · {{ item.career }}</span></div>
-          </div>
-          <div class="fav-actions">
-            <a :href="item.url" target="_blank" class="fav-btn" title="观看">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            </a>
-            <button class="fav-btn danger" @click="removeVideo(item)" title="取消收藏">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-        </template>
-
-        <!-- 面试题收藏 -->
-        <template v-else-if="item._type === 'interview'">
-          <div class="fav-type-icon interview">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          </div>
-          <div class="fav-info">
-            <div class="fav-title">{{ item.question }}</div>
-            <div class="fav-meta">
-              <span class="tag-pill" :class="diffPill(item.difficulty)">{{ item.difficulty || '中等' }}</span>
-              <span v-if="item.category"> · {{ item.category }}</span>
-              <span> · {{ item.created_at }}</span>
-            </div>
-          </div>
-          <div class="fav-actions">
-            <button class="fav-btn danger" @click="removeInterview(item)" title="取消收藏">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-        </template>
-
-        <!-- 笔试收藏 -->
-        <template v-else-if="item._type === 'exam'">
-          <div class="fav-type-icon exam">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-          </div>
-          <div class="fav-info">
-            <div class="fav-title">{{ item.question || item.title || '试题' }}</div>
-            <div class="fav-meta">
-              <span v-if="item.category">{{ item.category }}</span>
-              <span v-if="item.question_type"> · {{ item.question_type }}</span>
-            </div>
-          </div>
-          <div class="fav-actions">
-            <button class="fav-btn danger" @click="removeExam(item)" title="取消收藏">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-        </template>
-      </div>
+    <!-- ═══ 分页 ═══ -->
+    <el-pagination
+      v-if="totalItems > pageSize"
+      layout="prev, pager, next"
+      :total="totalItems"
+      :page-size="pageSize"
+      background
+      small
+      style="margin-top:16px;justify-content:center"
+    />
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -136,229 +90,203 @@ import axios from 'axios'
 const router = useRouter()
 const store = useCareerStore()
 
-// ── 问候 ──
-const now = new Date()
-const h = now.getHours()
-const greeting = h < 12 ? '早上好' : h < 18 ? '下午好' : '晚上好'
-const displayName = ref('同学')
-const todayStr = now.toLocaleDateString('zh-CN', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase()
+const el = ElMessage
 
-const activeTab = ref('all')
+// ── 数据 ──
+const searchText = ref('')
 const loading = ref(false)
-
-// 收藏数据源
-const interviewItems = ref([])
 const examItems = ref([])
+const pageSize = 10
+const expandedId = ref(null)
+function toggleItem(id) {
+  expandedId.value = expandedId.value === id ? null : id
+}
+function getOptText(options, key) {
+  if (!options) return ''
+  const opt = options.find(o => o.key === key)
+  return opt ? opt.value : ''
+}
 
-const tabs = computed(() => [
-  { key: 'all',    label: '全部',    count: allItems.value.length },
-  { key: 'career', label: '职业',    count: store.validBookmarks.length },
-  { key: 'video',  label: '视频',    count: store.videoBookmarks.length },
-  { key: 'interview', label: '面试题', count: interviewItems.value.length },
-  { key: 'exam',   label: '笔试',    count: examItems.value.length },
-])
-
-// 把所有收藏汇总成一个统一列表
-const allItems = computed(() => {
-  const items = []
-  // 职业收藏
-  store.validBookmarks.forEach(b => {
-    items.push({ ...b, _type: 'career', _id: `career-${b.career}` })
-  })
-  // 视频收藏
-  store.videoBookmarks.forEach(v => {
-    items.push({ ...v, _type: 'video', _id: `video-${v.bvid}` })
-  })
-  // 面试题
-  interviewItems.value.forEach(q => {
-    items.push({ ...q, _type: 'interview', _id: `interview-${q.id}` })
-  })
-  // 笔试
-  examItems.value.forEach(q => {
-    items.push({ ...q, _type: 'exam', _id: `exam-${q.id}` })
-  })
-  return items
-})
-
-// 按分类过滤
+// ── 过滤：只看笔试题目 ──
 const filteredItems = computed(() => {
-  let items = allItems.value
-  if (activeTab.value !== 'all') {
-    items = items.filter(i => i._type === activeTab.value)
+  let items = examItems.value
+  const q = searchText.value.trim().toLowerCase()
+  if (q) {
+    items = items.filter(i => {
+      const text = (i.question || i.title || '').toLowerCase()
+      return text.includes(q)
+    })
   }
   return items
 })
-function diffPill(d) {
-  const m = { easy: 'green', 简单: 'green', medium: 'orange', 中等: 'orange', hard: 'red', 困难: 'red' }
-  return m[d] || 'gray'
-}
+const totalItems = computed(() => filteredItems.value.length)
 
 // ── 操作 ──
-function goCareer(item) { router.push(`/career/${encodeURIComponent(item.career)}`) }
-function goUrl(url) { if (url) window.open(url, '_blank') }
-
-function removeCareer(item) {
-  store.removeBookmark(item.career)
-  ElMessage.success('已取消收藏')
-}
-function removeVideo(item) {
-  store.removeVideoBookmark(item.bvid)
-  ElMessage.success('已取消收藏')
-}
-async function removeInterview(item) {
-  try {
-    await axios.delete(`/api/interview/saved-questions/${item.id}`)
-    interviewItems.value = interviewItems.value.filter(q => q.id !== item.id)
-    ElMessage.success('已取消收藏')
-  } catch { ElMessage.error('取消失败') }
-}
-async function removeExam(item) {
-  try {
-    await axios.delete(`/api/exam/saved-questions/${item.id}`)
-    examItems.value = examItems.value.filter(q => q.id !== item.id)
-    ElMessage.success('已取消收藏')
-  } catch { ElMessage.error('取消失败') }
+function goBack() {
+  if (window.history.length > 1) router.back()
+  else router.push('/dashboard')
 }
 
-// ── 加载数据 ──
-async function loadInterviewSaved() {
-  try {
-    const { data } = await axios.get('/api/interview/saved-questions', { params: { page: 1, page_size: 200 } })
-    interviewItems.value = data.items || []
-  } catch { /* ignore */ }
-}
+// ── 加载 ──
 async function loadExamSaved() {
   try {
-    const { data } = await axios.get('/api/exam/saved-questions', { params: { page: 1, page_size: 200 } })
-    examItems.value = data.items || []
+    const { data } = await axios.get('/api/exam/wrong-questions', { params: { page: 1, page_size: 50 } })
+    examItems.value = data.wrong_questions || []
   } catch { /* ignore */ }
 }
 
 onMounted(async () => {
   loading.value = true
-  await Promise.all([loadInterviewSaved(), loadExamSaved()])
+  await loadExamSaved()
   loading.value = false
 })
 </script>
 
 <style scoped>
-/* ═══ 收藏管理页面 ═══ */
-.fav-page { max-width: 860px; }
-
-/* ═══ 欢迎横幅 ═══ */
-.welcome {
-  background: var(--bg-light);
-  padding: 32px 32px;
-  margin: -24px -28px 20px;
+/* ═══════ 页面居中容器 ═══════ */
+.fm-center-page {
+  --text-heading: #1e293b;
+  --text-body: #475569;
+  --text-muted: #94a3b8;
+  --border: #bfdbfe;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 32px 0;
+}
+.fm-card {
+  width: min(720px, calc(100vw - 60px));
+  padding: 52px 32px 36px;
+  background: #fff;
+  border: 1.5px dashed var(--border);
+  border-radius: 22px;
+  box-shadow: 0 16px 36px rgba(37,99,235,.06);
   position: relative;
+  overflow: hidden;
 }
-.welcome h1 { font-size: 24px; color: var(--text-heading); font-weight: 400; }
-.welcome h1 .hl-name { color: var(--primary); }
-.welcome .date { font-size: 13px; color: var(--text-muted); letter-spacing: 0.05em; }
-.banner-cat {
+/* ═══ 折角 ═══ */
+.fm-card::before {
+  content: '';
   position: absolute;
-  bottom: -5px;
-  right: 320px;
-  width: 140px;
-  height: auto;
-  pointer-events: none;
-  z-index: 0;
+  top: 0; right: 0;
+  width: 48px; height: 48px;
+  background: linear-gradient(135deg, transparent 50%, #EFF6FF 50%);
+  border-radius: 0 22px 0 0;
+}
+.fm-card::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 48px; height: 48px;
+  background: linear-gradient(135deg, transparent 50%, #BFDBFE 50%);
+  border-radius: 0 22px 0 0;
+  opacity: .15;
 }
 
-/* ── 分类标签 ── */
-.fav-tabs {
-  display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
-}
-.fav-tab {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 18px; border-radius: 20px;
-  font-size: 14px; font-weight: 700; cursor: pointer;
-  background: var(--bg-light); color: var(--primary);
-  border: 1.5px dashed transparent;
-  transition: all 0.2s;
-}
-.fav-tab:hover { border-color: var(--border-dashed); }
-.fav-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-.fav-tab .tab-count {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-width: 20px; height: 20px; border-radius: 10px;
-  background: rgba(37,99,235,0.10);
-  font-size: 11px; padding: 0 6px; color: var(--primary);
-}
-.fav-tab.active .tab-count { background: rgba(255,255,255,0.2); color: #fff; }
+/* ═══ 标题区 ═══ */
+.fm-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.fm-cat { width: 36px; height: 36px; object-fit: contain; }
+.fm-title { font-size: 20px; font-weight: 900; color: var(--text-heading); }
 
-/* ── 加载态 ── */
-.loading-state {
-  text-align: center; padding: 60px 0;
-  color: var(--text-muted); font-size: 14px;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
+/* ═══ 返回按钮 ═══ */
+.back-circle-btn {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: 2px solid #2563EB;
+  border-radius: 999px;
+  background: #fff;
+  color: #2563EB;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s;
 }
+.back-circle-btn:hover { background: #EFF6FF; }
 
-/* ── 收藏列表 ── */
-.fav-list { display: flex; flex-direction: column; gap: 10px; }
-
-/* ── 收藏项卡片 ── */
-.fav-item {
-  display: flex; align-items: center; gap: 14px;
-  background: var(--bg-light);
+/* ═══ 搜索栏 ═══ */
+.search-section { margin-bottom: 16px; }
+.search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #F8FAFF;
+  border: 1px solid #DBEAFE;
   border-radius: 12px;
-  padding: 14px 18px;
-  border: 1.5px dashed var(--border-dashed);
-  transition: box-shadow 0.2s;
 }
-.fav-item:hover { box-shadow: 0 2px 10px rgba(37,99,235,0.08); }
-.fav-type-icon {
-  width: 40px; height: 40px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  background: rgba(255,255,255,0.65);
-  color: var(--primary);
+.search-icon { color: #94A3B8; flex-shrink: 0; }
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: #1E293B;
 }
-.fav-type-icon.video { color: var(--accent); }
-.fav-type-icon.interview { color: #7C3AED; }
-.fav-type-icon.exam { color: #059669; }
-.fav-info { flex: 1; min-width: 0; cursor: pointer; }
-.fav-title { font-size: 14px; font-weight: 700; color: var(--text-heading); margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.fav-meta { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.tag-pill {
-  display: inline-flex; padding: 1px 8px; border-radius: 10px; font-size: 11px;
-  background: rgba(37,99,235,0.10); color: var(--primary);
-}
-.tag-pill.green { background: rgba(5,150,105,0.1); color: #059669; }
-.tag-pill.orange { background: rgba(234,179,8,0.12); color: #B45309; }
-.tag-pill.red { background: rgba(220,38,38,0.1); color: #DC2626; }
-.fav-actions { display: flex; gap: 4px; flex-shrink: 0; }
-.fav-btn {
-  width: 32px; height: 32px; border-radius: 8px;
-  display: inline-flex; align-items: center; justify-content: center;
-  border: 1.5px dashed var(--border-dashed);
-  background: rgba(255,255,255,0.65);
-  color: var(--primary); cursor: pointer;
-  transition: all 0.2s;
-}
-.fav-btn:hover { border-color: var(--primary); background: #fff; }
-.fav-btn.danger:hover { border-color: #FCA5A5; color: #DC2626; background: rgba(220,38,38,0.05); }
+.search-input::placeholder { color: #94A3B8; }
 
-/* ── 空状态 ── */
-.empty-state {
-  text-align: center; padding: 80px 20px;
-  color: var(--text-muted);
-}
-.empty-state .empty-icon { margin-bottom: 12px; }
-.empty-state p { font-size: 14px; margin-bottom: 6px; }
-.empty-state .empty-hint { font-size: 12px; color: var(--text-muted); }
-.explore-btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  margin-top: 16px; padding: 10px 24px; border-radius: 10px;
-  background: var(--primary); color: #fff;
-  font-size: 14px; font-weight: 700;
-  text-decoration: none; transition: opacity 0.2s;
-  font-family: inherit;
-}
-.explore-btn:hover { opacity: 0.85; }
+/* ═══ 空状态 ═══ */
+.empty-state { text-align: center; padding: 40px 0 20px; color: var(--text-body); }
+.empty-state p { margin: 6px 0; }
+.empty-hint { font-size: 13px; color: var(--text-muted); }
+.loading-state { text-align: center; padding: 40px; color: var(--text-muted); }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+/* ═══ 收藏列表 ═══ */
+.fav-list { display: flex; flex-direction: column; gap: 8px; }
+.fav-item {
+  padding: 14px 16px;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  transition: box-shadow .2s;
+}
+.fav-item:hover { box-shadow: 0 4px 12px rgba(37,99,235,.06); }
+.fi-q { font-size: 14px; font-weight: 600; color: var(--text-heading); margin-bottom: 6px; line-height: 1.6; }
+.fi-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.fi-tag {
+  font-size: 11px; padding: 2px 10px; border-radius: 99px;
+  background: #EFF6FF; color: #2563EB; font-weight: 600;
+}
+.fi-tag-kp { background: #F0FDF4; color: #16A34A; }
+.fi-tag-cnt { background: #FEF2F2; color: #DC2626; }
+.fi-date { font-size: 12px; color: var(--text-muted); margin-left: auto; }
+
+/* ═══ 展开详情 ═══ */
+.fi-detail {
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: #F8FAFF;
+  border-radius: 14px;
+  border: 1px solid #DBEAFE;
+}
+.fi-result {
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+.fi-result-right { background: #F0FDF4; color: #16A34A; }
+.fi-result-wrong { background: #FEF2F2; color: #DC2626; }
+.fi-choice-row { display: flex; align-items: baseline; gap: 4px; font-size: 13px; margin-bottom: 6px; }
+.fi-lbl { font-weight: 700; color: #475569; flex-shrink: 0; }
+.fi-val { color: #1E293B; flex: 1; }
+.fi-val-user { color: #DC2626; }
+.fi-val-correct { color: #16A34A; }
+.fi-opt-list { margin-top: 8px; }
+.fi-opt { display: flex; gap: 6px; padding: 4px 8px; margin-bottom: 2px; border-radius: 6px; font-size: 13px; }
+.fi-opt-correct { background: #F0FDF4; }
+.fi-opt-user { background: #FEF2F2; }
+.fi-opt-key { font-weight: 700; color: #475569; flex-shrink: 0; }
+.fi-opt-val { color: #1E293B; }
+.fi-analysis { margin-top: 12px; padding-top: 12px; border-top: 1px solid #DBEAFE; }
+.fi-analysis-lbl { display: block; font-weight: 700; font-size: 13px; color: #2563EB; margin-bottom: 6px; }
+.fi-analysis p { font-size: 13px; color: #475569; line-height: 1.7; margin: 0; }
 </style>

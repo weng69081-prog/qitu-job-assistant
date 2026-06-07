@@ -8,6 +8,7 @@ import InterviewSessionDetail from '../views/InterviewSessionDetail.vue'
 import InterviewHistory from '../views/InterviewHistory.vue'
 import InterviewWrongList from '../views/InterviewWrongList.vue'
 import InterviewSavedList from '../views/InterviewSavedList.vue'
+import ExamHistory from '../views/ExamHistory.vue'
 import ExamPractice from '../views/ExamPractice.vue'
 import ExamSession from '../views/ExamSession.vue'
 import ExamWrong from '../views/ExamWrong.vue'
@@ -33,17 +34,19 @@ const routes = [
   { path: '/career/:careerId', component: CareerDetail, props: true },
   { path: '/interview', component: InterviewSim },
   { path: '/interview/session', component: InterviewSession, meta: { standalone: true } },
-  { path: '/interview/history', component: InterviewHistory, meta: { standalone: false } },
+  { path: '/interview/history', component: InterviewHistory, meta: { standalone: true } },
   { path: '/interview/history/:id', component: InterviewSessionDetail, props: true },
   { path: '/interview/wrong-questions', component: InterviewWrongList, meta: { standalone: true } },
   { path: '/interview/saved-questions', component: InterviewSavedList, meta: { standalone: true } },
-  { path: '/exam/session', component: ExamSession },
-  { path: '/exam/wrong', component: ExamWrong },
+  { path: '/exam/session', component: ExamSession, meta: { standalone: true } },
+  { path: '/exam/wrong', component: ExamWrong, meta: { standalone: true } },
+  { path: '/exam/history', component: ExamHistory, meta: { standalone: true } },
+  { path: '/exam/history/:recordId', component: ExamHistory, meta: { standalone: true } },
   { path: '/exam-practice', component: ExamPractice },
   { path: '/resume', component: ResumeOptimize },
   { path: '/jobmatch', component: JobMatch },
   { path: '/delivery-assistant', component: DeliveryAssistant },
-  { path: '/favorites', component: FavoritesManage },
+  { path: '/favorites', component: FavoritesManage, meta: { standalone: true } },
   { path: '/settings', component: Settings },
 ]
 
@@ -58,12 +61,11 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
-  const needsProfile = localStorage.getItem('needs_profile') === 'true'
 
   // 公开页（如首页介绍页）：已登录则跳仪表盘
   if (to.meta.public) {
     if (token) {
-      return next(needsProfile ? '/profile-setup' : '/dashboard')
+      return next('/dashboard')
     }
     return next()
   }
@@ -71,18 +73,13 @@ router.beforeEach((to, from, next) => {
   // 登录/注册页 — 已登录则跳走
   if (to.meta.guest) {
     if (token) {
-      return next(needsProfile ? '/profile-setup' : '/dashboard')
+      return next('/dashboard')
     }
     return next()
   }
 
   // 未登录 → 去首页介绍页
   if (!token) return next('/')
-
-  // 已登录但没填资料，且不是去填资料页 → 强制去填
-  if (needsProfile && to.path !== '/profile-setup') {
-    return next('/profile-setup')
-  }
 
   next()
 })

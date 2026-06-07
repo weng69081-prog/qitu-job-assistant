@@ -85,6 +85,35 @@ def register(username: str = Query(...), password: str = Query(...), nickname: s
     return {"ok": True, "token": make_token(user_id), "user": {"id": user_id, "username": username, "nickname": nickname or username}}
 
 
+# ═══════════ 修改密码 ═══════════
+@router.post("/change-password")
+def change_password(
+    token: str = Query(...),
+    old_password: str = Query(...),
+    new_password: str = Query(...),
+):
+    uid = get_user_id(token)
+    if not uid:
+        raise HTTPException(401, "未登录")
+    with sqlite3.connect(DB_PATH) as conn:
+        row = conn.execute("SELECT password_hash FROM users WHERE id=?", (uid,)).fetchone()
+        if not row:
+            raise HTTPException(404, "用户不存在")
+        pw_stored = row[0]
+        parts = pw_stored.split(":")
+        h, s = parts[0], parts[1] if len(parts) > 1 else ""
+        test_h, _ = hash_pw(old_password, s)
+        if test_h != h:
+            raise HTTPException(400, "当前密码错误")
+        if len(new_password) < 6:
+            raise HTTPException(400, "新密码至少6位")
+        new_h, new_s = hash_pw(new_password)
+        conn.execute("UPDATE users SET password_hash=? WHERE id=?", (new_h + ":" + new_s, uid))
+    # 使旧 token 失效
+    SESSIONS.pop(token, None)
+    return {"ok": True}
+
+
 # ═══════════ 登录 ═══════════
 @router.post("/login")
 def login(username: str = Query(...), password: str = Query(...)):

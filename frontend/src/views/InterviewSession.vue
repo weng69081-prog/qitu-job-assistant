@@ -2,142 +2,172 @@
   <div class="session-page">
     <!-- ═══════ 顶部栏 ═══════ -->
     <div class="session-topbar">
-      <el-button text @click="backToEntry"><i class="fa-solid fa-arrow-left"></i> 返回面试与笔试</el-button>
-      <span class="session-title"><i class="fa-solid fa-video"></i> 对话式模拟面试</span>
+      <el-button class="back-circle-btn" @click="backToEntry"><i class="fa-solid fa-arrow-left"></i> 返回面试与笔试</el-button>
+      <span class="session-title"><i class="fa-solid fa-video"></i> 多模态模拟面试</span>
       <div class="topbar-actions">
         <el-button v-if="phase === 'chatting'" size="small" type="danger" plain @click="handleEndInterview"><i class="fa-solid fa-stop"></i> 结束面试</el-button>
       </div>
     </div>
 
-    <!-- ═══════ 阶段 1：设置（多步骤表单） ═══════ -->
-    <div v-if="phase === 'setup'" class="section-panel">
-      <el-card shadow="never" class="setup-card">
-        <template #header>
-          <span style="font-weight:600;font-size:1rem"><i class="fa-solid fa-gear"></i> 开始对话式面试</span>
-          <span class="setup-step-indicator">步骤 {{ setupStep }} / 3</span>
-        </template>
-
-        <!-- Step 1: 岗位与类别 -->
-        <div v-if="setupStep === 1">
-          <el-form label-position="top">
-            <el-form-item>
-              <template #label><i class="fa-solid fa-crosshairs"></i> 目标岗位</template>
-              <el-select v-model="career" placeholder="选择岗位" style="width:100%">
-                <el-option-group v-if="store.validBookmarks.length">
-                  <template #label><i class="fa-solid fa-star" style="color:var(--el-color-warning)"></i> 已收藏</template>
-                  <el-option v-for="b in store.validBookmarks" :key="b.career" :label="b.career" :value="b.career" />
-                </el-option-group>
-                <el-option label="前端开发工程师" value="前端开发工程师" />
-                <el-option label="后端开发工程师" value="后端开发工程师" />
-                <el-option label="数据分析师" value="数据分析师" />
-                <el-option label="产品经理" value="产品经理" />
-                <el-option label="软件测试工程师" value="软件测试工程师" />
-                <el-option label="UI设计师" value="UI设计师" />
-                <el-option label="运营专员" value="运营专员" />
-                <el-option label="市场营销" value="市场营销" />
-              </el-select>
-            </el-form-item>
-            <el-form-item>
-              <template #label><i class="fa-regular fa-folder-open"></i> 面试分类</template>
-              <el-select v-model="category" style="width:100%" placeholder="选择分类（默认同岗位）">
-                <el-option label="同岗位名称" :value="career" />
-                <el-option label="技术基础" value="技术基础" />
-                <el-option label="项目经验" value="项目经验" />
-                <el-option label="行为面试" value="行为面试" />
-                <el-option label="综合面试" value="综合面试" />
-              </el-select>
-            </el-form-item>
-          </el-form>
-          <div class="setup-nav">
-            <el-button type="primary" @click="setupStep = 2" :disabled="!career">下一步 <i class="fa-solid fa-arrow-right"></i></el-button>
+    <!-- ═══════ 阶段 1：设置（同屏承托） ═══════ -->
+    <div v-if="phase === 'setup'" class="section-panel setup-stage">
+      <div class="setup-shell">
+        <aside class="setup-side">
+          <div class="setup-side-kicker">启途面试舱</div>
+          <h1>三步准备好一场正式模拟</h1>
+          <p>人只要把岗位、简历和面试模式选好，后面就交给 AI 面试官来追问和复盘。</p>
+          <div class="setup-steps">
+            <button class="setup-step" :class="{ active: setupStep === 1, done: canProceedJob }" @click="setupStep = 1">
+              <span>01</span><b>选择岗位</b><small>也可自定义材料</small>
+            </button>
+            <button class="setup-step" :class="{ active: setupStep === 2, done: resumeFileName }" @click="setupStep = 2" :disabled="!canProceedJob">
+              <span>02</span><b>导入简历</b><small>可选但更贴合</small>
+            </button>
+            <button class="setup-step" :class="{ active: setupStep === 3 }" @click="setupStep = 3" :disabled="!canProceedJob">
+              <span>03</span><b>确认模式</b><small>开始对话练习</small>
+            </button>
           </div>
-        </div>
+        </aside>
 
-        <!-- Step 2: 简历上传 -->
-        <div v-if="setupStep === 2">
-          <el-form label-position="top">
-            <el-form-item>
-              <template #label><i class="fa-regular fa-file"></i> 上传简历（可选 — 简历驱动模式下强烈推荐）</template>
-              <div class="resume-upload-area">
-                <input type="file" ref="resumeInput" accept=".pdf,.doc,.docx,.txt" style="display:none" @change="onResumeUpload" />
-                <el-button size="small" @click="$refs.resumeInput.click()">
-                  {{ resumeFileName ? '重新选择' : '选择文件' }}
-                </el-button>
-                <span v-if="resumeFileName" class="resume-file-name">{{ resumeFileName }}</span>
-                <el-tag v-if="resumeFileName" type="success" size="small" effect="plain"><i class="fa-regular fa-check-circle"></i> 已上传</el-tag>
-                <el-button v-if="resumeFileName" size="small" text type="danger" @click="clearResume">移除</el-button>
-              </div>
-            </el-form-item>
-            <el-collapse v-if="resumeParsedText" style="margin-top:8px">
-              <el-collapse-item name="preview">
-              <template #title><i class="fa-solid fa-book-open"></i> 预览解析内容</template>
-                <pre class="resume-preview">{{ resumeParsedText }}</pre>
-              </el-collapse-item>
-            </el-collapse>
-            <div v-if="resumeUploading" class="resume-uploading">
-              <el-progress :percentage="resumeUploadProgress" :stroke-width="6" />
-              <span>正在上传并解析简历…</span>
+        <main class="setup-main-card">
+          <div class="setup-main-head">
+            <div>
+              <span class="setup-breadcrumb">步骤 {{ setupStep }} / 3</span>
+              <h2>{{ setupStep === 1 ? '先告诉启途，人想练哪个岗位' : setupStep === 2 ? '把简历放进来，让问题更像真实面试' : '确认练习方式，准备开口回答' }}</h2>
             </div>
-          </el-form>
-          <div class="setup-nav">
-            <el-button @click="setupStep = 1"><i class="fa-solid fa-arrow-left"></i> 上一步</el-button>
-            <el-button type="primary" @click="setupStep = 3">下一步 <i class="fa-solid fa-arrow-right"></i></el-button>
+            <div class="setup-mini-badge">{{ interviewTargetLabel }}</div>
           </div>
-        </div>
 
-        <!-- Step 3: 模式选择 + 开始 -->
-        <div v-if="setupStep === 3">
-          <el-form label-position="top">
-            <el-form-item>
-              <template #label><i class="fa-solid fa-gamepad"></i> 面试模式</template>
-              <el-radio-group v-model="mode" class="mode-radio-group">
-                <el-radio-button value="basic">
-                  <div class="mode-option">
-                    <span class="mode-icon"><i class="fa-regular fa-clipboard"></i></span>
-                    <div>
-                      <strong>基础模式</strong>
-                      <p class="mode-desc">固定问题，覆盖常见面试题</p>
-                    </div>
-                  </div>
-                </el-radio-button>
-                <el-radio-button value="resume">
-                  <div class="mode-option">
-                    <span class="mode-icon"><i class="fa-regular fa-file"></i></span>
-                    <div>
-                      <strong>简历驱动</strong>
-                      <p class="mode-desc">基于简历内容生成个性化问题</p>
-                    </div>
-                  </div>
-                </el-radio-button>
-                <el-radio-button value="stress">
-                  <div class="mode-option">
-                    <span class="mode-icon"><i class="fa-solid fa-fire"></i></span>
-                    <div>
-                      <strong>压力面试</strong>
-                      <p class="mode-desc">挑战性追问，模拟高压场景</p>
-                    </div>
-                  </div>
-                </el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item>
-              <template #label><i class="fa-regular fa-clock"></i> 面试时长</template>
-              <el-select v-model="interviewDuration" style="width:200px">
-                <el-option label="15 分钟" :value="15" />
-                <el-option label="30 分钟" :value="30" />
-                <el-option label="45 分钟" :value="45" />
-                <el-option label="60 分钟" :value="60" />
-              </el-select>
-            </el-form-item>
-          </el-form>
-          <div class="setup-nav">
-            <el-button @click="setupStep = 2"><i class="fa-solid fa-arrow-left"></i> 上一步</el-button>
-            <el-button type="primary" size="large" @click="handleStartInterview" :loading="startLoading">
-              <i class="fa-solid fa-play"></i> 开始面试
-            </el-button>
+          <!-- Step 1: 岗位与类别 -->
+          <div v-if="setupStep === 1" class="setup-step-content">
+            <div class="custom-interview-hero">
+              <div>
+                <span class="custom-kicker">CUSTOM INTERVIEW</span>
+                <h3>两种开始方式：选岗位，或把真实面试材料交给启途</h3>
+                <p>适合岗位很特殊、老师布置了题目、或人手里有 JD/面试要求时使用。AI 面试官会按材料追问，不再只走固定模板。</p>
+              </div>
+              <div class="custom-paper-mark">QITU</div>
+            </div>
+            <el-form label-position="top">
+              <el-form-item>
+                <template #label><i class="fa-solid fa-crosshairs"></i> 目标岗位</template>
+                <el-select v-model="career" placeholder="选择岗位，或在下方手动输入" style="width:100%" allow-create filterable clearable>
+                  <el-option-group v-if="store.validBookmarks.length">
+                    <template #label><i class="fa-solid fa-star" style="color:var(--el-color-warning)"></i> 已收藏</template>
+                    <el-option v-for="b in store.validBookmarks" :key="b.career" :label="b.career" :value="b.career" />
+                  </el-option-group>
+                  <el-option label="前端开发工程师" value="前端开发工程师" />
+                  <el-option label="后端开发工程师" value="后端开发工程师" />
+                  <el-option label="数据分析师" value="数据分析师" />
+                  <el-option label="产品经理" value="产品经理" />
+                  <el-option label="软件测试工程师" value="软件测试工程师" />
+                  <el-option label="UI设计师" value="UI设计师" />
+                  <el-option label="运营专员" value="运营专员" />
+                  <el-option label="市场营销" value="市场营销" />
+                </el-select>
+              </el-form-item>
+              <div class="custom-form-grid">
+                <el-form-item>
+                  <template #label><i class="fa-regular fa-pen-to-square"></i> 自定义岗位名称</template>
+                  <el-input v-model="customInterview.target" placeholder="例：新媒体运营实习生 / 银行柜员 / 考研复试" clearable />
+                </el-form-item>
+                <el-form-item>
+                  <template #label><i class="fa-regular fa-folder-open"></i> 面试分类</template>
+                  <el-select v-model="category" style="width:100%" placeholder="选择分类（默认同岗位）" allow-create filterable clearable>
+                    <el-option label="同岗位名称" :value="interviewTargetLabel" />
+                    <el-option label="技术基础" value="技术基础" />
+                    <el-option label="项目经验" value="项目经验" />
+                    <el-option label="行为面试" value="行为面试" />
+                    <el-option label="综合面试" value="综合面试" />
+                  </el-select>
+                </el-form-item>
+              </div>
+              <el-form-item>
+                <template #label><i class="fa-solid fa-scroll"></i> 自定义面试材料（可选）</template>
+                <el-input
+                  v-model="customInterview.material"
+                  type="textarea"
+                  :rows="5"
+                  maxlength="1200"
+                  show-word-limit
+                  placeholder="可以粘贴岗位 JD、老师要求、比赛答辩规则、公司面试重点。启途会按这里的内容组织提问。"
+                />
+              </el-form-item>
+            </el-form>
+            <div v-if="customInterviewSummary.length" class="custom-summary-strip">
+              <span v-for="item in customInterviewSummary" :key="item" class="custom-summary-pill">{{ item }}</span>
+            </div>
+            <div class="setup-nav">
+              <el-button type="primary" @click="setupStep = 2" :disabled="!canProceedJob">下一步 <i class="fa-solid fa-arrow-right"></i></el-button>
+            </div>
           </div>
-        </div>
-      </el-card>
+
+          <!-- Step 2: 简历上传 -->
+          <div v-if="setupStep === 2" class="setup-step-content">
+            <el-form label-position="top">
+              <el-form-item>
+                <template #label><i class="fa-regular fa-file"></i> 上传简历（可选）</template>
+                <div class="resume-upload-area">
+                  <input type="file" ref="resumeInput" accept=".pdf,.doc,.docx,.txt" style="display:none" @change="onResumeUpload" />
+                  <el-button size="small" @click="$refs.resumeInput.click()">
+                    {{ resumeFileName ? '重新选择' : '选择文件' }}
+                  </el-button>
+                  <span v-if="resumeFileName" class="resume-file-name">{{ resumeFileName }}</span>
+                  <el-tag v-if="resumeFileName" type="success" size="small" effect="plain"><i class="fa-regular fa-check-circle"></i> 已上传</el-tag>
+                  <el-button v-if="resumeFileName" size="small" text type="danger" @click="clearResume">移除</el-button>
+                </div>
+              </el-form-item>
+              <div class="resume-hint-card">
+                <b>简历驱动模式会怎么用？</b>
+                <p>启途会根据简历里的项目、技能和经历追问，不会只问泛泛的固定题。</p>
+              </div>
+              <el-collapse v-if="resumeParsedText" style="margin-top:12px">
+                <el-collapse-item name="preview">
+                <template #title><i class="fa-solid fa-book-open"></i> 预览解析内容</template>
+                  <pre class="resume-preview">{{ resumeParsedText }}</pre>
+                </el-collapse-item>
+              </el-collapse>
+              <div v-if="resumeUploading" class="resume-uploading">
+                <el-progress :percentage="resumeUploadProgress" :stroke-width="6" />
+                <span>正在上传并解析简历…</span>
+              </div>
+            </el-form>
+            <div class="setup-nav">
+              <el-button @click="setupStep = 1"><i class="fa-solid fa-arrow-left"></i> 上一步</el-button>
+              <el-button type="primary" @click="setupStep = 3">下一步 <i class="fa-solid fa-arrow-right"></i></el-button>
+            </div>
+          </div>
+
+          <!-- Step 3: 模式选择 + 开始 -->
+          <div v-if="setupStep === 3" class="setup-step-content">
+            <el-form label-position="top">
+              <el-form-item>
+                <template #label><i class="fa-solid fa-gamepad"></i> 面试模式</template>
+                <el-radio-group v-model="mode" class="mode-radio-group">
+                  <el-radio-button value="basic"><div class="mode-option"><span class="mode-icon"><i class="fa-regular fa-clipboard"></i></span><div><strong>基础模式</strong><p class="mode-desc">固定问题，覆盖常见面试题</p></div></div></el-radio-button>
+                  <el-radio-button value="resume"><div class="mode-option"><span class="mode-icon"><i class="fa-regular fa-file"></i></span><div><strong>简历驱动</strong><p class="mode-desc">基于简历内容生成个性化问题</p></div></div></el-radio-button>
+                  <el-radio-button value="stress"><div class="mode-option"><span class="mode-icon"><i class="fa-solid fa-fire"></i></span><div><strong>压力面试</strong><p class="mode-desc">挑战性追问，模拟高压场景</p></div></div></el-radio-button>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item>
+                <template #label><i class="fa-regular fa-clock"></i> 面试时长</template>
+                <el-select v-model="interviewDuration" style="width:200px">
+                  <el-option label="15 分钟" :value="15" />
+                  <el-option label="30 分钟" :value="30" />
+                  <el-option label="45 分钟" :value="45" />
+                  <el-option label="60 分钟" :value="60" />
+                </el-select>
+              </el-form-item>
+            </el-form>
+            <div class="setup-nav final-nav">
+              <el-button @click="setupStep = 2"><i class="fa-solid fa-arrow-left"></i> 上一步</el-button>
+              <el-button type="primary" size="large" @click="handleStartInterview" :loading="startLoading">
+                <i class="fa-solid fa-play"></i> 开始面试
+              </el-button>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
 
     <!-- ═══════ 阶段 2：面试中 ═══════ -->
@@ -148,7 +178,7 @@
           <el-tag :type="modeTagType" size="small" effect="dark">
             {{ modeLabel }}
           </el-tag>
-          <span class="it-career">{{ career }}</span>
+          <span class="it-career">{{ interviewTargetLabel }}</span>
         </div>
         <div class="it-center">
           <div class="countdown-timer" :class="{ 'countdown-warning': remainingSeconds <= 120 }">
@@ -201,7 +231,7 @@
                 v-model="userInput"
                 type="textarea"
                 :rows="2"
-                placeholder="输入你的回答… 或点击🎤语音输入"
+                placeholder="输入你的回答… 也可以用下方语音输入"
                 :disabled="aiLoading || paused"
                 @keydown.enter.exact.prevent="sendMessage"
               />
@@ -312,6 +342,30 @@
             </div>
           </div>
 
+          <!-- 行为观察区 -->
+          <div class="risk-watch-card">
+            <div class="risk-watch-head">
+              <span><i class="fa-solid fa-shield-heart"></i> 行为观察</span>
+              <el-tag size="small" :type="riskLevelTag.type" effect="plain">{{ riskLevelTag.label }}</el-tag>
+            </div>
+            <p class="risk-watch-desc">只做温和记录：离开页面、长时间空白、手动标记等会进入报告，不会直接判定作弊。</p>
+            <div class="risk-score-line">
+              <span>风险指数</span>
+              <el-progress :percentage="riskScore" :stroke-width="7" :color="riskScoreColor" />
+            </div>
+            <div class="risk-actions">
+              <el-button size="small" plain @click="recordManualRisk('候选人主动说明', '候选人主动记录了需要复盘的异常情况。')">
+                <i class="fa-regular fa-flag"></i> 手动记录
+              </el-button>
+              <el-button size="small" text @click="clearRiskEvents" :disabled="!riskEvents.length">清空</el-button>
+            </div>
+            <div v-if="riskEvents.length" class="risk-mini-list">
+              <div v-for="item in riskEvents.slice(-3).reverse()" :key="item.id" class="risk-mini-item">
+                <b>{{ item.title }}</b><small>{{ formatRiskTime(item.time) }}</small>
+              </div>
+            </div>
+          </div>
+
           <!-- 关键词提示（简历驱动模式） -->
           <div v-if="mode === 'resume' && currentKeywords.length" class="keyword-hints">
             <div class="keyword-header"><i class="fa-solid fa-lightbulb"></i> 关键词提示</div>
@@ -344,9 +398,25 @@
           <el-button text size="small" @click="goToHistory" style="float:right"><i class="fa-regular fa-clipboard"></i> 查看面试记录</el-button>
         </template>
         <div class="report-top-info">
-          <span class="report-job">{{ career }}</span>
+          <span class="report-job">{{ interviewTargetLabel }}</span>
           <el-tag :type="modeTagType" size="small" effect="dark">{{ modeLabel }}</el-tag>
           <span class="report-rounds">共 {{ messages.filter(m => m.role === 'assistant').length }} 轮对话</span>
+        </div>
+        <div v-if="riskEvents.length" class="risk-report-card">
+          <div class="risk-report-head">
+            <i class="fa-solid fa-shield-heart"></i>
+            <div>
+              <b>行为观察记录</b>
+              <p>这是温和提醒，不直接判定作弊，只记录面试过程中的异常片段，方便复盘。</p>
+            </div>
+          </div>
+          <div class="risk-report-list">
+            <div v-for="item in riskEvents" :key="item.id" class="risk-report-item">
+              <span>{{ formatRiskTime(item.time) }}</span>
+              <b>{{ item.title }}</b>
+              <small>{{ item.detail }}</small>
+            </div>
+          </div>
         </div>
         <div class="report-summary" v-if="report.summary">{{ report.summary }}</div>
         <div class="overall-score-area">
@@ -362,13 +432,13 @@
               <!-- 轴线 -->
               <line v-for="a in radarAxes" :key="a.key" :x1="150" :y1="150" :x2="a.x" :y2="a.y" stroke="#d0d4d8" stroke-width="1" stroke-dasharray="4,3" />
               <!-- 数据多边形 -->
-              <polygon :points="radarDataPoints" fill="rgba(61,90,128,0.15)" stroke="#3D5A80" stroke-width="2.5" stroke-linejoin="round" />
+              <polygon :points="radarDataPoints" fill="rgba(37,99,235,0.14)" stroke="#2563EB" stroke-width="2.5" stroke-linejoin="round" />
               <!-- 数据锚点 -->
-              <circle v-for="n in radarNodes" :key="n.key" :cx="n.x" :cy="n.y" r="4.5" fill="#3D5A80" />
+              <circle v-for="n in radarNodes" :key="n.key" :cx="n.x" :cy="n.y" r="4.5" fill="#2563EB" />
               <!-- 维度标签 -->
-              <text v-for="l in radarLabels" :key="l.key" :x="l.x" :y="l.y" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#5a6a7d" font-weight="500">{{ l.label }}</text>
+              <text v-for="l in radarLabels" :key="l.key" :x="l.x" :y="l.y" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#475569" font-weight="500">{{ l.label }}</text>
               <!-- 分数标签 -->
-              <text v-for="s in radarScores" :key="s.key" :x="s.x" :y="s.y" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#8a9aad" font-weight="600">{{ s.score }}</text>
+              <text v-for="s in radarScores" :key="s.key" :x="s.x" :y="s.y" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#64748B" font-weight="600">{{ s.score }}</text>
             </svg>
           </div>
         </div>
@@ -422,6 +492,10 @@ const category = ref('')
 const mode = ref('basic')
 const setupStep = ref(1)
 const interviewDuration = ref(30) // minutes
+const customInterview = reactive({
+  target: '',
+  material: ''
+})
 const resumeInput = ref(null)
 const resumeFileName = ref('')
 const resumeContent = ref('')
@@ -429,6 +503,32 @@ const resumeParsedText = ref('')
 const resumeFileId = ref('')
 const resumeUploading = ref(false)
 const resumeUploadProgress = ref(0)
+
+const interviewTargetLabel = computed(() => {
+  const target = customInterview.target.trim() || career.value.trim()
+  if (target) return target
+  if (customInterview.material.trim()) return '自定义面试'
+  return '未选择岗位'
+})
+const canProceedJob = computed(() => interviewTargetLabel.value !== '未选择岗位')
+const customInterviewSummary = computed(() => {
+  const items = []
+  if (customInterview.target.trim()) items.push(`自定义岗位：${customInterview.target.trim()}`)
+  if (career.value.trim()) items.push(`岗位库：${career.value.trim()}`)
+  if (customInterview.material.trim()) items.push(`已加入材料 ${customInterview.material.trim().length} 字`)
+  return items
+})
+
+function buildInterviewJobPrompt() {
+  const target = interviewTargetLabel.value
+  const material = customInterview.material.trim()
+  const resume = resumeParsedText.value.trim()
+  const parts = [`目标岗位：${target}`]
+  if (category.value) parts.push(`面试分类：${category.value}`)
+  if (material) parts.push(`自定义面试材料：${material.slice(0, 1200)}`)
+  if (resume) parts.push(`候选人简历摘录：${resume.slice(0, 1200)}`)
+  return parts.join('\n')
+}
 
 function clearResume() {
   resumeFileName.value = ''
@@ -498,6 +598,68 @@ const reportLoadProgress = ref(0)
 // ==================== Countdown Timer ====================
 const remainingSeconds = ref(0)
 let countdownInterval = null
+const riskEvents = ref([])
+let lastInputAt = Date.now()
+let silenceTimer = null
+
+const riskScore = computed(() => Math.min(100, riskEvents.value.length * 18))
+const riskScoreColor = computed(() => riskScore.value >= 60 ? '#F97316' : riskScore.value >= 30 ? '#0EA5E9' : '#2563EB')
+const riskLevelTag = computed(() => {
+  if (riskScore.value >= 60) return { label: '需复盘', type: 'warning' }
+  if (riskScore.value >= 30) return { label: '有记录', type: 'primary' }
+  return { label: '平稳', type: 'success' }
+})
+
+function addRiskEvent(title, detail) {
+  if (phase.value !== 'chatting') return
+  const latest = riskEvents.value[riskEvents.value.length - 1]
+  if (latest && latest.title === title && Date.now() - latest.time < 15000) return
+  riskEvents.value.push({ id: `${Date.now()}-${Math.random().toString(16).slice(2)}`, title, detail, time: Date.now() })
+}
+
+function recordManualRisk(title, detail) {
+  addRiskEvent(title, detail)
+  ElMessage.info('已记录到本场面试报告')
+}
+
+function clearRiskEvents() {
+  riskEvents.value = []
+}
+
+function formatRiskTime(ts) {
+  const d = new Date(ts)
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+function startRiskWatch() {
+  lastInputAt = Date.now()
+  stopRiskWatch()
+  document.addEventListener('visibilitychange', handleVisibilityRisk)
+  silenceTimer = setInterval(() => {
+    if (phase.value === 'chatting' && !paused.value && Date.now() - lastInputAt > 90000) {
+      addRiskEvent('长时间未作答', '超过 90 秒没有输入或发送回答，建议复盘是否卡顿、离席或需要降低难度。')
+      lastInputAt = Date.now()
+    }
+  }, 15000)
+}
+
+function stopRiskWatch() {
+  document.removeEventListener('visibilitychange', handleVisibilityRisk)
+  if (silenceTimer) {
+    clearInterval(silenceTimer)
+    silenceTimer = null
+  }
+}
+
+function handleVisibilityRisk() {
+  if (document.hidden && phase.value === 'chatting') {
+    addRiskEvent('离开面试页面', '面试过程中页面切到后台或失去可见性，系统仅记录供复盘参考。')
+  }
+}
+
+watch(userInput, (val) => {
+  if (val.trim()) lastInputAt = Date.now()
+})
 
 const formattedTime = computed(() => {
   const m = Math.floor(remainingSeconds.value / 60)
@@ -655,7 +817,7 @@ async function startRecording() {
   try {
     // Create combined stream from camera (already includes audio if available)
     recordedChunks = []
-    const combinedStream = cameraStream // cameraStream already has audio from getUserMedia
+    let combinedStream = cameraStream // cameraStream already has audio from getUserMedia
 
     // Check if we need to add microphone audio separately
     const audioTracks = cameraStream.getAudioTracks()
@@ -957,8 +1119,8 @@ function goToDetail(id) {
 
 // ==================== Start Interview ====================
 async function handleStartInterview() {
-  if (!career.value) {
-    ElMessage.warning('请先选择目标岗位')
+  if (!canProceedJob.value) {
+    ElMessage.warning('请先选择或填写目标岗位')
     return
   }
 
@@ -967,6 +1129,8 @@ async function handleStartInterview() {
   phase.value = 'chatting'
   chatRound.value = 0
   paused.value = false
+  riskEvents.value = []
+  startRiskWatch()
 
   // If resume mode and we have a resume, fetch resume questions first
   if (mode.value === 'resume' && resumeParsedText.value) {
@@ -985,12 +1149,13 @@ async function handleStartInterview() {
 
   try {
     const { data } = await axios.post(`${API}/interview/chat/start`, {
-      job: career.value,
-      category: category.value || career.value,
-      mode: mode.value
+      job: buildInterviewJobPrompt(),
+      category: category.value || interviewTargetLabel.value,
+      mode: mode.value,
+      custom_material: customInterview.material.trim()
     })
     sessionId.value = data.session_id
-    const firstMsg = data.message || `你好！欢迎参加${modeLabel.value}面试。请先简单介绍一下你自己。`
+    const firstMsg = buildOpeningMessage()
     messages.value.push({ role: 'assistant', content: firstMsg, time: Date.now() })
 
     // Auto-speak the first message
@@ -1015,8 +1180,16 @@ async function handleStartInterview() {
   } catch (err) {
     ElMessage.error('启动面试失败：' + (err.response?.data?.detail || err.message || '未知错误'))
     phase.value = 'setup'
+    stopRiskWatch()
   }
   startLoading.value = false
+}
+
+function buildOpeningMessage() {
+  const jobName = interviewTargetLabel.value || '目标岗位'
+  const modeName = modeLabel.value || '模拟'
+  const materialHint = customInterview.material.trim() ? '我已经读取了你提供的自定义面试材料，后面会按材料里的要求追问。' : ''
+  return `你好，我是启途 AI 面试官。今天我们按「${jobName}」做一场${modeName}面试。${materialHint}先别着急介绍项目，我会先用一两个基础问题帮你进入状态；如果后面需要聊项目，我会提前说明。第一个问题：你为什么想了解或尝试「${jobName}」这个方向？`
 }
 
 function updateKeywords(aiMsg) {
@@ -1057,6 +1230,7 @@ async function sendMessage() {
 
   userInput.value = ''
   messages.value.push({ role: 'user', content: msg, time: Date.now() })
+  lastInputAt = Date.now()
   aiLoading.value = true
   scrollToBottom()
 
@@ -1099,6 +1273,7 @@ async function sendMessage() {
 async function skipQuestion() {
   if (aiLoading.value || !sessionId.value) return
   aiLoading.value = true
+  addRiskEvent('跳过题目', '候选人主动跳过了一道题，报告中仅作为练习节奏参考。')
   try {
     const { data } = await axios.post(`${API}/interview/chat`, {
       session_id: sessionId.value,
@@ -1179,8 +1354,8 @@ async function handleEndInterview() {
     try {
       const scores = Object.values(data.dimensions || {}).map(d => d.score || 0)
       await axios.post(`${API}/interview/save-session`, {
-        job: data.job || career.value,
-        category: category.value || career.value,
+        job: data.job || interviewTargetLabel.value,
+        category: category.value || interviewTargetLabel.value,
         mode: mode.value,
         total_questions: data.total_questions || Math.floor(messages.value.filter(m => m.role === 'user').length),
         average_score: String(data.overall_score || 0),
@@ -1190,7 +1365,10 @@ async function handleEndInterview() {
         dimensions_json: JSON.stringify(data.dimensions || {}),
         strengths_json: JSON.stringify(data.strengths || []),
         weaknesses_json: JSON.stringify(data.weaknesses || []),
-        suggestions_json: JSON.stringify(data.suggestions || [])
+        suggestions_json: JSON.stringify([
+          ...(data.suggestions || []),
+          ...(riskEvents.value.length ? [`行为观察：本场记录 ${riskEvents.value.length} 条异常片段，仅供复盘，不作为作弊结论。`] : [])
+        ])
       })
     } catch { /* silent */ }
 
@@ -1223,6 +1401,8 @@ function resetToSetup() {
   currentKeywords.value = []
   resumeQuestions.value = []
   resumeQuestionIndex = 0
+  riskEvents.value = []
+  stopRiskWatch()
 }
 
 // ==================== Cleanup ====================
@@ -1230,6 +1410,7 @@ function cleanupAll() {
   stopCamera()
   stopVoiceInput()
   stopCountdown()
+  stopRiskWatch()
   if (isRecordingVideo.value) stopRecording()
   if (micOn.value && micStream) {
     micStream.getAudioTracks().forEach(t => t.stop())
@@ -1249,27 +1430,50 @@ onUnmounted(() => {
 <style scoped>
 /* ==================== Global CSS Variables ==================== */
 :root {
-  --session-bg: var(--bg-body, #f5f6fa);
+  --session-bg: linear-gradient(180deg, #F8FBFF 0%, #FFFFFF 46%);
   --session-card-bg: var(--bg-card, #ffffff);
-  --session-border: var(--border-light, #ebeef5);
-  --session-text: var(--text-body, #333);
-  --session-text-muted: var(--text-muted, #999);
-  --session-shadow: var(--shadow-sm, 0 1px 4px rgba(0,0,0,0.06));
-  --session-radius: var(--radius-md, 10px);
+  --session-border: #BFDBFE;
+  --session-text: var(--text-body, #475569);
+  --session-text-muted: var(--text-muted, #94A3B8);
+  --session-shadow: 0 12px 30px rgba(37,99,235,.07);
+  --session-radius: 18px;
 }
 
 /* ==================== Full-width Layout ==================== */
 .session-page {
   width: 100%;
   min-height: 100vh;
-  padding: 0 2rem 2rem;
+  padding: 0 0 2rem;
   background: var(--session-bg);
 }
 .session-topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.8rem 0;
+  padding: 0.8rem 1.2rem 0.8rem;
+  color: var(--text-heading);
+}
+.back-circle-btn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px 8px 14px !important;
+  border: 2px solid #BFDBFE !important;
+  border-radius: 999px !important;
+  background: #fff !important;
+  color: var(--primary) !important;
+  font-weight: 800 !important;
+  font-size: 0.95rem !important;
+  box-shadow: 0 2px 6px rgba(37,99,235,.08) !important;
+  transition: all 0.2s !important;
+}
+.back-circle-btn:hover {
+  border-color: var(--primary) !important;
+  box-shadow: 0 4px 12px rgba(37,99,235,.14) !important;
+}
+.session-topbar :deep(.el-button) {
+  color: var(--primary);
+  font-weight: 800;
 }
 .session-title {
   font-weight: 600;
@@ -1278,7 +1482,7 @@ onUnmounted(() => {
 }
 .session-title i {
   margin-right: 6px;
-  color: var(--primary, #3D5A80);
+  color: var(--primary, #2563EB);
 }
 .topbar-actions {
   display: flex;
@@ -1288,28 +1492,261 @@ onUnmounted(() => {
   min-height: 200px;
 }
 
-/* ==================== Setup Card ==================== */
-.setup-card {
-  border-radius: var(--session-radius);
-  max-width: 620px;
+/* ==================== Setup Stage ==================== */
+.setup-stage {
+  padding: 4px 0 18px;
+  background: linear-gradient(180deg, #EFF6FF 0%, #F8FAFC 120px);
+  min-height: calc(100vh - 64px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.setup-shell {
+  width: min(1280px, calc(100vw - 48px));
   margin: 0 auto;
-  border: 1px solid var(--session-border);
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 28px;
+  align-items: stretch;
 }
-.setup-card :deep(.el-card__header) {
-  border-bottom: 1px solid var(--session-border);
-  padding: 14px 20px;
+.setup-side {
+  position: relative;
+  overflow: hidden;
+  padding: 28px 24px;
+  border-radius: 26px 10px 26px 26px;
+  background: linear-gradient(155deg, #EFF6FF 0%, #FFFFFF 72%);
+  border: 1.5px dashed #93C5FD;
+  box-shadow: 0 18px 40px rgba(37,99,235,.08);
 }
-.setup-step-indicator {
-  float: right;
-  font-size: 0.8rem;
-  color: var(--session-text-muted);
-  font-weight: 400;
+.setup-side::after {
+  content: '';
+  position: absolute;
+  right: -42px;
+  bottom: -42px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(37,99,235,.08);
+}
+.setup-side-kicker {
+  color: var(--primary);
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+.setup-side h1 {
+  margin: 14px 0 10px;
+  color: var(--text-heading);
+  font-size: 31px;
+  line-height: 1.24;
+  font-weight: 900;
+}
+.setup-side p {
+  color: var(--text-light);
+  font-size: 15px;
+  line-height: 1.75;
+}
+.setup-steps {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 28px;
+}
+.setup-step {
+  display: grid;
+  grid-template-columns: 42px minmax(0,1fr);
+  grid-template-areas: 'num title' 'num desc';
+  gap: 0 12px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #DBEAFE;
+  border-radius: 18px;
+  background: rgba(255,255,255,.78);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.setup-step:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+.setup-step span {
+  grid-area: num;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #EFF6FF;
+  color: var(--primary);
+  font-weight: 900;
+}
+.setup-step b {
+  grid-area: title;
+  color: var(--text-heading);
+  font-size: 17px;
+  font-weight: 900;
+}
+.setup-step small {
+  grid-area: desc;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.setup-step.active {
+  border-color: #93C5FD;
+  background: #fff;
+  box-shadow: 8px 8px 18px rgba(147,197,253,.16), -8px -8px 18px rgba(255,255,255,.86);
+}
+.setup-step.done span {
+  background: var(--primary);
+  color: #fff;
+}
+.setup-main-card {
+  min-height: 540px;
+  padding: 32px 36px;
+  border-radius: 10px 26px 26px 26px;
+  background: #fff;
+  border: 1.5px dashed #BFDBFE;
+  box-shadow: 0 18px 40px rgba(37,99,235,.06);
+}
+.setup-main-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px dashed #DBEAFE;
+}
+.setup-breadcrumb {
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.setup-main-head h2 {
+  margin-top: 7px;
+  color: var(--text-heading);
+  font-size: 26px;
+  line-height: 1.35;
+  font-weight: 900;
+}
+.setup-mini-badge {
+  flex: none;
+  max-width: 170px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: var(--primary-light);
+  border: 1px solid #BFDBFE;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.setup-step-content {
+  min-height: 370px;
+  display: flex;
+  flex-direction: column;
+}
+.custom-interview-hero {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 18px;
+  padding: 20px 22px;
+  border-radius: 22px 8px 22px 22px;
+  background:
+    radial-gradient(circle at 14% 18%, rgba(14,165,233,.13), transparent 28%),
+    linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 72%);
+  border: 1.5px dashed #BFDBFE;
+}
+.custom-kicker {
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .16em;
+}
+.custom-interview-hero h3 {
+  margin: 8px 0 6px;
+  color: var(--text-heading);
+  font-size: 22px;
+  line-height: 1.35;
+  font-weight: 900;
+}
+.custom-interview-hero p {
+  max-width: 680px;
+  color: var(--text-light);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.custom-paper-mark {
+  position: absolute;
+  right: 18px;
+  bottom: -8px;
+  color: rgba(37,99,235,.08);
+  font-size: 54px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.custom-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.custom-summary-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.custom-summary-pill {
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 800;
 }
 .setup-nav {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 12px;
+  margin-top: auto;
   padding-top: 1.2rem;
+}
+.final-nav {
+  border-top: 1px dashed #DBEAFE;
+  margin-top: 14px;
+}
+.resume-hint-card {
+  padding: 16px 18px;
+  margin: 4px 0 6px;
+  border-radius: 16px;
+  background: var(--primary-light);
+  border: 1px solid #BFDBFE;
+}
+.resume-hint-card b {
+  color: var(--primary);
+  font-size: 17px;
+  font-weight: 900;
+}
+.resume-hint-card p {
+  margin-top: 4px;
+  color: var(--text-light);
+  font-size: 14px;
+}
+@media (max-width: 900px) {
+  .setup-shell {
+    width: calc(100vw - 32px);
+    grid-template-columns: 1fr;
+  }
+  .setup-side h1 { font-size: 26px; }
+  .custom-form-grid { grid-template-columns: 1fr; }
+  .risk-report-item { grid-template-columns: 1fr; }
 }
 .resume-upload-area {
   display: flex;
@@ -1328,7 +1765,7 @@ onUnmounted(() => {
 .resume-preview {
   font-size: 0.78rem;
   color: var(--text-body, #444);
-  background: var(--bg-alt, #f8f9fa);
+  background: #F8FBFF;
   padding: 0.8rem;
   border-radius: var(--radius-sm, 8px);
   max-height: 200px;
@@ -1369,7 +1806,7 @@ onUnmounted(() => {
   flex-shrink: 0;
   width: 32px;
   text-align: center;
-  color: var(--primary, #3D5A80);
+  color: var(--primary, #2563EB);
 }
 .mode-desc {
   font-size: 0.75rem;
@@ -1384,12 +1821,12 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 1rem;
-  background: var(--session-card-bg);
-  border-radius: var(--session-radius);
-  margin-bottom: 0.8rem;
+  background: rgba(255,255,255,.9);
+  border-radius: 18px;
+  margin-bottom: 0.9rem;
   box-shadow: var(--session-shadow);
   gap: 12px;
-  border: 1px solid var(--session-border);
+  border: 1.5px dashed var(--session-border);
 }
 .it-left {
   display: flex;
@@ -1419,8 +1856,9 @@ onUnmounted(() => {
   font-variant-numeric: tabular-nums;
   color: var(--text-heading, #333);
   padding: 2px 10px;
-  background: var(--bg-alt, #f5f5f5);
-  border-radius: 6px;
+  background: var(--primary-light);
+  border: 1px solid #DBEAFE;
+  border-radius: 999px;
 }
 .countdown-warning {
   color: #C85A20 !important;
@@ -1439,9 +1877,10 @@ onUnmounted(() => {
 .round-badge {
   font-size: 0.78rem;
   color: var(--session-text-muted);
-  background: var(--bg-alt, #f5f5f5);
-  padding: 2px 8px;
-  border-radius: 10px;
+  background: var(--primary-light);
+  border: 1px solid #DBEAFE;
+  padding: 3px 10px;
+  border-radius: 999px;
 }
 
 /* ==================== Chat Layout ==================== */
@@ -1462,10 +1901,10 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   background: var(--session-card-bg);
-  border-radius: var(--session-radius);
-  box-shadow: var(--shadow-md, 0 2px 12px rgba(0,0,0,0.06));
+  border-radius: 22px;
+  box-shadow: var(--session-shadow);
   overflow: hidden;
-  border: 1px solid var(--session-border);
+  border: 1.5px dashed var(--session-border);
 }
 .chat-messages {
   flex: 1;
@@ -1495,17 +1934,17 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   font-size: 1rem;
-  background: var(--bg-alt, #f0f0f0);
+  background: #E6EDF5;
   flex-shrink: 0;
   color: var(--text-body, #555);
 }
 .chat-bubble.ai .chat-avatar {
-  background: #ede8ff;
-  color: var(--primary, #3D5A80);
+  background: var(--primary-light);
+  color: var(--primary);
 }
 .chat-bubble.user .chat-avatar {
-  background: #e3f2fd;
-  color: #3D5A80;
+  background: #DBEAFE;
+  color: var(--primary);
 }
 .chat-content {
   padding: 0.6rem 1rem;
@@ -1515,12 +1954,13 @@ onUnmounted(() => {
   position: relative;
 }
 .chat-bubble.ai .chat-content {
-  background: #f5f3ff;
+  background: #F8FBFF;
   color: var(--text-body, #333);
+  border: 1px solid #DBEAFE;
   border-top-left-radius: 2px;
 }
 .chat-bubble.user .chat-content {
-  background: #3D5A80;
+  background: linear-gradient(145deg, #0EA5E9, #2563EB);
   color: white;
   border-top-right-radius: 2px;
 }
@@ -1564,7 +2004,7 @@ onUnmounted(() => {
 .chat-input-bar {
   border-top: 1px solid var(--session-border);
   padding: 0.6rem;
-  background: var(--bg-alt, #fafbfc);
+  background: #F8FBFF;
 }
 .chat-input-row {
   margin-bottom: 6px;
@@ -1573,10 +2013,18 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 .cia-left {
   display: flex;
-  gap: 6px;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.chat-input-actions > .el-button {
+  flex: none;
+  min-width: 92px;
 }
 
 /* Typing animation */
@@ -1609,21 +2057,21 @@ onUnmounted(() => {
   background: var(--session-card-bg);
   border-radius: var(--session-radius);
   overflow: hidden;
-  box-shadow: var(--shadow-md, 0 2px 12px rgba(0,0,0,0.08));
-  border: 1px solid var(--session-border);
+  box-shadow: var(--session-shadow);
+  border: 1.5px dashed var(--session-border);
 }
 .camera-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: var(--bg-alt, #f8f9fc);
+  background: var(--primary-light);
   font-size: 0.8rem;
   font-weight: 600;
 }
 .camera-header i {
   margin-right: 6px;
-  color: var(--primary, #3D5A80);
+  color: var(--primary, #2563EB);
 }
 .camera-controls {
   display: flex;
@@ -1680,7 +2128,7 @@ onUnmounted(() => {
   50% { opacity: 0.3; }
 }
 .camera-placeholder {
-  background: var(--bg-alt, #f8f9fa);
+  background: #F8FBFF;
   aspect-ratio: 4/3;
   display: flex;
   flex-direction: column;
@@ -1701,6 +2149,66 @@ onUnmounted(() => {
   font-size: 0.75rem;
   color: var(--text-muted, #bbb);
 }
+
+/* 行为观察 */
+.risk-watch-card {
+  padding: 12px;
+  border-radius: var(--session-radius);
+  background: linear-gradient(145deg, #FFFFFF, #EFF6FF);
+  border: 1.5px dashed #BFDBFE;
+  box-shadow: var(--session-shadow);
+}
+.risk-watch-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-heading);
+  font-size: .86rem;
+  font-weight: 900;
+}
+.risk-watch-head i {
+  color: var(--primary);
+  margin-right: 5px;
+}
+.risk-watch-desc {
+  margin: 8px 0 10px;
+  color: var(--session-text-muted);
+  font-size: .76rem;
+  line-height: 1.6;
+}
+.risk-score-line {
+  display: grid;
+  grid-template-columns: 58px 1fr 34px;
+  align-items: center;
+  gap: 8px;
+  font-size: .74rem;
+  color: var(--session-text-muted);
+}
+.risk-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.risk-mini-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.risk-mini-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.78);
+  border: 1px solid #DBEAFE;
+  font-size: .76rem;
+}
+.risk-mini-item b { color: var(--text-heading); }
+.risk-mini-item small { color: var(--session-text-muted); }
 .emotion-details {
   padding: 8px 12px;
 }
@@ -1720,7 +2228,7 @@ onUnmounted(() => {
 .ed-bar-track {
   flex: 1;
   height: 5px;
-  background: var(--bg-alt, #f0f0f0);
+  background: #E6EDF5;
   border-radius: 3px;
 }
 .ed-bar-fill {
@@ -1756,8 +2264,8 @@ onUnmounted(() => {
   background: var(--session-card-bg);
   border-radius: var(--session-radius);
   padding: 10px 12px;
-  box-shadow: var(--shadow-md, 0 2px 12px rgba(0,0,0,0.08));
-  border: 1px solid var(--session-border);
+  box-shadow: var(--session-shadow);
+  border: 1.5px dashed var(--session-border);
 }
 .recording-header {
   font-size: 0.8rem;
@@ -1766,7 +2274,7 @@ onUnmounted(() => {
 }
 .recording-header i {
   margin-right: 6px;
-  color: var(--primary, #3D5A80);
+  color: var(--primary, #2563EB);
 }
 .recording-buttons {
   display: flex;
@@ -1783,14 +2291,14 @@ onUnmounted(() => {
   background: var(--session-card-bg);
   border-radius: var(--session-radius);
   padding: 10px 12px;
-  box-shadow: var(--shadow-md, 0 2px 12px rgba(0,0,0,0.08));
-  border: 1px solid var(--session-border);
+  box-shadow: var(--session-shadow);
+  border: 1.5px dashed var(--session-border);
 }
 .keyword-header {
   font-size: 0.8rem;
   font-weight: 600;
   margin-bottom: 8px;
-  color: var(--primary, #3D5A80);
+  color: var(--primary, #2563EB);
 }
 .keyword-header i {
   margin-right: 6px;
@@ -1821,9 +2329,10 @@ onUnmounted(() => {
 }
 .report-card {
   border-radius: var(--session-radius);
-  max-width: 720px;
+  max-width: 960px;
   margin: 0 auto;
-  border: 1px solid var(--session-border);
+  border: 1.5px dashed var(--session-border);
+  box-shadow: var(--session-shadow);
 }
 /* ─── 四维雷达图 ─── */
 .radar-section {
@@ -1853,10 +2362,54 @@ onUnmounted(() => {
   color: var(--text-muted, #999);
   font-size: 0.78rem;
 }
+.risk-report-card {
+  margin: 12px 0 16px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #F8FBFF;
+  border: 1.5px dashed #BFDBFE;
+}
+.risk-report-head {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  color: var(--text-heading);
+}
+.risk-report-head i {
+  color: var(--primary);
+  margin-top: 3px;
+}
+.risk-report-head b {
+  font-size: 16px;
+  font-weight: 900;
+}
+.risk-report-head p {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.risk-report-list {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+.risk-report-item {
+  display: grid;
+  grid-template-columns: 88px 120px 1fr;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #DBEAFE;
+  font-size: 13px;
+}
+.risk-report-item span { color: var(--text-muted); }
+.risk-report-item b { color: var(--primary); }
+.risk-report-item p { color: var(--text-body); }
 .report-summary {
   text-align: center;
   font-size: 0.9rem;
-  color: var(--primary, #3D5A80);
+  color: var(--primary, #2563EB);
   padding: 0.5rem 0;
   font-weight: 500;
 }
@@ -1874,7 +2427,7 @@ onUnmounted(() => {
   margin: 1rem 0;
 }
 .dim-card {
-  background: var(--bg-alt, #f8f9fa);
+  background: #F8FBFF;
   border-radius: var(--radius-sm, 10px);
   padding: 0.8rem;
 }

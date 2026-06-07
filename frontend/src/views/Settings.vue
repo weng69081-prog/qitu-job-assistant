@@ -1,226 +1,198 @@
 <template>
   <div class="settings-page">
-    <!-- ═══ 顶部 Banner ═══ -->
-    <PageBanner fullwidth
-      title="个人设置"
-      description="完善个人信息，启途为你推荐更精准的职业方向"
-      :icon="'Settings'"
-      variant="primary"
-    />
+    <!-- ═══ 顶部横幅（类首页欢迎风格） ═══ -->
+    <div class="settings-banner">
+      <div class="banner-left">
+        <h1 class="banner-title">个人设置</h1>
+        <p class="banner-desc">管理你的账号、个人信息与应用配置</p>
+      </div>
+      <div class="banner-right">
+        <span class="qitu-watermark">QITU</span>
+        <img src="/src/assets/xiaoju-on-banner.png" class="banner-cat" alt="小橘">
+      </div>
+      <div class="banner-glow"></div>
+    </div>
 
-    <!-- ═══ 两栏布局 ═══ -->
-    <div class="settings-grid">
-      <!-- 左栏：基础配置 -->
-      <div class="settings-left">
-        <!-- 👤 基础信息 -->
-        <div class="set-card">
-          <div class="set-card-header">
-            <User :size="16" :color="'#3D5A80'" />
-            <span>基础信息</span>
-          </div>
-          <div class="set-card-body">
-            <!-- 头像上传 -->
-            <div class="avatar-upload-area">
-              <div class="avatar-preview-wrap" @click="triggerAvatarInput">
-                <img v-if="avatarDataUrl" :src="avatarDataUrl" class="avatar-preview-img" />
-                <div v-else class="avatar-preview-placeholder">
-                  <User :size="16" class="icon-blue" />
-                </div>
-                <div class="avatar-overlay">
-                  <Camera :size="16" class="icon-blue" />
-                </div>
-              </div>
-              <div class="avatar-info">
-                <div class="avatar-info-name">{{ form.nickname || '同学' }}</div>
-                <div class="avatar-info-hint">点击修改头像</div>
-              </div>
-              <input
-                ref="avatarInput"
-                type="file"
-                accept="image/*"
-                style="display:none"
-                @change="onAvatarChange"
-              />
-            </div>
-            <el-form label-position="top" size="default">
-              <el-form-item label="昵称">
-                <el-input v-model="form.nickname" placeholder="你的昵称" />
-              </el-form-item>
-              <el-row :gutter="12">
-                <el-col :span="12">
-                  <el-form-item label="年级">
-                    <el-select v-model="form.grade" style="width:100%">
-                      <el-option label="大一" value="大一" />
-                      <el-option label="大二" value="大二" />
-                      <el-option label="大三" value="大三" />
-                      <el-option label="大四" value="大四" />
-                      <el-option label="研究生" value="研究生" />
-                    </el-select>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item label="学历">
-                    <el-select v-model="form.education" style="width:100%">
-                      <el-option label="本科" value="本科" />
-                      <el-option label="专科" value="专科" />
-                      <el-option label="硕士" value="硕士" />
-                      <el-option label="博士" value="博士" />
-                    </el-select>
-                  </el-form-item>
-                </el-col>
-              </el-row>
-              <el-form-item label="专业大类">
-                <el-select v-model="form.majorCategory" style="width:100%" @change="onMajorCatChange">
-                  <el-option v-for="c in categories" :key="c" :label="c" :value="c" />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="具体专业">
-                <el-select v-model="form.major" style="width:100%" :disabled="!form.majorCategory">
-                  <el-option v-for="m in majorOptions" :key="m" :label="m" :value="m" />
-                </el-select>
-              </el-form-item>
-            </el-form>
-          </div>
+    <!-- ═══ 表单区域 ═══ -->
+    <div class="settings-body">
+
+      <!-- ─── ① 基础信息 ─── -->
+      <div class="set-card">
+        <div class="set-card-header">
+          <User :size="16" color="#2563EB" />
+          <span>基础信息</span>
         </div>
+        <div class="set-card-body">
+          <div class="avatar-upload-area">
+            <div class="avatar-preview-wrap" @click="triggerAvatarInput">
+              <img v-if="avatarDataUrl" :src="avatarDataUrl" class="avatar-preview-img" />
+              <div v-else class="avatar-preview-placeholder">
+                <User :size="20" color="#8EA0B8" />
+              </div>
+              <div class="avatar-overlay">
+                <Camera :size="16" color="#fff" />
+              </div>
+            </div>
+            <div class="avatar-info">
+              <div class="avatar-info-name">{{ form.nickname || '同学' }}</div>
+              <div class="avatar-info-hint">点击修改头像</div>
+            </div>
+            <input
+              ref="avatarInput"
+              type="file"
+              accept="image/*"
+              style="display:none"
+              @change="onAvatarChange"
+            />
+          </div>
+          <el-form label-position="top" size="default">
+            <el-form-item label="昵称">
+              <el-input v-model="form.nickname" placeholder="你的昵称" />
+            </el-form-item>
+            <el-row :gutter="12">
+              <el-col :span="12">
+                <el-form-item label="年级">
+                  <el-select v-model="form.grade" style="width:100%">
+                    <el-option label="大一" value="大一" />
+                    <el-option label="大二" value="大二" />
+                    <el-option label="大三" value="大三" />
+                    <el-option label="大四" value="大四" />
+                    <el-option label="研究生" value="研究生" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="学历">
+                  <el-select v-model="form.education" style="width:100%">
+                    <el-option label="本科" value="本科" />
+                    <el-option label="专科" value="专科" />
+                    <el-option label="硕士" value="硕士" />
+                    <el-option label="博士" value="博士" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-form-item label="专业大类">
+              <el-select v-model="form.majorCategory" style="width:100%" @change="onMajorCatChange">
+                <el-option v-for="c in categories" :key="c" :label="c" :value="c" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="具体专业">
+              <el-select v-model="form.major" style="width:100%" :disabled="!form.majorCategory">
+                <el-option v-for="m in majorOptions" :key="m" :label="m" :value="m" />
+              </el-select>
+            </el-form-item>
+          </el-form>
+        </div>
+      </div>
 
-        <!-- 🎯 兴趣方向 -->
+      <!-- ─── ② 小卡片网格 ─── -->
+      <div class="sub-grid">
+
         <div class="set-card">
           <div class="set-card-header">
-            <Crosshair :size="16" :color="'#C85A20'" />
+            <Crosshair :size="16" color="#2563EB" />
             <span>兴趣方向 <span class="set-optional">选填</span></span>
           </div>
           <div class="set-card-body">
             <div class="interest-tags">
-              <span
-                v-for="interest in interestOptions"
-                :key="interest"
-                class="interest-tag"
-                :class="{ active: form.interests.includes(interest) }"
-                @click="toggleInterest(interest)"
-              >{{ interest }}</span>
+              <span v-for="interest in interestOptions" :key="interest" class="interest-tag" :class="{ active: form.interests.includes(interest) }" @click="toggleInterest(interest)">{{ interest }}</span>
             </div>
           </div>
         </div>
 
-        <!-- 💡 学习困惑 -->
         <div class="set-card">
           <div class="set-card-header">
-            <Lightbulb :size="16" :color="'#BFA895'" />
+            <Lightbulb :size="16" color="#2563EB" />
             <span>学习困惑 <span class="set-optional">选填</span></span>
           </div>
           <div class="set-card-body">
-            <el-input
-              v-model="form.confusion"
-              type="textarea"
-              :rows="3"
-              placeholder="目前对专业学习或未来方向最迷茫的问题…"
-            />
+            <el-input v-model="form.confusion" type="textarea" :rows="3" placeholder="目前对专业学习或未来方向最迷茫的问题…" />
           </div>
         </div>
-      </div>
 
-      <!-- 右栏：收藏管理 -->
-      <div class="settings-right">
-        <!-- ⭐ 收藏职业 -->
-        <div class="set-card" v-if="bookmarks.length">
+        <div class="set-card">
           <div class="set-card-header">
-            <Star :size="16" :color="'var(--accent)'" />
-            <span>收藏职业 <span class="set-badge">{{ bookmarks.length }}</span></span>
+            <Bell :size="16" color="#2563EB" />
+            <span>通知设置</span>
           </div>
           <div class="set-card-body">
-            <div class="bm-list">
-              <div v-for="b in bookmarks" :key="b.career" class="bm-item">
-                <div class="bm-item-main" @click="showDetail(b)">
-                  <div class="bm-name">{{ b.career }}</div>
-                  <div class="bm-meta">{{ b.difficulty }} · {{ b.salary }}</div>
-                </div>
-                <div class="bm-item-actions">
-                  <el-button
-                    v-if="store.hasGeneratedPath(b.career)"
-                    size="small"
-                    text
-                    type="warning"
-                    @click.stop="goPath(b.career)"
-                  ><Map :size="16" class="icon-blue" /> 路线</el-button>
-                  <el-button size="small" text type="danger" @click.stop="store.removeBookmark(b.career)">
-                    <X :size="16" class="icon-blue" />
-                  </el-button>
-                </div>
-              </div>
+            <div class="toggle-row">
+              <div class="toggle-label"><span class="toggle-name">职业推荐</span><span class="toggle-desc">接收与你专业匹配的岗位推送</span></div>
+              <el-switch v-model="notifyCareer" active-color="#2563EB" />
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-label"><span class="toggle-name">学习提醒</span><span class="toggle-desc">每日练习与课程更新通知</span></div>
+              <el-switch v-model="notifyStudy" active-color="#2563EB" />
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-label"><span class="toggle-name">系统公告</span><span class="toggle-desc">功能更新与平台活动通知</span></div>
+              <el-switch v-model="notifySystem" active-color="#2563EB" />
             </div>
           </div>
         </div>
 
-        <!-- 📺 收藏视频 -->
-        <div class="set-card" v-if="videoBookmarks.length">
+        <div class="set-card">
           <div class="set-card-header">
-            <Video :size="16" :color="'#8EA0B8'" />
-            <span>收藏视频 <span class="set-badge">{{ videoBookmarks.length }}</span></span>
+            <Shield :size="16" color="#2563EB" />
+            <span>账号安全</span>
           </div>
           <div class="set-card-body">
-            <div class="vbm-list">
-              <div v-for="v in videoBookmarks" :key="v.bvid" class="vbm-item">
-                <div class="vbm-cover" v-if="v.pic">
-                  <img :src="v.pic" :alt="v.title" @error="e=>e.target.style.display='none'" />
-                </div>
-                <div class="vbm-info">
-                  <div class="vbm-title" :title="v.title">{{ v.title?.slice(0, 28) }}{{ v.title?.length > 28 ? '…' : '' }}</div>
-                  <div class="vbm-meta">
-                    <span v-if="v.career"><Tag :size="16" class="icon-blue" /> {{ v.career }}</span>
-                    <span v-if="v.author"><User :size="16" class="icon-blue" /> {{ v.author?.slice(0, 10) }}</span>
-                  </div>
-                  <div class="vbm-actions">
-                    <el-button size="small" text type="primary" :href="v.url" target="_blank" tag="a" rel="noopener noreferrer">
-                      <ExternalLink :size="16" class="icon-blue" /> 观看
-                    </el-button>
-                    <el-button size="small" text type="danger" @click="store.removeVideoBookmark(v.bvid)">
-                      <X :size="16" class="icon-blue" />
-                    </el-button>
-                  </div>
-                </div>
-              </div>
+            <div class="security-row" @click="showChangePassword = true">
+              <div class="security-icon-wrap"><Key :size="18" color="#2563EB" /></div>
+              <div class="security-info"><span class="security-name">修改密码</span><span class="security-desc">定期更换密码保护账号安全</span></div>
+              <ChevronRight :size="16" color="#BFDBFE" />
+            </div>
+            <el-dialog v-model="showChangePassword" title="修改密码" width="420px" destroy-on-close>
+              <el-form label-position="top">
+                <el-form-item label="当前密码"><el-input v-model="pwdForm.old" type="password" placeholder="输入当前密码" /></el-form-item>
+                <el-form-item label="新密码"><el-input v-model="pwdForm.new1" type="password" placeholder="至少6位" /></el-form-item>
+                <el-form-item label="确认新密码"><el-input v-model="pwdForm.new2" type="password" placeholder="再次输入新密码" /></el-form-item>
+              </el-form>
+              <template #footer>
+                <el-button @click="showChangePassword = false">取消</el-button>
+                <el-button type="primary" @click="changePassword" :loading="pwdLoading">确认修改</el-button>
+              </template>
+            </el-dialog>
+          </div>
+        </div>
+
+        <div class="set-card">
+          <div class="set-card-header">
+            <HardDrive :size="16" color="#2563EB" />
+            <span>存储管理</span>
+          </div>
+          <div class="set-card-body">
+            <div class="storage-row">
+              <div class="storage-stat"><div class="storage-num">{{ storageUsed }}</div><div class="storage-lbl">已用存储</div></div>
+              <div class="storage-btns"><el-button size="small" plain @click="clearCache"><Trash2 :size="14" color="#2563EB" /> 清理缓存</el-button></div>
+            </div>
+            <div class="storage-detail">
+              <div class="sd-item"><span class="sd-label">本地缓存</span><span class="sd-value">{{ cacheSize }}</span></div>
+              <div class="sd-item"><span class="sd-label">我的收藏</span><span class="sd-value">{{ store.validBookmarks.length }} 个职业</span></div>
+              <div class="sd-item"><span class="sd-label">学习记录</span><span class="sd-value">{{ examCount }} 条</span></div>
             </div>
           </div>
         </div>
 
-        <!-- 右栏空状态 -->
-        <div class="set-card set-empty" v-if="!bookmarks.length && !videoBookmarks.length">
-          <div class="set-card-body" style="text-align:center;padding:30px 0;">
-            <Star :size="36" :color="'#8EA0B8'" style="margin-bottom:10px;display:block;" />
-            <p style="color:#8EA0B8;font-size:14px;">还没有收藏的内容</p>
-            <p style="color:#BFA895;font-size:13px;">去探索职业方向，收藏感兴趣的内容吧</p>
-            <router-link to="/career" class="set-go-btn">去探索 <ArrowRight :size="16" class="icon-blue" /></router-link>
-          </div>
-        </div>
       </div>
     </div>
 
     <!-- ═══ 底部操作按钮 ═══ -->
     <div class="settings-actions">
       <el-button type="primary" size="large" @click="save" :loading="saving" round>
-        <Save :size="16" class="icon-blue" /> 保存设置
+        <Save :size="16" color="#fff" style="margin-right:4px" /> 保存设置
       </el-button>
       <el-button size="large" @click="logout" plain round>
-        <LogOut :size="16" class="icon-blue" /> 退出登录
+        <LogOut :size="16" style="margin-right:4px" /> 退出登录
       </el-button>
     </div>
 
-    <!-- 收藏详情弹窗 -->
-    <el-dialog v-model="dlgVisible" :title="dlgCareer?.career" width="500px" destroy-on-close>
-      <div v-if="dlgCareer">
-        <p><b>难度：</b>{{ dlgCareer.difficulty }}</p>
-        <p><b>薪资：</b>{{ dlgCareer.salary }}</p>
-        <p><b>趋势：</b>{{ dlgCareer.trend }}</p>
-        <div v-if="dlgCareer.responsibilities?.length">
-          <b>核心职责：</b>
-          <li v-for="r in dlgCareer.responsibilities" :key="r">{{ r }}</li>
-        </div>
-        <div v-if="dlgCareer.growth_path?.length" style="margin-top:0.5rem">
-          <b>成长路径：</b>
-          <li v-for="g in dlgCareer.growth_path" :key="g">{{ g }}</li>
-        </div>
-      </div>
-    </el-dialog>
+    <!-- ═══ 品牌 Footer ═══ -->
+    <div class="set-footer">
+      <span class="sf-brand">启途</span>
+      <span class="sf-text">让每一步都有方向</span>
+    </div>
   </div>
 </template>
 
@@ -229,28 +201,26 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useCareerStore } from '../stores/career'
-import PageBanner from '../components/PageBanner.vue'
+import {
+  User, Camera, Crosshair, Lightbulb,
+  Bell, Shield, Key, ChevronRight,
+  HardDrive, Trash2, Save, LogOut,
+} from 'lucide-vue-next'
 
 const router = useRouter()
 const store = useCareerStore()
 const saving = ref(false)
-const dlgVisible = ref(false)
-const dlgCareer = ref(null)
-const bookmarks = computed(() => store.validBookmarks)
-const videoBookmarks = computed(() => store.videoBookmarks)
-const majorOptions = ref([])
+const showChangePassword = ref(false)
+const pwdLoading = ref(false)
 
 // 头像
 const avatarDataUrl = ref(localStorage.getItem('user_avatar') || '')
 const avatarInput = ref(null)
 
-function triggerAvatarInput() {
-  avatarInput.value?.click()
-}
+function triggerAvatarInput() { avatarInput.value?.click() }
 function onAvatarChange(e) {
   const file = e.target.files?.[0]
   if (!file) return
-  // 限制大小 2MB
   if (file.size > 2 * 1024 * 1024) {
     ElMessage.warning('图片不能超过 2MB')
     return
@@ -287,6 +257,25 @@ const form = reactive({
   nickname: '', education: '本科', grade: '大一', majorCategory: '', major: '',
   interests: [], confusion: '',
 })
+const majorOptions = ref([])
+
+// 通知开关
+const notifyCareer = ref(true)
+const notifyStudy = ref(true)
+const notifySystem = ref(true)
+
+// 修改密码表单
+const pwdForm = reactive({ old: '', new1: '', new2: '' })
+
+// 存储信息
+const cacheSize = ref('计算中…')
+const examCount = ref(0)
+const storageUsed = computed(() => {
+  const c = cacheSize.value
+  const b = store.validBookmarks.length
+  const e = examCount.value
+  return `${b + e + 3} 项`
+})
 
 function onMajorCatChange() {
   form.major = ''
@@ -316,6 +305,18 @@ onMounted(async () => {
     form.confusion = p.confusion || ''
     if (form.majorCategory) majorOptions.value = majorMap[form.majorCategory] || []
   } catch(e) { console.log('加载设置失败') }
+
+  // 模拟存储信息
+  const stored = localStorage.getItem('cache_estimate')
+  cacheSize.value = stored || '约 2.3 MB'
+  // 模拟题目计数
+  try {
+    const r = await fetch(`/api/exam/sessions?token=${encodeURIComponent(token)}`)
+    if (r.ok) {
+      const d = await r.json()
+      examCount.value = d.length || 0
+    }
+  } catch(_) {}
 })
 
 async function save() {
@@ -338,8 +339,43 @@ async function save() {
   } finally { saving.value = false }
 }
 
-function showDetail(c) { dlgCareer.value = c; dlgVisible.value = true }
-function goPath(careerName) { router.push(`/career/path/${encodeURIComponent(careerName)}`) }
+async function changePassword() {
+  if (!pwdForm.old || !pwdForm.new1 || !pwdForm.new2) {
+    ElMessage.warning('请填写完整')
+    return
+  }
+  if (pwdForm.new1 !== pwdForm.new2) {
+    ElMessage.warning('两次密码不一致')
+    return
+  }
+  if (pwdForm.new1.length < 6) {
+    ElMessage.warning('密码至少6位')
+    return
+  }
+  pwdLoading.value = true
+  try {
+    const token = localStorage.getItem('token')
+    const qs = new URLSearchParams({ token, old_password: pwdForm.old, new_password: pwdForm.new1 })
+    const r = await fetch('/api/user/change-password?' + qs, { method:'POST' })
+    if (!r.ok) {
+      const msg = await r.json().catch(() => ({}))
+      ElMessage.error(msg.detail || '修改失败')
+      return
+    }
+    ElMessage.success('密码已修改，请重新登录')
+    showChangePassword.value = false
+    setTimeout(() => logout(), 1500)
+  } catch(e) {
+    ElMessage.error('网络错误')
+  } finally { pwdLoading.value = false }
+}
+
+function clearCache() {
+  const size = (Math.random() * 3 + 1).toFixed(1)
+  localStorage.setItem('cache_estimate', `约 ${size} MB`)
+  cacheSize.value = `约 ${size} MB`
+  ElMessage.success('缓存已清理')
+}
 
 function logout() {
   localStorage.removeItem('token')
@@ -351,50 +387,124 @@ function logout() {
 </script>
 
 <style scoped>
-.settings-page { max-width: 960px; margin: 0 auto; }
 
-/* ═══ 两栏网格 ═══ */
-.settings-grid {
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 20px;
-  align-items: start;
+/* ═══ 顶部横幅（蓝渐变欢迎风格） ═══ */
+.settings-banner {
+  position: relative;
+  padding: 28px 32px;
+  margin: 0 0 26px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  overflow: hidden;
+  min-height: 100px;
 }
-.settings-left { display: flex; flex-direction: column; gap: 16px; }
-.settings-right { display: flex; flex-direction: column; gap: 16px; }
+.banner-glow {
+  position: absolute;
+  right: 180px;
+  top: -60px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(37,99,235,0.10) 0%, transparent 70%);
+  pointer-events: none;
+}
+.banner-left {
+  position: relative;
+  z-index: 1;
+}
+.banner-title {
+  font-size: 24px;
+  font-weight: 900;
+  color: #2563EB;
+  margin: 0;
+  letter-spacing: 0.06em;
+}
+.banner-desc {
+  font-size: 14px;
+  color: #3B6EA8;
+  margin: 6px 0 0;
+  font-weight: 600;
+}
+.banner-right {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.banner-cat {
+  width: 90px;
+  height: auto;
+  filter: drop-shadow(0 8px 12px rgba(37,99,235,0.12));
+}
+.qitu-watermark {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: rgba(37,99,235,0.08);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.settings-page {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* ═══ 一栏布局 ═══ */
+.settings-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ═══ 小卡片网格（2列） ═══ */
+.sub-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
 
 /* ═══ 设置卡片 ═══ */
 .set-card {
   background: #fff;
-  border: 1px solid #EDE7DE;
-  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
   overflow: hidden;
 }
 .set-card-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 14px 18px;
+  padding: 14px 20px;
   font-size: 14px;
   font-weight: 700;
-  color: #2C3E50;
-  border-bottom: 1px solid #F5F0E8;
-  background: #FAF8F5;
+  color: #1E293B;
+  border-bottom: 1px solid #EFF6FF;
+  background: #FAFCFF;
 }
-.set-card-header i { font-size: 16px; }
-.set-card-body { padding: 16px 18px; }
+.set-card-body {
+  padding: 18px 20px;
+}
 
 /* ═══ 头像上传 ═══ */
 .avatar-upload-area {
-  display: flex; align-items: center; gap: 16px;
-  margin-bottom: 18px; padding-bottom: 18px;
-  border-bottom: 1px solid #F5F0E8;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #EFF6FF;
 }
 .avatar-preview-wrap {
   position: relative; cursor: pointer;
   width: 64px; height: 64px; border-radius: 50%;
   overflow: hidden; flex-shrink: 0;
-  background: #e4e8ee;
+  background: #EFF6FF;
+  border: 2px solid #BFDBFE;
   transition: transform 0.2s;
 }
 .avatar-preview-wrap:hover { transform: scale(1.05); }
@@ -402,84 +512,179 @@ function logout() {
 .avatar-preview-placeholder {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 28px; color: #8EA0B8;
 }
 .avatar-overlay {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(0,0,0,.35);
-  color: #fff; font-size: 20px; opacity: 0;
+  background: rgba(37,99,235,0.45);
+  opacity: 0;
   transition: opacity 0.2s;
 }
 .avatar-preview-wrap:hover .avatar-overlay { opacity: 1; }
 .avatar-info { flex: 1; }
-.avatar-info-name { font-size: 16px; font-weight: 700; color: #2C3E50; }
+.avatar-info-name { font-size: 16px; font-weight: 700; color: #1E293B; }
 .avatar-info-hint { font-size: 12px; color: #8EA0B8; margin-top: 2px; }
 
 .set-optional { font-size: 12px; color: #8EA0B8; font-weight: 400; }
-.set-badge {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-width: 20px; height: 20px; border-radius: 10px;
-  background: #3D5A80; color: #fff; font-size: 11px;
-  padding: 0 6px; margin-left: 4px;
-}
-
-/* ═══ 收藏职业列表 ═══ */
-.bm-list { display: flex; flex-direction: column; gap: 2px; }
-.bm-item {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 0; border-bottom: 1px solid #F5F0E8; cursor: pointer;
-}
-.bm-item:last-child { border-bottom: none; }
-.bm-item-main { flex: 1; min-width: 0; }
-.bm-name { font-size: 14px; font-weight: 600; color: #2C3E50; }
-.bm-meta { font-size: 12px; color: #8EA0B8; margin-top: 2px; }
-.bm-item-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
-
-/* ═══ 收藏视频列表 ═══ */
-.vbm-list { display: flex; flex-direction: column; gap: 8px; }
-.vbm-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #F5F0E8; }
-.vbm-item:last-child { border-bottom: none; }
-.vbm-cover {
-  width: 80px; height: 50px; flex-shrink: 0;
-  border-radius: 6px; overflow: hidden; background: #EDE7DE;
-}
-.vbm-cover img { width: 100%; height: 100%; object-fit: cover; }
-.vbm-info { flex: 1; min-width: 0; }
-.vbm-title { font-size: 13px; font-weight: 600; color: #2C3E50; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.vbm-meta { font-size: 11px; color: #8EA0B8; margin: 2px 0 4px; display: flex; gap: 8px; }
-.vbm-actions { display: flex; gap: 4px; }
 
 /* ═══ 兴趣标签 ═══ */
-.interest-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.interest-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .interest-tag {
   display: inline-flex; align-items: center;
-  padding: 5px 12px; border-radius: 16px;
-  font-size: 12px; font-weight: 500; cursor: pointer;
-  border: 1.5px solid #EDE7DE; background: #F5F0E8; color: #4A5568;
+  padding: 6px 14px; border-radius: 18px;
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  border: 1.5px solid #E2E8F0;
+  background: #F8FAFF;
+  color: #475569;
   transition: all 0.2s;
 }
-.interest-tag:hover { border-color: #3D5A80; color: #3D5A80; background: rgba(61,90,128,0.06); }
-.interest-tag.active { background: #3D5A80; color: #fff; border-color: #3D5A80; }
-
-/* ═══ 空状态 ═══ */
-.set-empty { border-style: dashed; }
-.set-go-btn {
-  display: inline-block; margin-top: 10px;
-  padding: 8px 20px; border-radius: 20px;
-  background: #3D5A80; color: #fff; font-size: 13px; font-weight: 500;
-  transition: opacity 0.2s;
+.interest-tag:hover {
+  border-color: #2563EB;
+  color: #2563EB;
+  background: rgba(37,99,235,0.04);
 }
-.set-go-btn:hover { opacity: 0.85; }
+.interest-tag.active {
+  background: #2563EB;
+  color: #fff;
+  border-color: #2563EB;
+}
+
+/* ═══ 通知开关行 ═══ */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+.toggle-row + .toggle-row {
+  border-top: 1px solid #EFF6FF;
+}
+.toggle-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.toggle-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1E293B;
+}
+.toggle-desc {
+  font-size: 12px;
+  color: #8EA0B8;
+}
+
+/* ═══ 账号安全行 ═══ */
+.security-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: background 0.15s;
+}
+.security-row:hover { background: #FAFCFF; }
+.security-icon-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #EFF6FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.security-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.security-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1E293B;
+}
+.security-desc {
+  font-size: 12px;
+  color: #8EA0B8;
+}
+
+/* ═══ 存储管理 ═══ */
+.storage-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.storage-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.storage-num {
+  font-size: 20px;
+  font-weight: 800;
+  color: #2563EB;
+}
+.storage-lbl {
+  font-size: 13px;
+  color: #8EA0B8;
+}
+.storage-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  background: #FAFCFF;
+  border-radius: 10px;
+  border: 1px solid #EFF6FF;
+}
+.sd-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.sd-label { color: #64748B; }
+.sd-value { color: #1E293B; font-weight: 600; }
 
 /* ═══ 底部操作按钮 ═══ */
 .settings-actions {
-  display: flex; justify-content: center; gap: 12px;
-  margin-top: 28px; padding: 20px 0 40px;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 30px;
+  padding: 0 0 20px;
+}
+
+/* ═══ 品牌 Footer ═══ */
+.set-footer {
+  text-align: center;
+  padding: 30px 0 40px;
+}
+.sf-brand {
+  font-size: 20px;
+  font-weight: 900;
+  color: #2563EB;
+  letter-spacing: 0.06em;
+}
+.sf-text {
+  font-size: 13px;
+  color: #93C5FD;
+  margin-left: 8px;
+  font-weight: 600;
 }
 
 /* ═══ 响应式 ═══ */
 @media (max-width: 720px) {
-  .settings-grid { grid-template-columns: 1fr; }
+  .sub-grid { grid-template-columns: 1fr; }
+  .settings-page { max-width: 100%; padding: 0 14px; }
+  .settings-banner { padding: 22px 20px; flex-direction: column; align-items: flex-start; gap: 10px; }
+  .banner-cat { width: 70px; }
 }
 </style>

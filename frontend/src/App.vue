@@ -42,11 +42,7 @@
           <span class="sn-dot"></span>
           <span class="sn-label">投递</span>
         </router-link>
-        <router-link to="/favorites" class="sn-item" active-class="sn-active">
-          <span class="sn-dot"></span>
-          <span class="sn-label">收藏</span>
-        </router-link>
-      </nav>
+        </nav>
 
       <div class="sidebar-footer">
         <router-link to="/settings" class="sf-item" title="设置">
@@ -63,30 +59,17 @@
 
     <!-- ═══ 主内容区 ═══ -->
     <div class="app-body">
-      <header class="app-topbar">
+      <header class="app-topbar" v-show="showTopbar">
         <div class="topbar-left">
-          <!-- 搜索框 -->
-          <div class="search-box" v-show="showSearch">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input
-              type="text"
-              v-model="searchQuery"
-              placeholder="搜索职业、岗位、面试题..."
-              @keyup.enter="doSearch"
-            />
-          </div>
         </div>
         <div class="topbar-right">
-          <router-link to="/favorites" class="topbar-icon-btn" title="收藏">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          </router-link>
           <router-link to="/settings" class="topbar-icon-btn" title="设置">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
           </router-link>
         </div>
       </header>
 
-      <main class="app-main">
+      <main class="app-main" :class="{ 'fav-page': isFavorites, 'dashboard-page': isDashboard, 'full-banner-page': isFullBannerPage }">
         <router-view />
       </main>
     </div>
@@ -108,9 +91,12 @@ import AiAssistant from './components/AiAssistant.vue'
 const route = useRoute()
 const token = ref(null)
 const userDisplay = ref({})
-const searchQuery = ref('')
-const showSearch = computed(() => route.path !== '/favorites')
 const isStandalone = computed(() => route.meta?.standalone === true)
+const isFavorites = computed(() => route.path === '/favorites')
+const isDashboard = computed(() => route.path === '/dashboard')
+const fullBannerPages = ['/career', '/interview', '/exam-practice', '/resume', '/delivery-assistant']
+const isFullBannerPage = computed(() => fullBannerPages.some(path => route.path === path || route.path.startsWith(`${path}/`)))
+const showTopbar = computed(() => !isFavorites.value && !isDashboard.value && !isFullBannerPage.value)
 
 // 头像：如果有 base64 就显示图片，否则只显示文字
 const avatarDataUrl = ref(localStorage.getItem('user_avatar') || '')
@@ -136,13 +122,6 @@ onMounted(() => {
     }
   }, 2000)
 })
-
-function doSearch() {
-  const q = searchQuery.value.trim()
-  if (!q) return
-  // 导航到投递助手页并携带搜索词（该页面支持 keyword 搜索）
-  window.location.href = `/delivery-assistant?search=${encodeURIComponent(q)}`
-}
 
 watch(() => route.path, () => {
   token.value = localStorage.getItem('token')
@@ -230,7 +209,7 @@ ul { list-style:none; }
   width: var(--sidebar-width);
   min-height: 100vh;
   background: var(--bg-sidebar);
-  border-right: 1px solid var(--border);
+  border-right: 1.5px dashed var(--border-dashed);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -249,7 +228,7 @@ ul { list-style:none; }
   border-bottom: 1px dashed var(--border-dashed);
 }
 .sidebar-brand svg { flex-shrink:0; }
-.brand-name { font-size: 18px; font-weight: 700; color: var(--primary); letter-spacing: 2px; }
+.brand-name { font-size: 24px; font-weight: 700; color: var(--primary); letter-spacing: 2px; }
 .brand-sub { font-size: 9px; color: var(--text-muted); letter-spacing: 2.5px; margin-top: 2px; text-transform: uppercase; }
 
 /* 圆点导航 */
@@ -265,7 +244,7 @@ ul { list-style:none; }
   align-items: center;
   gap: 10px;
   padding: 10px 18px;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--text-light);
   transition: all 0.2s;
   position: relative;
@@ -336,29 +315,6 @@ ul { list-style:none; }
   z-index: 90;
 }
 .topbar-left { display: flex; align-items: center; }
-.search-box {
-  display: flex; align-items: center;
-  background: var(--bg-light);
-  border: 1px solid transparent;
-  border-radius: 8px;
-  padding: 0 6px 0 14px;
-  height: 34px;
-  width: 220px;
-  transition: all 0.3s;
-}
-.search-box:focus-within {
-  border-color: var(--primary);
-  width: 260px;
-  background: #fff;
-  box-shadow: 0 0 0 2px rgba(37,99,235,0.08);
-}
-.search-box svg { margin-right: 8px; flex-shrink:0; }
-.search-box input {
-  background:none; border:none; outline:none;
-  color: var(--text-body); font-size:13px; flex:1;
-  font-family: inherit;
-}
-.search-box input::placeholder { color: var(--text-muted); }
 .topbar-right { display: flex; align-items: center; gap: 8px; }
 .topbar-icon-btn {
   width: 32px; height: 32px;
@@ -375,13 +331,31 @@ ul { list-style:none; }
 /* ═══ 主内容 ═══ */
 .app-main {
   flex: 1;
-  padding: 24px 28px;
+  --main-pad-x: 28px;
+  padding: 24px var(--main-pad-x);
   animation: pageIn 0.3s ease;
 }
 
 @keyframes pageIn {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* 收藏页：去掉顶部padding让欢迎横幅顶到头 */
+.app-main.fav-page { padding-top: 0; }
+.app-main.dashboard-page { overflow-x: hidden; }
+/* 首页：同上 */
+.app-main.dashboard-page { padding-top: 0; }
+.app-main.full-banner-page { padding-top: 0; }
+.layout-root:not(.standalone) .app-main.full-banner-page .page-banner.banner-fullwidth .banner-content {
+  padding-left: calc(var(--sidebar-width) + 60px);
+  padding-right: 32px;
+}
+/* 独立 standalone 页面：banner 不需要补偿侧边栏 */
+.layout-root.standalone .page-banner.banner-fullwidth {
+  width: 100%;
+  margin-left: 0;
+  border-radius: 0;
 }
 
 /* ── Common Components ── */
@@ -525,19 +499,31 @@ ul { list-style:none; }
 
 /* Responsive */
 @media (max-width:900px) {
-  .app-main { padding:20px; }
+  .app-main { --main-pad-x: 20px; padding:20px var(--main-pad-x); }
   .user-name { display:none; }
-  .search-box { width:160px; }
 }
 @media (max-width:768px) {
-  .search-box { width:120px; }
   .brand-sub { display:none; }
 }
 @media (max-width:640px) {
   .grid-4, .grid-3, .grid-2 { grid-template-columns:1fr; }
-  .app-main { padding:14px; }
-  .search-box { display:none; }
+  .app-main { --main-pad-x: 14px; padding:14px var(--main-pad-x); }
 }
 .icon-blue { color: var(--primary); }
 .icon-blue svg { stroke: var(--primary); }
+
+/* ═══ 品牌 Footer（全局） ═══ */
+.brand-footer {
+  text-align: center;
+  padding: 36px 0 28px;
+  color: #94A3B8;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+.brand-footer .qitu-up { color: #2563EB; font-weight: 800; }
+.brand-footer .qitu-sl {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #BFDBFE;
+}
 </style>

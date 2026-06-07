@@ -1,10 +1,12 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from database import engine, Base
-from routers import career, interview, resume, user, exam, bilibili, delivery, assistant
+from routers import career, interview, resume, user, exam, bilibili, delivery, assistant, dashboard
 import json
 import os
+from pathlib import Path
 
 # 创建数据库表
 Base.metadata.create_all(bind=engine)
@@ -55,10 +57,16 @@ app.include_router(exam.router)
 app.include_router(bilibili.router)
 app.include_router(delivery.router)
 app.include_router(assistant.router)
+app.include_router(dashboard.router)
 
-@app.get("/")
-def root():
-    return {"status": "ok", "message": "多模态模拟面试评测智能体 API 已启动"}
+# ═══ 生产环境：托管前端静态文件 ═══
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend" / "dist"
+if FRONTEND_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
+
+@app.get("/api/health")
+def health():
+    return {"status": "ok", "message": "启途·AI求职助手 API 已启动"}
 
 if __name__ == "__main__":
     import uvicorn

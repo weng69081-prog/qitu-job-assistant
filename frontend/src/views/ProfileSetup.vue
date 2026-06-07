@@ -1,59 +1,14 @@
 <template>
   <div class="setup-page">
-    <!-- ═══ 背景云朵装饰 ═══ -->
-    <div class="setup-sky">
-      <div class="sky-cloud sc-1"></div>
-      <div class="sky-cloud sc-2"></div>
-      <div class="sky-cloud sc-3"></div>
-      <div class="sky-cloud sc-4"></div>
-      <div class="sky-cloud sc-5"></div>
-      <div class="sky-cloud sc-6"></div>
-    </div>
-
-    <!-- ═══ 左侧品牌区（不动） ═══ -->
-    <div class="brand-panel">
-      <div class="brand-content">
-        <div class="brand-logo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
-            <circle cx="12" cy="12" r="10"/>
-            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
-          </svg>
-        </div>
-        <h1 class="brand-title">启途</h1>
-        <p class="brand-sub">QITU · AI 求职助手</p>
-        <p class="brand-tagline">完善基础信息 · 开启职业探索<br>更精准的推荐 · 从了解你开始</p>
-        <div class="brand-features">
-          <div class="brand-feature-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/>
-            </svg>
-            <span>昵称与专业</span>
-          </div>
-          <div class="brand-feature-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
-              <circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
-            </svg>
-            <span>兴趣方向</span>
-          </div>
-          <div class="brand-feature-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>
-            <span>学习困惑</span>
-          </div>
-        </div>
-        <div class="brand-quote">「了解你，才能更好地帮你」</div>
-      </div>
-    </div>
-
-    <!-- ═══ 右侧淡灰底 + 白卡片表单 ═══ -->
-    <div class="form-panel">
-      <div class="setup-welcome">
-        <h2>完善资料</h2>
-        <p>只需几分钟，让启途更懂你</p>
+    <div class="sign-wrapper">
+      <!-- ═══ 品牌 ═══ -->
+      <div class="brand-logo-area">
+        <div class="brand-title">启途</div>
+        <div class="brand-slogan">完善资料 · 开启职业探索</div>
       </div>
 
-      <div class="form-card">
+      <!-- ═══ 磨砂玻璃卡片 ═══ -->
+      <div class="setup-card">
         <img src="/src/assets/auth-cat.png" class="setup-cat" alt="" />
 
         <!-- 昵称 + 年级 -->
@@ -241,218 +196,193 @@ async function save() {
 </script>
 
 <style scoped>
-/* ═══ 页面布局 ═══ */
+/* ═══ 页面 — 全屏背景图 ═══ */
 .setup-page {
-  display: flex;
   min-height: 100vh;
   width: 100%;
-  position: relative;
-  background: linear-gradient(180deg,#6FA3C8 0%,#8DB8D8 25%,#B0D0E4 50%,#D0E4F0 75%,#E8F0F5 100%);
-  overflow: hidden;
-}
-
-/* ═══ 背景云朵 ═══ */
-.setup-sky {
-  position: absolute; inset:0;
-  pointer-events:none; overflow:hidden;
-}
-.setup-sky .sky-cloud {
-  position:absolute; border-radius:50%;
-  background:rgba(255,255,255,.45); filter:blur(40px);
-  will-change:transform;
-}
-.sc-1 { width:500px; height:120px; top:5%; left:-8%; animation:cloudA 120s linear infinite; }
-.sc-2 { width:400px; height:100px; top:15%; left:40%; animation:cloudB 140s linear infinite; }
-.sc-3 { width:350px; height:85px; top:55%; left:65%; animation:cloudA 100s linear infinite; }
-.sc-4 { width:300px; height:70px; top:70%; left:20%; animation:cloudB 90s linear infinite; }
-.sc-5 { width:180px; height:45px; top:40%; left:80%; animation:cloudA 70s linear infinite; }
-.sc-6 { width:250px; height:60px; top:80%; left:-5%; animation:cloudB 85s linear infinite; }
-@keyframes cloudA { 0%{transform:translateX(0)} 100%{transform:translateX(1200px)} }
-@keyframes cloudB { 0%{transform:translateX(0)} 100%{transform:translateX(1000px)} }
-
-/* ═══ 左侧品牌区 ═══ */
-.brand-panel {
-  width: 35%;
-  position: relative;
-  z-index: 1;
+  background: url('/auth-bg-watercolor-clean.png') center/cover no-repeat fixed;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(155deg, rgba(61,90,128,.88) 0%, rgba(74,107,148,.72) 60%, rgba(142,160,184,.55) 100%);
-  backdrop-filter: blur(4px);
-}
-.brand-content {
-  position:relative; z-index:1; text-align:center;
-  color:#fff; padding:2rem; display:flex;
-  flex-direction:column; align-items:center;
-}
-.brand-logo {
-  width:56px; height:56px; border-radius:16px;
-  background:rgba(255,255,255,.15); backdrop-filter:blur(8px);
-  display:flex; align-items:center; justify-content:center;
-  margin-bottom:8px;
-}
-.brand-title { font-size:2.2rem; font-weight:800; letter-spacing:6px; margin-bottom:2px; text-shadow:0 2px 12px rgba(0,0,0,.08); }
-.brand-sub { font-size:.78rem; color:rgba(255,255,255,.55); letter-spacing:4px; margin-bottom:14px; }
-.brand-tagline { font-size:.85rem; color:rgba(255,255,255,.75); line-height:1.7; max-width:240px; margin:0 auto 24px; }
-.brand-features { display:flex; flex-wrap:wrap; justify-content:center; gap:8px 14px; margin-bottom:20px; }
-.brand-feature-item {
-  display:flex; align-items:center; gap:6px; font-size:.8rem;
-  color:rgba(255,255,255,.7); background:rgba(255,255,255,.1);
-  padding:5px 12px; border-radius:20px; backdrop-filter:blur(4px);
-  border:1px solid rgba(255,255,255,.06);
-}
-.brand-feature-item svg { color:#8EA0B8; flex-shrink:0; }
-.brand-quote { font-size:.82rem; color:rgba(255,255,255,.4); font-style:italic; letter-spacing:1px; margin-top:6px; }
-
-/* ═══ 表单上方趴边猫 ═══ */
-.setup-cat {
-  position: absolute;
-  top: -70px;
-  right: 20px;
-  width: 90px;
-  z-index: 5;
-  pointer-events: none;
-}
-
-/* ═══ 白色卡片 ═══ */
-.form-card {
-  width: 100%;
-  max-width: 480px;
-  background: #ffffff;
-  border-radius: 18px;
-  padding: 2.4rem;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
   position: relative;
-  animation: fadeIn .3s ease;
 }
 
-/* ═══ 右侧 — 淡灰底 ═══ */
-.form-panel {
-  flex: 1;
+/* ═══ 微遮罩（同登录页） ═══ */
+.setup-page::before {
+  content: '';
+  position: fixed; inset:0;
+  background: rgba(0,0,0,0.05);
+  z-index: 0;
+}
+
+/* ═══ 外层容器 ═══ */
+.sign-wrapper {
   position: relative;
   z-index: 1;
-  background: #f5f7fa;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  overflow-y: auto;
+  width: 100%;
+  padding: 20px;
 }
 
-/* ═══ 白色区域左上角的欢迎文字 ═══ */
-.setup-welcome {
+/* ═══ 品牌 ═══ */
+.brand-logo-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 26px;
+}
+.brand-title {
+  font-size: 52px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 10px;
+  line-height: 1;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.brand-slogan {
+  font-size: 16px;
+  color: rgba(255,255,255,0.75);
+  margin-top: 10px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+/* ═══ 磨砂玻璃卡片 ═══ */
+.setup-card {
+  width: 480px;
+  max-width: 100%;
+  background: rgba(255,255,255,0.60);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 14px;
+  padding: 28px 30px 30px;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.08);
+  position: relative;
+  border: 1px solid rgba(255,255,255,0.35);
+}
+
+/* ═══ 小猫 ═══ */
+.setup-cat {
   position: absolute;
-  top: 4.5rem;
-  left: 3.5rem;
-  text-align: left;
+  top: -66px;
+  right: 10px;
+  width: 80px;
   z-index: 2;
-}
-.setup-welcome h2 {
-  font-size: 2.6rem;
-  font-weight: 800;
-  color: #1a2744;
-  margin: 0 0 6px 0;
-}
-.setup-welcome p {
-  font-size: 1.1rem;
-  color: #8EA0B8;
-  margin: 0;
+  pointer-events: none;
 }
 
-@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+/* ═══ 字段提示 ═══ */
+.field-label {
+  font-size: 13px;
+  color: rgba(25,27,31,0.65);
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
 
 /* ═══ 表单字段 ═══ */
 .form-field {
-  display:flex; align-items:center;
-  background:#fff; border:1.5px solid #D8DCE6; border-radius:12px;
-  padding:0 1.1rem; margin-bottom:.6rem;
-  transition:border-color .2s, box-shadow .2s;
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.5);
+  border: 1px solid rgba(235,236,237,0.7);
+  border-radius: 10px;
+  padding: 0 14px;
+  margin-bottom: 10px;
+  transition: border-color .2s, box-shadow .2s;
 }
-.form-field:focus-within { border-color:#3D5A80; box-shadow:0 0 0 3px rgba(61,90,128,.08); }
-.form-field.error { border-color:#f56c6c; }
+.form-field:focus-within {
+  border-color: #1772f6;
+  box-shadow: 0 0 0 3px rgba(23,114,246,0.08);
+}
+.form-field.error { border-color: #f56c6c; }
 
 .inp-icon {
-  width:18px; height:18px; color:#8EA0B8; flex-shrink:0; margin-right:.75rem;
-  transition:color .2s;
+  width: 17px;
+  height: 17px;
+  color: #8590a6;
+  flex-shrink: 0;
+  margin-right: 10px;
+  transition: color .2s;
 }
-.form-field:focus-within .inp-icon { color:#3D5A80; }
+.form-field:focus-within .inp-icon { color: #1772f6; }
 
 .form-field input,
 .form-field select {
-  flex:1; border:none; outline:none; font-size:1rem;
-  padding:.95rem 0; background:transparent; color:#4A5568;
-  -webkit-appearance:none; appearance:none;
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  padding: 11px 0;
+  background: transparent;
+  color: #191b1f;
+  font-family: inherit;
 }
-.form-field select { cursor:pointer; }
-.form-field select option:first-child { color:#9AAEC2; }
-.form-field input::placeholder { color:#9AAEC2; }
+.form-field input::placeholder { color: #8590a6; }
+.form-field select { cursor: pointer; }
+.form-field select option:first-child { color: #8590a6; }
 
-.form-field.textarea-field { padding:.5rem 1.1rem; }
+.form-field.textarea-field { padding: 8px 14px; }
 .form-field textarea {
-  flex:1; border:none; outline:none; font-size:.9rem;
-  padding:.45rem 0; background:transparent; color:#4A5568;
-  resize:vertical; min-height:46px; font-family:inherit; line-height:1.4;
+  flex: 1; border: none; outline: none;
+  font-size: 14px; padding: 3px 0;
+  background: transparent; color: #191b1f;
+  resize: vertical; min-height: 44px;
+  font-family: inherit; line-height: 1.4;
 }
-.form-field textarea::placeholder { color:#9AAEC2; }
+.form-field textarea::placeholder { color: #8590a6; }
 
 .error-msg {
-  color:#f56c6c; font-size:.8rem;
-  margin:-.2rem 0 .6rem .3rem;
-  display:flex; align-items:center; gap:.3rem;
-}
-
-/* ═══ 字段标签 ═══ */
-.field-label {
-  display:flex; align-items:center; gap:.35rem;
-  font-size:.82rem; font-weight:600; color:#1a2744;
-  margin:.6rem 0 .35rem;
+  color: #f56c6c;
+  font-size: 12px;
+  margin: -6px 0 8px 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* ═══ 兴趣标签 ═══ */
-.tags-grid { display:flex; flex-wrap:wrap; gap:.4rem; }
+.tags-grid { display: flex; flex-wrap: wrap; gap: 6px; }
 .tag-item {
-  display:inline-block; padding:.38rem .65rem; border-radius:20px;
-  font-size:.8rem; cursor:pointer; border:1.5px solid #D8DCE6;
-  background:#fff; color:#8EA0B8; transition:all .2s;
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1.5px solid rgba(235,236,237,0.7);
+  background: rgba(255,255,255,0.4);
+  color: #8590a6;
+  transition: all .2s;
 }
-.tag-item:hover { border-color:#3D5A80; color:#3D5A80; }
-.tag-item.active { background:#3D5A80; color:#fff; border-color:#3D5A80; }
+.tag-item:hover { border-color: #1772f6; color: #1772f6; }
+.tag-item.active { background: #1772f6; color: #fff; border-color: #1772f6; }
 
-/* ═══ 提交按钮 ═══ */
+/* ═══ 提交按钮（同登录页） ═══ */
 .submit-btn {
-  width:100%; padding:.95rem; border:none; border-radius:12px;
-  background:linear-gradient(135deg,#3D5A80,#2C4460);
-  color:#fff; font-size:1rem; font-weight:600;
-  cursor:pointer; transition:transform .15s, box-shadow .2s, opacity .2s;
-  display:flex; align-items:center; justify-content:center; gap:.4rem;
-  margin-top:1.2rem;
+  width: 100%;
+  height: 42px;
+  border: none;
+  border-radius: 8px;
+  background: #1772f6;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+  transition: background .2s, transform .15s;
 }
-.submit-btn:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 6px 20px rgba(61,90,128,.25); }
-.submit-btn:disabled { opacity:.7; cursor:not-allowed; }
-.submit-btn.loading { pointer-events:none; }
-.submit-btn svg { flex-shrink:0; }
+.submit-btn:hover:not(:disabled) { background: #1565db; transform: translateY(-1px); }
+.submit-btn:disabled { opacity: .7; cursor: not-allowed; }
+.submit-btn.loading { pointer-events: none; }
 
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg)} }
-
-/* ═══ 响应式 ═══ */
-@media (max-width:1100px) {
-  .brand-panel { width: 32%; }
-}
-@media (max-width:900px) {
-  .setup-page { flex-direction: column; }
-  .brand-panel { width:100%; min-height:170px; }
-  .brand-title { font-size:1.6rem; }
-  .form-panel { padding:2rem 1rem; }
-  .setup-welcome { position: static; text-align: center; margin-bottom: 1rem; }
-  .form-card { max-width:480px; }
-}
-@media (max-width:480px) {
-  .brand-panel { min-height:140px; }
-  .form-card { padding:1.6rem 1.2rem; }
-  .form-field input,
-  .form-field select { font-size:.95rem; padding:.8rem 0; }
-  .submit-btn { padding:.8rem; font-size:.95rem; }
-}
 </style>

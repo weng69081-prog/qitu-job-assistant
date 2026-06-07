@@ -4,169 +4,193 @@
     <div class="banner-wrap">
       <PageBanner fullwidth
         title="职业探索"
-        description="探索适合你的职业方向，了解岗位要求与发展路径"
+        description="从兴趣到岗位，规划你的第一条职业路线"
         :icon="'Compass'"
         variant="primary"
+        cat-src="/src/assets/new-explore-cat.png"
+        cat-alt="小橘探路"
+        :path-items="['探索方向', '成长路线', '收藏路线']"
       />
-      <img src="/src/assets/new-explore-cat.png" class="banner-cat" alt="小橘探路">
     </div>
-    <!-- ═══ 顶部：专业选择 + 全局搜索 ═══ -->
-    <div class="list-top-bar">
-      <div class="top-left">
-        <el-select v-model="selectedCategory" placeholder="选择专业大类" size="large" style="width:200px" @change="onCategoryChange">
-          <el-option v-for="c in majorCategories" :key="c" :label="c" :value="c" />
-        </el-select>
-        <span class="career-count"><Briefcase :size="16" class="icon-blue" /> 共 <b>{{ filteredCareers.length }}</b> 个岗位</span>
-      </div>
-      <div class="search-input-wrap">
-        <Search :size="16" class="icon-blue" />
-        <el-input
-          v-model="searchQuery"
-          placeholder="搜索岗位名称或关键词…"
-          clearable
-          size="large"
-        />
-      </div>
-    </div>
-
-    <!-- ═══ 筛选区：标签式多选 ═══ -->
-    <div class="filter-bar">
-      <div class="filter-group">
-        <span class="filter-label"><Signal :size="16" class="icon-blue" /> 入门难度</span>
-        <div class="filter-tags">
-          <span
-            v-for="d in difficultyOptions" :key="d"
-            class="filter-tag"
-            :class="{ active: selectedDifficulties.includes(d) }"
-            @click="toggleDifficulty(d)"
-          >{{ d }}</span>
-        </div>
-      </div>
-      <div class="filter-group">
-        <span class="filter-label"><Briefcase :size="16" class="icon-blue" /> 工作类型</span>
-        <div class="filter-tags">
-          <span
-            v-for="t in workTypeOptions" :key="t"
-            class="filter-tag"
-            :class="{ active: selectedWorkTypes.includes(t) }"
-            @click="toggleWorkType(t)"
-          >{{ t }}</span>
-        </div>
-      </div>
-      <div class="filter-group">
-        <span class="filter-label"><Coins :size="16" class="icon-blue" /> 薪资标签</span>
-        <div class="filter-tags">
-          <span
-            v-for="s in salaryTagOptions" :key="s"
-            class="filter-tag"
-            :class="{ active: selectedSalaryTags.includes(s) }"
-            @click="toggleSalaryTag(s)"
-          >{{ s }}</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ 已收藏岗位专区 ═══ -->
-    <div v-if="store.validBookmarks.length > 0" class="bookmark-band">
-      <div class="bm-band-header">
-        <span class="bm-band-title"><Star :size="16" class="icon-blue" /> 已收藏岗位 <b>({{ store.validBookmarks.length }})</b></span>
-        <el-button text size="small" @click="$router.push('/settings')">管理收藏 <ArrowRight :size="16" class="icon-blue" /></el-button>
-      </div>
-      <div class="bm-band-scroll">
-        <div
-          v-for="b in store.validBookmarks"
-          :key="b.career"
-          class="bm-band-card"
-          @click="goDetail(b.career)"
-        >
-          <div class="bm-band-top">
-            <span class="bm-band-name">{{ b.career }}</span>
-            <span class="bm-band-badge" v-if="store.hasGeneratedPath(b.career)" title="已生成成长路线"><Map :size="16" class="icon-blue" /></span>
-          </div>
-          <div class="bm-band-meta">{{ b.difficulty }} · {{ b.salary }}</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ═══ 主体：网格布局岗位卡片 ═══ -->
-    <div v-if="loading" class="loading-state"><Loader :size="16" class="icon-blue" /> 加载中…</div>
-    <div v-else-if="aiSearchLoading" class="empty-state">
-      <div class="ai-searching">
-        <span class="empty-icon"><Bot :size="16" class="icon-blue" /></span>
-        <p style="font-size:1.2rem;margin-bottom:0.5rem">正在为你补充该职业信息，请稍候…</p>
-        <p class="empty-hint">AI正在生成 <b>{{ searchQuery }}</b> 的详细资料</p>
-        <el-progress :percentage="80" :stroke-width="4" style="max-width:300px;margin:1rem auto" />
-      </div>
-    </div>
-    <div v-else-if="filteredCareers.length === 0 && !searchQuery" class="empty-state">
-      <span class="empty-icon"><Search :size="16" class="icon-blue" /></span>
-      <p>没有找到匹配的岗位</p>
-      <p class="empty-hint">试试调整筛选条件或选择其他专业</p>
-    </div>
-    <div v-else-if="aiSearchError" class="empty-state">
-      <span class="empty-icon"><TriangleAlert :size="16" class="icon-blue" /></span>
-      <p>搜索出错：{{ aiSearchError }}</p>
-      <p class="empty-hint">请重试或换一个关键词</p>
-    </div>
-    <div v-else-if="filteredCareers.length === 0 && searchQuery" class="empty-state">
-      <span class="empty-icon"><Search :size="16" class="icon-blue" /></span>
-      <p>没搜到「{{ searchQuery }}」的结果</p>
-      <p class="empty-hint">AI正在生成信息…</p>
-    </div>
-    <div v-else class="career-grid">
-      <div
-        v-for="c in filteredCareers"
-        :key="c.career"
-        class="card career-card"
-        :class="{ 'is-bookmarked': store.isBookmarked(c.career), 'ai-gen-card': c.ai_generated }"
-        @click="goDetail(c.career)"
-      >
-        <div class="card-ribbon" v-if="store.isBookmarked(c.career)"><Star :size="16" class="icon-blue" /> 已收藏</div>
-        <div class="card-body">
-          <div class="card-icon">{{ getIcon(c.career) }}</div>
-          <div class="card-title-area">
-            <div class="card-title-row">
-              <strong class="card-name">{{ c.career }}</strong>
-              <span class="card-path-badge" v-if="store.hasGeneratedPath(c.career)" title="已生成成长路线"><Map :size="16" class="icon-blue" /></span>
-              <el-tag v-if="c.ai_generated" size="small" type="danger" class="new-tag">新</el-tag>
+    <!-- ═══ 主体：左侧平板职业清单 + 右侧视频推荐 ═══ -->
+    <div class="explore-workbench">
+      <aside class="career-tablet-shell">
+        <div class="tablet-device">
+          <div class="tablet-camera"></div>
+          <div class="tablet-screen">
+            <div class="tablet-statusbar">
+              <span class="tablet-time">{{ tabletTime }}</span>
+              <div class="tablet-system-icons" aria-hidden="true">
+                <span class="tablet-signal"><i></i><i></i><i></i></span>
+                <span class="tablet-wifi"></span>
+                <span class="tablet-battery"><i></i></span>
+              </div>
             </div>
-            <span class="card-intro">{{ c.short_intro || '' }}</span>
-          </div>
-          <div class="card-actions">
-            <el-button
-              size="small"
-              :type="store.isBookmarked(c.career) ? 'warning' : 'default'"
-              circle
-              @click.stop="toggleBookmark(c)"
-              :title="store.isBookmarked(c.career) ? '取消收藏' : '收藏岗位'"
-            ><Star :size="16" class="icon-blue" :class="store.isBookmarked(c.career) ? 'fas fa-star' : 'far fa-star'" /></el-button>
-            <el-button
-              size="small"
-              type="primary"
-              circle
-              plain
-              @click.stop="scrollToVideos(c.career)"
-              title="入门学习视频"
-            ><Monitor :size="16" class="icon-blue" /></el-button>
-          </div>
-        </div>
-        <div class="card-tags">
-          <span class="tag-pill" :class="difficultyType(c.difficulty) === 'success' ? 'green' : difficultyType(c.difficulty) === 'warning' ? 'orange' : difficultyType(c.difficulty) === 'danger' ? 'red' : 'gray'"><Signal :size="16" class="icon-blue" /> {{ c.difficulty }}</span>
-          <span class="tag-pill blue"><Coins :size="16" class="icon-blue" /> {{ c.salary_tag || c.salary }}</span>
-          <span class="tag-pill green"><Briefcase :size="16" class="icon-blue" /> {{ c.work_type || '技术类' }}</span>
-          <span v-if="c.keywords" v-for="kw in (c.keywords || []).slice(0,2)" :key="kw" class="tag-pill gray"><Tag :size="16" class="icon-blue" /> {{ kw }}</span>
-        </div>
-      </div>
-    </div>
+            <div class="tablet-header">
+              <span class="tablet-title">职业口袋清单</span>
+              <div class="tablet-search">
+                <Search :size="16" class="icon-blue" />
+                <el-input
+                  v-model="searchQuery"
+                  placeholder="搜索岗位名称…"
+                  clearable
+                  size="large"
+                />
+              </div>
+              <span class="career-count"><Briefcase :size="16" class="icon-blue" /> {{ filteredCareers.length }} 个</span>
+            </div>
 
-    <!-- ═══════════════════════════════════ -->
-    <!-- 📺 职业入门学习视频推荐模块          -->
-    <!-- ═══════════════════════════════════ -->
-    <div class="card video-recommend-section" ref="videoSection">
-      <div class="section-header">
-        <div class="section-title">
-          <Monitor :size="16" class="icon-blue" />
-          <span>职业入门学习视频推荐</span>
+            <div class="tablet-categories">
+              <button
+                v-for="c in majorCategories"
+                :key="c"
+                class="major-chip"
+                :class="{ active: selectedCategory === c }"
+                @click="selectCategory(c)"
+              >{{ c }}</button>
+            </div>
+
+            <div class="filter-bar">
+              <div class="filter-line">
+                <span class="filter-label"><Signal :size="16" class="icon-blue" /> 入门难度</span>
+                <div class="filter-tags">
+                  <span
+                    v-for="d in difficultyOptions" :key="d"
+                    class="filter-tag"
+                    :class="{ active: selectedDifficulties.includes(d) }"
+                    @click="toggleDifficulty(d)"
+                  >{{ d }}</span>
+                </div>
+              </div>
+              <div class="filter-line">
+                <span class="filter-label"><Briefcase :size="16" class="icon-blue" /> 工作类型</span>
+                <div class="filter-tags">
+                  <span
+                    v-for="t in workTypeOptions" :key="t"
+                    class="filter-tag"
+                    :class="{ active: selectedWorkTypes.includes(t) }"
+                    @click="toggleWorkType(t)"
+                  >{{ t }}</span>
+                </div>
+              </div>
+              <div class="filter-line salary-filter-line">
+                <span class="filter-label"><Coins :size="16" class="icon-blue" /> 薪资标签</span>
+                <div class="filter-tags">
+                  <span
+                    v-for="s in salaryTagOptions" :key="s"
+                    class="filter-tag"
+                    :class="{ active: selectedSalaryTags.includes(s) }"
+                    @click="toggleSalaryTag(s)"
+                  >{{ s }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="store.validBookmarks.length > 0" class="bookmark-band">
+              <div class="bm-band-header">
+                <span class="bm-band-title"><Star :size="16" class="icon-blue" /> 已收藏 <b>{{ store.validBookmarks.length }}</b></span>
+                <el-button text size="small" @click="$router.push('/settings')">管理 <ArrowRight :size="16" class="icon-blue" /></el-button>
+              </div>
+              <div class="bm-band-scroll">
+                <div
+                  v-for="b in store.validBookmarks.slice(0, 4)"
+                  :key="b.career"
+                  class="bm-band-card"
+                  @click="goDetail(b.career)"
+                >
+                  <div class="bm-band-top">
+                    <span class="bm-band-name">{{ b.career }}</span>
+                    <span class="bm-band-badge" v-if="store.hasGeneratedPath(b.career)" title="已生成成长路线"><Map :size="16" class="icon-blue" /></span>
+                  </div>
+                  <div class="bm-band-meta">{{ b.difficulty }} · {{ b.salary }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tablet-career-list">
+              <div v-if="loading" class="loading-state"><Loader :size="16" class="icon-blue" /> 加载中…</div>
+              <div v-else-if="aiSearchLoading" class="empty-state">
+                <div class="ai-searching">
+                  <span class="empty-icon"><Bot :size="16" class="icon-blue" /></span>
+                  <p>正在补充该职业信息…</p>
+                  <p class="empty-hint">AI正在生成 <b>{{ searchQuery }}</b></p>
+                  <el-progress :percentage="80" :stroke-width="4" style="max-width:260px;margin:1rem auto" />
+                </div>
+              </div>
+              <div v-else-if="filteredCareers.length === 0 && !searchQuery" class="empty-state">
+                <span class="empty-icon"><Search :size="16" class="icon-blue" /></span>
+                <p>没有找到匹配的岗位</p>
+                <p class="empty-hint">试试调整筛选条件或选择其他专业</p>
+              </div>
+              <div v-else-if="aiSearchError" class="empty-state">
+                <span class="empty-icon"><TriangleAlert :size="16" class="icon-blue" /></span>
+                <p>搜索出错：{{ aiSearchError }}</p>
+                <p class="empty-hint">请重试或换一个关键词</p>
+              </div>
+              <div v-else-if="filteredCareers.length === 0 && searchQuery" class="empty-state">
+                <span class="empty-icon"><Search :size="16" class="icon-blue" /></span>
+                <p>没搜到「{{ searchQuery }}」的结果</p>
+                <p class="empty-hint">AI正在生成信息…</p>
+              </div>
+              <div v-else class="career-grid">
+                <div
+                  v-for="c in filteredCareers"
+                  :key="c.career"
+                  class="card career-card"
+                  :class="{ 'is-bookmarked': store.isBookmarked(c.career), 'ai-gen-card': c.ai_generated }"
+                  @click="goDetail(c.career)"
+                >
+                  <div class="card-ribbon" v-if="store.isBookmarked(c.career)"><Star :size="16" class="icon-blue" /> 已收藏</div>
+                  <div class="card-body">
+                    <div class="card-icon">{{ getIcon(c.career) }}</div>
+                    <div class="card-title-area">
+                      <div class="card-title-row">
+                        <strong class="card-name">{{ c.career }}</strong>
+                        <span class="card-path-badge" v-if="store.hasGeneratedPath(c.career)" title="已生成成长路线"><Map :size="16" class="icon-blue" /></span>
+                        <el-tag v-if="c.ai_generated" size="small" type="danger" class="new-tag">新</el-tag>
+                      </div>
+                      <span class="card-intro">{{ c.short_intro || '' }}</span>
+                    </div>
+                  </div>
+                  <div class="card-tag-row card-meta-row">
+                    <span class="tag-pill" :class="difficultyType(c.difficulty) === 'success' ? 'green' : difficultyType(c.difficulty) === 'warning' ? 'orange' : difficultyType(c.difficulty) === 'danger' ? 'red' : 'gray'"><Signal :size="16" class="icon-blue" /> {{ c.difficulty }}</span>
+                    <span class="tag-pill green"><Briefcase :size="16" class="icon-blue" /> {{ c.work_type || '技术类' }}</span>
+                    <span v-if="c.keywords" v-for="kw in (c.keywords || []).slice(0,2)" :key="kw" class="tag-pill gray"><Tag :size="16" class="icon-blue" /> {{ kw }}</span>
+                  </div>
+                  <div class="card-tag-row card-salary-row">
+                    <span class="tag-pill blue salary-pill"><Coins :size="16" class="icon-blue" /> {{ c.salary_tag || c.salary }}</span>
+                    <div class="card-actions">
+                      <el-button
+                        size="small"
+                        :type="store.isBookmarked(c.career) ? 'warning' : 'default'"
+                        circle
+                        @click.stop="toggleBookmark(c)"
+                        :title="store.isBookmarked(c.career) ? '取消收藏' : '收藏岗位'"
+                      ><Star :size="16" class="icon-blue" :class="store.isBookmarked(c.career) ? 'fas fa-star' : 'far fa-star'" /></el-button>
+                      <el-button
+                        size="small"
+                        type="primary"
+                        circle
+                        plain
+                        @click.stop="scrollToVideos(c.career)"
+                        title="入门学习视频"
+                      ><Monitor :size="16" class="icon-blue" /></el-button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <section class="video-recommend-section" ref="videoSection">
+        <div class="video-panel-head">
+          <div>
+            <span class="section-kicker">LEARNING VIDEO</span>
+            <h2>职业入门学习推荐视频</h2>
+            <p>先看一个方向的视频，再去左侧平板清单里收藏岗位和生成路线。</p>
+          </div>
           <span v-if="selectedVideoCareer" class="section-title-badge">{{ selectedVideoCareer }}</span>
         </div>
         <div class="video-section-controls">
@@ -175,74 +199,73 @@
             <el-radio-button value="new"><Star :size="16" class="icon-blue" /> 最新</el-radio-button>
           </el-radio-group>
         </div>
-      </div>
 
-      <!-- 视频卡片加载状态 -->
-      <div v-if="videoLoading" class="loading-state"><Loader :size="16" class="icon-blue" /> 正在搜索B站视频…</div>
+        <div v-if="videoLoading" class="loading-state video-loading"><Loader :size="16" class="icon-blue" /> 正在搜索B站视频…</div>
 
-      <!-- 视频卡片网格 -->
-      <div v-else-if="videoList.length > 0" class="video-grid">
-        <div
-          v-for="(v, idx) in videoList"
-          :key="v.bvid || idx"
-          class="card video-card"
-        >
-          <!-- 封面图 -->
-          <div class="video-cover" v-if="v.pic">
-            <img :src="v.pic" :alt="v.title" @error="onCoverError($event, v)" />
-            <span class="video-duration" v-if="v.duration">{{ v.duration }}</span>
-            <div class="video-cover-overlay">
-              <span class="overlay-play"><Play :size="16" class="icon-blue" /> 去B站学习</span>
+        <div v-else-if="videoList.length > 0" class="video-grid">
+          <div
+            v-for="(v, idx) in videoList"
+            :key="v.bvid || idx"
+            class="card video-card"
+          >
+            <div class="video-cover" v-if="v.pic" @click="openVideo(v)">
+              <img :src="v.pic" :alt="v.title" @error="onCoverError($event, v)" />
+              <span class="video-duration" v-if="v.duration">{{ v.duration }}</span>
+              <div class="video-cover-overlay">
+                <span class="overlay-play"><Play :size="16" class="icon-blue" /> 去B站学习</span>
+              </div>
             </div>
-          </div>
-          <div class="video-cover video-cover-placeholder" v-else @click="openVideo(v)">
-            <span class="placeholder-icon"><Film :size="16" class="icon-blue" /></span>
-            <span class="placeholder-title">{{ v.title?.slice(0, 12) || '入门视频' }}</span>
-          </div>
+            <div class="video-cover video-cover-placeholder" v-else @click="openVideo(v)">
+              <span class="placeholder-icon"><Film :size="16" class="icon-blue" /></span>
+              <span class="placeholder-title">{{ v.title?.slice(0, 12) || '入门视频' }}</span>
+            </div>
 
-          <!-- 相关信息 -->
-          <div class="video-info">
-            <div class="video-title-row">
-              <span class="video-title" :title="cleanTitle(v.title)">{{ cleanTitle(v.title) }}</span>
-              <el-tag v-if="store.isBookmarked(selectedVideoCareer)" size="small" type="warning" class="bookmark-video-tag"><Star :size="16" class="icon-blue" /> 收藏岗位专属</el-tag>
-              <el-button
-                size="small"
-                circle
-                :type="store.isVideoBookmarked(v.bvid) ? 'warning' : 'default'"
-                @click.stop="toggleVideoBookmark(v)"
-                class="video-star-btn"
-                :title="store.isVideoBookmarked(v.bvid) ? '取消收藏视频' : '收藏视频'"
-              ><Star :size="16" class="icon-blue" :class="store.isVideoBookmarked(v.bvid) ? 'fas fa-star' : 'far fa-star'" /></el-button>
+            <div class="video-info">
+              <div class="video-title-row">
+                <span class="video-title" :title="cleanTitle(v.title)">{{ cleanTitle(v.title) }}</span>
+                <el-button
+                  size="small"
+                  circle
+                  :type="store.isVideoBookmarked(v.bvid) ? 'warning' : 'default'"
+                  @click.stop="toggleVideoBookmark(v)"
+                  class="video-star-btn"
+                  :title="store.isVideoBookmarked(v.bvid) ? '取消收藏视频' : '收藏视频'"
+                ><Star :size="16" class="icon-blue" :class="store.isVideoBookmarked(v.bvid) ? 'fas fa-star' : 'far fa-star'" /></el-button>
+              </div>
+              <div class="video-meta">
+                <span class="video-author" v-if="v.author"><User :size="16" class="icon-blue" /> {{ v.author }}</span>
+                <span class="video-stats" v-if="v.play">
+                  <span><Play :size="16" class="icon-blue" /> {{ formatCount(v.play) }}</span>
+                  <span v-if="v.danmaku"> <MessageSquare :size="16" class="icon-blue" /> {{ formatCount(v.danmaku) }}</span>
+                </span>
+              </div>
+              <p class="video-description" v-if="v.description">{{ v.description?.slice(0, 34) }}{{ v.description?.length > 34 ? '…' : '' }}</p>
+              <a
+                :href="v.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="video-link-btn"
+                @click.stop="onVideoClick(v)"
+              >
+                去B站学习 <ArrowRight :size="16" class="icon-blue" />
+              </a>
             </div>
-            <div class="video-meta">
-              <span class="video-author" v-if="v.author"><User :size="16" class="icon-blue" /> {{ v.author }}</span>
-              <span class="video-stats" v-if="v.play">
-                <span><Play :size="16" class="icon-blue" /> {{ formatCount(v.play) }}</span>
-                <span v-if="v.danmaku"> <MessageSquare :size="16" class="icon-blue" /> {{ formatCount(v.danmaku) }}</span>
-              </span>
-            </div>
-            <p class="video-description" v-if="v.description">{{ v.description?.slice(0, 60) }}{{ v.description?.length > 60 ? '…' : '' }}</p>
-            <a
-              :href="v.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="video-link-btn"
-              @click.stop="onVideoClick(v)"
-            >
-              去B站学习 <ArrowRight :size="16" class="icon-blue" />
-            </a>
           </div>
         </div>
-      </div>
 
-      <!-- 空状态 -->
-      <div v-else class="empty-state" style="padding:30px 0">
-        <span class="empty-icon"><Video :size="16" class="icon-blue" /></span>
-        <p>暂无推荐视频</p>
-        <p class="empty-hint">先选择一个岗位查看推荐</p>
-      </div>
+        <div v-else class="empty-state video-empty">
+          <span class="empty-icon"><Video :size="16" class="icon-blue" /></span>
+<p>暂无推荐视频</p>
+          <p class="empty-hint">先在左侧选一个岗位查看推荐</p>
+        </div>
+      </section>
     </div>
   </div>
+    <!-- ═══ 品牌 Footer ═══ -->
+    <div class="brand-footer">
+      <div>启途 · <span class="qitu-up">QITU</span></div>
+      <div class="qitu-sl">向上生长，自有答案</div>
+    </div>
 </template>
 
 <script setup>
@@ -275,6 +298,10 @@ const selectedSalaryTags = ref([])
 const difficultyOptions = ['低', '中', '高']
 const workTypeOptions = ['技术类', '设计类', '运营类', '市场类', '职能类', '研究类']
 const salaryTagOptions = ['8K起', '10K起', '15K起', '20K起']
+const tabletTime = computed(() => {
+  const now = new Date()
+  return now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })
+})
 
 // 视频推荐模块
 const videoSection = ref(null)
@@ -435,7 +462,9 @@ function goDetail(name) {
 }
 
 // 切换专业
-function onCategoryChange() {
+function selectCategory(category) {
+  if (selectedCategory.value === category) return
+  selectedCategory.value = category
   loadCareers()
 }
 
@@ -539,61 +568,326 @@ onMounted(async () => {
   position: relative;
   margin-top: 0;
 }
+
 /* 顶部搜索栏 */
-.list-top-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.top-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 .career-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 0.82rem;
-  color: var(--text-muted);
+  color: #2563EB;
+  font-weight: 800;
 }
-.career-count i {
-  margin-right: 4px;
+
+/* 顶部框下方：左侧平板职业清单 + 右侧窄视频推荐栏 */
+.explore-workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 2.05fr) minmax(270px, .74fr);
+  gap: 40px;
+  align-items: start;
+  margin-top: 58px;
 }
-.search-input-wrap {
+.career-tablet-shell {
+  min-width: 0;
+}
+.tablet-device {
   position: relative;
-  width: 320px;
-}
-.search-input-wrap .el-input {
   width: 100%;
+  min-height: 0;
+  padding: 12px;
+  border-radius: 30px;
+  background: linear-gradient(145deg, #DCEBFA 0%, #FFFFFF 45%, #CFE2F7 100%);
+  border: 1px solid rgba(147,197,253,.76);
+  box-shadow: 18px 22px 44px rgba(37,99,235,.12), inset 0 0 0 1px rgba(255,255,255,.88);
 }
-.search-input-icon {
+.tablet-device::after {
+  content: '';
   position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-  font-size: 14px;
-  z-index: 1;
+  inset: 8px;
+  border-radius: 24px;
+  border: 1px dashed rgba(37,99,235,.18);
   pointer-events: none;
 }
-.search-input-wrap .el-input :deep(.el-input__wrapper) {
-  padding-left: 36px;
+.tablet-camera {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #64748B 0 18%, #1E293B 42%, #0F172A 100%);
+  z-index: 2;
+  box-shadow: 0 0 0 4px rgba(255,255,255,.72), inset 0 -1px 0 rgba(255,255,255,.20);
+}
+.tablet-screen {
+  position: relative;
+  z-index: 1;
+  height: min(68vh, 680px);
+  min-height: 610px;
+  overflow-y: auto;
+  padding: 0 18px 18px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8FBFF 54%, #EFF6FF 100%);
+  border: 1px solid rgba(255,255,255,.92);
+  overflow-x: hidden;
+}
+.tablet-screen::-webkit-scrollbar { width: 0; }
+.tablet-statusbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 38px;
+  margin: 0 -18px 12px;
+  padding: 8px 18px 9px;
+  border-radius: 22px 22px 14px 14px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8FBFF 72%, rgba(248,251,255,.96) 100%);
+  border-bottom: 2px solid rgba(37,99,235,.24);
+  box-shadow: 0 1px 0 rgba(255,255,255,.95), 0 10px 18px rgba(37,99,235,.08);
+  backdrop-filter: blur(16px);
+  color: #2563EB;
+  font-size: 12px;
+  font-weight: 900;
+}
+.tablet-statusbar::before {
+  content: '';
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: -2px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(37,99,235,.12), rgba(37,99,235,.52), rgba(14,165,233,.28), rgba(37,99,235,.12));
+  pointer-events: none;
+}
+.tablet-statusbar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -18px;
+  height: 18px;
+  background: linear-gradient(180deg, rgba(248,251,255,.95), rgba(248,251,255,0));
+  pointer-events: none;
+}
+.tablet-system-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.tablet-signal {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+.tablet-signal i {
+  display: block;
+  width: 3px;
+  border-radius: 3px;
+  background: #2563EB;
+}
+.tablet-signal i:nth-child(1) { height: 5px; opacity: .45; }
+.tablet-signal i:nth-child(2) { height: 8px; opacity: .7; }
+.tablet-signal i:nth-child(3) { height: 11px; }
+.tablet-wifi {
+  width: 14px;
+  height: 10px;
+  border: 2px solid #2563EB;
+  border-left-color: transparent;
+  border-right-color: transparent;
+  border-bottom: 0;
+  border-radius: 12px 12px 0 0;
+  position: relative;
+}
+.tablet-wifi::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -3px;
+  width: 4px;
+  height: 4px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: #2563EB;
+}
+.tablet-battery {
+  position: relative;
+  width: 24px;
+  height: 12px;
+  border: 1.6px solid #2563EB;
+  border-radius: 4px;
+  padding: 2px;
+}
+.tablet-battery::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  top: 3px;
+  width: 2px;
+  height: 5px;
+  border-radius: 0 2px 2px 0;
+  background: #2563EB;
+}
+.tablet-battery i {
+  display: block;
+  height: 100%;
+  width: 72%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #38BDF8, #2563EB);
+}
+.tablet-header {
+  display: grid;
+  grid-template-columns: auto minmax(280px, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 10px;
+}
+.tablet-title {
+  color: #1E293B;
+  font-size: 23px;
+  font-weight: 900;
+  letter-spacing: .03em;
+}
+.tablet-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px 12px;
+  border-radius: 18px;
+  background: #F8FBFF;
+  border: 1px solid #DBEAFE;
+  box-shadow: inset 4px 4px 9px rgba(37,99,235,.08), inset -4px -4px 9px rgba(255,255,255,.95);
+}
+.tablet-search .el-input { flex: 1; }
+.tablet-search :deep(.el-input__wrapper) {
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.tablet-categories {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0 2px;
+  overflow-x: auto;
+}
+.tablet-categories::-webkit-scrollbar { height: 0; }
+.major-chip {
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 14px;
+  color: #2563EB;
+  background: #EFF6FF;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 4px 4px 10px rgba(37,99,235,.10), -4px -4px 10px rgba(255,255,255,.92);
+}
+.major-chip.active {
+  color: #fff;
+  background: linear-gradient(145deg, #38BDF8, #2563EB);
+}
+
+/* 新拟态胶囊筛选区：启途浅蓝白软凸起 / 激活蓝色浅凹陷 */
+.filter-bar {
+  display: grid;
+  grid-template-columns: minmax(138px, .58fr) minmax(320px, 1.34fr) minmax(210px, .86fr);
+  column-gap: 18px;
+  row-gap: 14px;
+  align-items: stretch;
+  margin: 10px 0 14px;
+  padding: 12px;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #F8FBFF 0%, #EFF6FF 100%);
+  border: 1px solid rgba(191,219,254,.72);
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,.92),
+    10px 10px 22px rgba(37,99,235,.08),
+    -8px -8px 18px rgba(255,255,255,.92);
+}
+.filter-line {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.salary-filter-line {
+  padding-top: 2px;
+}
+.filter-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #2563EB;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+.filter-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.filter-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 6px 13px;
+  border: 0;
+  border-radius: 999px;
+  background: #F8FBFF;
+  color: #2563EB;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  cursor: pointer;
+  user-select: none;
+  box-shadow:
+    5px 5px 12px rgba(37,99,235,.12),
+    -5px -5px 12px rgba(255,255,255,.98),
+    inset 1px 1px 0 rgba(255,255,255,.78);
+  transition: transform .16s ease, color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+.filter-tag:hover {
+  color: #0EA5E9;
+  transform: translateY(-1px);
+  box-shadow:
+    7px 7px 15px rgba(37,99,235,.14),
+    -7px -7px 15px rgba(255,255,255,1),
+    inset 1px 1px 0 rgba(255,255,255,.86);
+}
+.filter-tag.active {
+  color: #FFFFFF;
+  background: linear-gradient(145deg, #38BDF8 0%, #2563EB 100%);
+  box-shadow:
+    inset 4px 4px 9px rgba(30,64,175,.25),
+    inset -4px -4px 9px rgba(255,255,255,.20),
+    3px 3px 8px rgba(37,99,235,.18);
+  transform: translateY(0);
 }
 
 /* 岗位网格 */
 .career-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
 /* 岗位卡片 */
 .career-card {
   position: relative;
-  padding: 16px;
+  padding: 12px;
   cursor: pointer;
   transition: all 0.2s;
+  border-radius: 20px;
+  background: rgba(255,255,255,.86);
 }
 .career-card:hover {
   border-color: var(--primary);
@@ -621,7 +915,7 @@ onMounted(async () => {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 .card-icon {
   font-size: 1.5rem;
@@ -666,45 +960,112 @@ onMounted(async () => {
   display: flex;
   gap: 4px;
   flex-shrink: 0;
-  margin-left: 4px;
+  margin-left: auto;
 }
-.card-tags {
+.card-tag-row {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
 }
+.card-meta-row { margin-bottom: 8px; }
+.card-salary-row {
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px dashed #BFDBFE;
+}
+.salary-pill {
+  font-size: 12px;
+  font-weight: 900;
+}
+.tag-pill.blue { background: #EFF6FF; color: #2563EB; }
+.tag-pill.green { background: #ECFDF5; color: #059669; }
+.tag-pill.orange { background: #FFF7ED; color: #C2410C; }
+.tag-pill.red { background: #FEF2F2; color: #DC2626; }
+.tag-pill.gray { background: #F1F5F9; color: #64748B; }
 
 /* ════════════════════════════════════ */
 /* 视频推荐模块                        */
 /* ════════════════════════════════════ */
 .video-recommend-section {
-  margin-top: 28px;
-  padding: 20px 16px;
+  position: sticky;
+  top: 24px;
+  margin-top: 0;
+  padding: 14px;
+  min-height: 0;
+  max-height: 72vh;
+  overflow-y: auto;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(14,165,233,.12), transparent 30%),
+    linear-gradient(180deg, #FFFFFF 0%, #F8FBFF 100%);
+  border: 1px solid #DBEAFE;
+  box-shadow: 0 16px 34px rgba(37,99,235,.08);
+}
+.video-recommend-section::-webkit-scrollbar { width: 0; }
+.video-panel-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px dashed #BFDBFE;
+}
+.section-kicker {
+  display: inline-flex;
+  margin-bottom: 5px;
+  color: #2563EB;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+.video-panel-head h2 {
+  margin: 0;
+  color: #1E293B;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: .02em;
+}
+.video-panel-head p {
+  max-width: none;
+  margin: 4px 0 0;
+  color: #64748B;
+  font-size: 12px;
+  line-height: 1.5;
 }
 .section-title-badge {
-  font-size: 0.8rem;
-  font-weight: 500;
+  flex: none;
+  font-size: 13px;
+  font-weight: 900;
   color: var(--primary);
-  background: var(--primary-bg);
-  padding: 2px 10px;
-  border-radius: 12px;
+  background: #EFF6FF;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid #BFDBFE;
 }
 .video-section-controls {
+  display: flex;
+  justify-content: flex-end;
   flex-shrink: 0;
+  margin-bottom: 10px;
 }
 
 /* 视频卡片网格 */
 .video-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 14px;
+  grid-template-columns: 1fr;
+  gap: 10px;
 }
 .video-card {
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
   transition: all 0.2s;
-  border: 1px solid var(--border);
+  border: 1px solid #DBEAFE;
+  border-radius: 16px;
+  background: #fff;
 }
 .video-card:hover {
   border-color: var(--primary);
@@ -715,7 +1076,8 @@ onMounted(async () => {
 .video-cover {
   position: relative;
   width: 100%;
-  aspect-ratio: 16/9;
+  height: 86px;
+  aspect-ratio: auto;
   overflow: hidden;
   background: var(--primary-bg);
   cursor: pointer;
@@ -785,7 +1147,8 @@ onMounted(async () => {
 
 /* 视频信息 */
 .video-info {
-  padding: 10px 12px 12px;
+  min-width: 0;
+  padding: 8px 10px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -794,13 +1157,13 @@ onMounted(async () => {
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 .video-title {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-heading);
-  line-height: 1.4;
+  line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -817,17 +1180,17 @@ onMounted(async () => {
 .video-star-btn {
   flex-shrink: 0;
   margin-left: auto;
-  width: 24px !important;
-  height: 24px !important;
-  font-size: 0.7rem !important;
+  width: 22px !important;
+  height: 22px !important;
+  font-size: 0.66rem !important;
 }
 .video-meta {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.72rem;
+  gap: 7px;
+  font-size: 0.66rem;
   color: var(--text-muted);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 .video-author {
   color: var(--primary);
@@ -837,10 +1200,10 @@ onMounted(async () => {
   gap: 6px;
 }
 .video-description {
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   color: var(--text-muted);
-  line-height: 1.4;
-  margin: 2px 0 8px;
+  line-height: 1.3;
+  margin: 1px 0 6px;
   flex: 1;
   opacity: 0.7;
 }
@@ -848,11 +1211,11 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--accent);
+  background: linear-gradient(145deg, #38BDF8 0%, #2563EB 100%);
   color: white;
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 500;
-  padding: 5px 12px;
+  padding: 4px 10px;
   border-radius: 16px;
   text-decoration: none;
   text-align: center;
@@ -860,8 +1223,8 @@ onMounted(async () => {
   align-self: flex-start;
 }
 .video-link-btn:hover {
-  background: #B54E1A;
-  box-shadow: 0 2px 8px rgba(200, 90, 32, 0.3);
+  background: linear-gradient(145deg, #0EA5E9 0%, #1D4ED8 100%);
+  box-shadow: 0 8px 18px rgba(37,99,235,0.18);
 }
 
 /* AI生成职业相关 */
@@ -895,30 +1258,53 @@ onMounted(async () => {
   padding: 2rem 0;
 }
 
-@media (max-width: 640px) {
-  .career-grid { grid-template-columns: 1fr; }
-  .list-top-bar { flex-direction: column; align-items: stretch; }
-  .search-input-wrap { width: 100%; }
-  .video-grid { grid-template-columns: 1fr; }
-  .video-section-header { flex-direction: column; align-items: flex-start; }
+@media (max-width: 1180px) {
+  .explore-workbench {
+    grid-template-columns: 1fr;
+  }
+  .video-recommend-section {
+    position: relative;
+    top: auto;
+    max-height: none;
+  }
 }
 
-/* ═══ 职业探索猫：趴banner底边（同首页风格） ═══ */
-.banner-wrap {
-  position: relative;
+@media (max-width: 760px) {
+  .tablet-header {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .tablet-search {
+    order: 3;
+  }
+  .career-count {
+    justify-self: start;
+  }
+  .filter-bar {
+    grid-template-columns: 1fr;
+  }
+  .career-grid {
+    grid-template-columns: 1fr;
+  }
 }
-.banner-cat {
-  position: absolute;
-  bottom: 0px;
-  right: 320px;
-  width: 60px;
-  height: auto;
-  pointer-events: none;
-  z-index: 0;
-  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.18));
-  transition: transform 0.3s ease;
+
+@media (max-width: 640px) {
+  .explore-workbench { gap: 18px; }
+  .video-panel-head { flex-direction: column; }
+  .video-panel-head h2 { font-size: 22px; }
+  .video-panel-head p { font-size: 14px; }
+  .video-recommend-section { padding: 18px; border-radius: 22px; }
+  .video-grid { grid-template-columns: 1fr; }
+  .video-card { grid-template-columns: 1fr; }
+  .video-cover { height: auto; aspect-ratio: 16/9; }
+  .tablet-device { padding: 10px; border-radius: 26px; min-height: 0; }
+  .tablet-screen { padding: 0 12px 14px; min-height: 620px; border-radius: 20px; }
+  .tablet-statusbar { margin: 0 -12px 12px; padding: 8px 12px 9px; border-radius: 20px 20px 12px 12px; }
+  .tablet-title { font-size: 20px; }
+  .filter-bar { padding: 12px; border-radius: 22px; }
+  .filter-tag { min-height: 34px; padding: 7px 14px; }
+  .card-salary-row { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .card-actions { margin-left: 0; }
 }
-.banner-cat:hover {
-  transform: scale(1.08) rotate(-3deg);
-}
+
 </style>

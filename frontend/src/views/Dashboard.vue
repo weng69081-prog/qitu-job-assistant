@@ -1,21 +1,30 @@
 <template>
   <div class="dashboard">
+    <div class="dash-scene" ref="dashRef" :style="{ zoom: dashZoom }">
     <!-- ═══ 欢迎横幅（全宽撑满） ═══ -->
     <div class="welcome">
-      <div>
+      <div class="banner-greeting">
         <h1>{{ greeting }}，<span class="hl-name">{{ displayName }}</span></h1>
+        <img :src="paperPlane" class="banner-plane" alt="">
       </div>
       <div class="date">{{ todayStr }}</div>
       <img src="/src/assets/xiaoju-on-banner.png" class="banner-cat" alt="小橘">
     </div>
 
-    <!-- ═══ 热力 + 4统计 ═══ -->
-    <div class="heat-row">
-      <!-- 左：活跃足迹 -->
-      <div class="heat-left">
-        <div class="hl">活跃足迹</div>
+    <!-- ═══ 热力 + 卡片叠 ═══ -->
+    <div class="heat-area">
+      <!-- 左：活跃足迹（独立蓝底框） -->
+      <div class="heat-card">
+        <div class="heat-header">
+          <div class="hl">活跃足迹</div>
+          <div class="date-picker">
+            <button class="dp-btn" @click="prevMonth">‹</button>
+            <span class="dp-label">{{ heatYear }}年{{ monthNames[heatMonth] }}</span>
+            <button class="dp-btn" @click="nextMonth">›</button>
+          </div>
+        </div>
         <div class="heat-grid">
-          <div v-for="i in 196" :key="i" class="hs" :class="heatLevel(i)"></div>
+          <div v-for="(level, i) in heatData" :key="i" class="hs" :class="[level, { today: i === todayCellIdx }]"></div>
         </div>
         <div class="heat-foot">
           <div class="hf-item"><span class="hf-num">{{ heatDaysMonth }}</span><span class="hf-lbl">天/本月</span></div>
@@ -24,11 +33,35 @@
         </div>
       </div>
 
-      <!-- 右：4统计 2×2 -->
-      <div class="heat-right">
-        <div class="s2-item" v-for="s in s2stats" :key="s.label">
-          <span class="s2-num">{{ s.num }}</span>
-          <span class="s2-lbl">{{ s.label }}</span>
+      <!-- 右：4卡片叠 -->
+      <div class="stack-wrapper">
+        <div class="card-stack">
+          <div
+            v-for="(s, i) in s2stats"
+            :key="s.label"
+            class="stack-card"
+            :class="{ active: activeCard === i }"
+            :style="stackCardStyle(i)"
+            @click="selectStackCard(i)"
+          >
+            <div class="sc-num">{{ s.num }}</div>
+            <div class="sc-lbl">{{ s.label }}</div>
+          </div>
+          <div class="stack-click-tabs" aria-label="统计卡片切换">
+            <button
+              v-for="(s, i) in s2stats"
+              :key="`stack-tab-${s.label}`"
+              class="stack-tab"
+              :class="{ active: activeCard === i }"
+              type="button"
+              :aria-label="`查看${s.label}`"
+              @click="selectStackCard(i)"
+            ></button>
+          </div>
+        </div>
+        <div class="qitu-slogan" aria-label="启途标语">
+          <span class="qs-brand">启途</span>
+          <span class="qs-text">让每一步都有方向</span>
         </div>
       </div>
     </div>
@@ -39,12 +72,10 @@
       <div>
         <div class="light-card">
           <div class="lc-title">今日推荐</div>
-          <div class="rec-item">
-            <span class="ri">URL 到渲染：浏览器做了什么？</span>
-            <span class="rt">立即练习 ›</span>
-          </div>
-          <div class="rec-item"><span class="ri">HTTP 缓存策略详解</span><span class="rt">今天 · 新</span></div>
-          <div class="rec-item"><span class="ri">前端模块化发展史</span><span class="rt">明天截止</span></div>
+          <router-link v-for="(item, i) in recommendations" :key="i" :to="item.url" class="rec-item">
+            <span class="ri">{{ item.text }}</span>
+            <span class="rt">{{ item.label }}</span>
+          </router-link>
         </div>
         <div class="light-card">
           <div class="lc-title">操作记录</div>
@@ -129,15 +160,53 @@
       <div>启途 · <span>QITU</span></div>
       <div>向上生长，自有答案</div>
     </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useCareerStore } from '../stores/career'
 import axios from 'axios'
+import bg1 from '../assets/cards/card-bg-1.jpg'
+import bg2 from '../assets/cards/card-bg-2.jpg'
+import bg3 from '../assets/cards/card-bg-3.jpg'
+import bg4 from '../assets/cards/card-bg-4.jpg'
+import paperPlane from '../assets/paper-plane.png'
 
 const store = useCareerStore()
+
+// ── 等比缩放 ──
+const dashRef = ref(null)
+const DASH_REF_W = 1160
+const dashZoom = ref(1)
+
+function updateDashZoom() {
+  if (!dashRef.value) return
+  const parent = dashRef.value.parentElement
+  if (!parent) return
+  const availW = parent.clientWidth
+  // 实际容器宽度 / 参考宽度 = 缩放系数
+  const scale = availW / DASH_REF_W
+  // 窄于参考宽度时不缩放，宽于参考宽度时等比放大
+  dashZoom.value = Math.max(1, scale)
+}
+
+let resizeTimer = null
+function onResize() {
+  clearTimeout(resizeTimer)
+  resizeTimer = setTimeout(updateDashZoom, 60)
+}
+
+onMounted(() => {
+  updateDashZoom()
+  window.addEventListener('resize', onResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', onResize)
+  clearTimeout(resizeTimer)
+})
 
 // ── 用户信息 ──
 const now = new Date()
@@ -148,26 +217,143 @@ const initial = ref('同')
 const todayStr = now.toLocaleDateString('zh-CN', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase()
 
 // ── 热力图 ──
-const heatDaysMonth = 23
-const heatDaysStreak = 12
-const heatWeekCount = 8
+const nowDate = new Date()
+const heatYear = ref(nowDate.getFullYear())
+const heatMonth = ref(nowDate.getMonth()) // 0-indexed
 
-function heatLevel(i) {
-  const r = Math.random()
-  if (r < 0.35) return ''
-  if (r < 0.6) return 'l1'
-  if (r < 0.78) return 'l2'
-  if (r < 0.9) return 'l3'
-  return 'l4'
+const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月']
+
+// 用年月做种子，生成稳定随机热力数据（196格，28×7）
+function seededRand(seed) {
+  let s = seed
+  return function() {
+    s = (s * 9301 + 49297) % 233280
+    return s / 233280
+  }
+}
+const heatData = computed(() => {
+  const seed = heatYear.value * 100 + heatMonth.value + 1
+  const rand = seededRand(seed)
+  const data = []
+  for (let i = 0; i < 196; i++) {
+    const r = rand()
+    if (r < 0.35) data.push('')
+    else if (r < 0.6) data.push('l1')
+    else if (r < 0.78) data.push('l2')
+    else if (r < 0.9) data.push('l3')
+    else data.push('l4')
+  }
+  return data
+})
+
+// 今天是第几天（当月），用于标记格子
+const todayCellIdx = computed(() => {
+  const today = new Date()
+  if (heatYear.value !== today.getFullYear() || heatMonth.value !== today.getMonth()) return -1
+  return today.getDate() - 1 // 0-indexed
+})
+
+const heatDaysMonth = computed(() => heatData.value.filter(l => l !== '').length)
+const heatDaysStreak = computed(() => {
+  // 用 heatData 算连续活跃天数
+  let maxStreak = 0, cur = 0
+  for (const l of heatData.value) {
+    if (l !== '') { cur++; maxStreak = Math.max(maxStreak, cur) }
+    else cur = 0
+  }
+  return maxStreak
+})
+const heatWeekCount = computed(() => {
+  // 取后28个（最近一周）中的活跃数
+  return heatData.value.slice(-28).filter(l => l !== '').length
+})
+
+function prevMonth() {
+  if (heatMonth.value === 0) {
+    heatMonth.value = 11
+    heatYear.value--
+  } else {
+    heatMonth.value--
+  }
+}
+function nextMonth() {
+  if (heatMonth.value === 11) {
+    heatMonth.value = 0
+    heatYear.value++
+  } else {
+    heatMonth.value++
+  }
+}
+function goToToday() {
+  heatYear.value = nowDate.getFullYear()
+  heatMonth.value = nowDate.getMonth()
 }
 
 // ── 4统计 ──
 const s2stats = ref([
-  { num: 0, label: '个已探索' },
-  { num: 0, label: '次面试' },
-  { num: 0, label: '次优化' },
-  { num: 0, label: '平均分' },
+  { num: 12, label: '个已探索' },
+  { num: 8, label: '次面试' },
+  { num: 23, label: '次优化' },
+  { num: 76, label: '平均分' },
 ])
+
+// ── 今日推荐（从后端加载） ──
+const recommendations = ref([])
+
+// ── 从后端加载数据 ──
+async function loadDashboardData() {
+  try {
+    const [recRes, statsRes, actRes] = await Promise.all([
+      axios.get('/api/dashboard/recommendations'),
+      axios.get('/api/dashboard/stats'),
+      axios.get('/api/dashboard/activities'),
+    ])
+    if (recRes.data?.items) recommendations.value = recRes.data.items
+    if (statsRes.data) {
+      s2stats.value[0].num = statsRes.data.explored_count
+      s2stats.value[1].num = statsRes.data.interview_count
+      s2stats.value[2].num = statsRes.data.optimize_count
+      s2stats.value[3].num = statsRes.data.avg_score
+    }
+    if (actRes.data?.items) activities.value = actRes.data.items
+  } catch (e) {
+    // API 不可用时 fallback 到 localStorage
+    const careers = JSON.parse(localStorage.getItem('explored_careers') || '[]')
+    const sessions = JSON.parse(localStorage.getItem('interview_sessions') || '[]')
+    s2stats.value[0].num = careers.length || 0
+    s2stats.value[1].num = sessions.length || 0
+    s2stats.value[2].num = 0
+    s2stats.value[3].num = 0
+    const acts = []
+    careers.slice(-3).forEach(c => acts.push({ text: `探索了「${c.title || c}」职业方向`, time: '最近' }))
+    sessions.slice(-2).forEach(s => acts.push({ text: `完成了「${s.title || '面试'}」模拟面试`, time: '最近' }))
+    if (!acts.length) acts.push({ text: '欢迎来到启途！开始你的求职之旅', time: '刚刚' })
+    activities.value = acts
+  }
+}
+
+// ── 卡片叠交互 ──
+const activeCard = ref(0)
+
+const bgImgs = [bg1, bg2, bg3, bg4]
+
+function getStackOffset(i) {
+  const total = s2stats.value.length || 4
+  return (i - activeCard.value + total) % total
+}
+
+function stackCardStyle(i) {
+  const offset = getStackOffset(i)
+  return {
+    '--stack-offset': offset,
+    '--stack-z': 20 - offset,
+    backgroundImage: `url(${bgImgs[i]})`,
+  }
+}
+
+function selectStackCard(i) {
+  activeCard.value = i
+}
 
 // ── 收藏数据 ──
 const careerBookmarks = computed(() => {
@@ -252,41 +438,44 @@ onMounted(() => {
     } catch (e) {}
   }
 
-  // 加载统计
-  const careers = JSON.parse(localStorage.getItem('explored_careers') || '[]')
-  const sessions = JSON.parse(localStorage.getItem('interview_sessions') || '[]')
-  s2stats.value[0].num = careers.length || 0
-  s2stats.value[1].num = sessions.length || 0
-  s2stats.value[2].num = 0
-  s2stats.value[3].num = 0
-
-  // 加载活动
-  const acts = []
-  careers.slice(-3).forEach(c => {
-    acts.push({ text: `探索了「${c.title || c}」职业方向`, time: '最近' })
-  })
-  sessions.slice(-2).forEach(s => {
-    acts.push({ text: `完成了「${s.title || '面试'}」模拟面试`, time: '最近' })
-  })
-  if (!acts.length) {
-    acts.push({ text: '欢迎来到启途！开始你的求职之旅', time: '刚刚' })
-  }
-  activities.value = acts
+  // 从后端加载首页数据（推荐、统计、活动）
+  loadDashboardData()
 })
 </script>
 
 <style scoped>
-.dashboard { overflow-x: hidden; }
+.dashboard {
+  width: 100%;
+}
+
+/* 等比缩放容器 — 固定1160px参考宽度，按容器宽度缩放 */
+.dash-scene {
+  width: 100%;
+  max-width: 1160px;
+  transform-origin: top left;
+}
 
 /* ═══ 欢迎横幅 ═══ */
 .welcome {
-  background: var(--bg-light);
+  background: transparent;
   padding: 32px 32px;
-  margin: -24px -28px 20px;
+  margin: 0 -28px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: relative;
+}
+.welcome::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: calc(-1 * (var(--sidebar-width) + 28px));
+  right: -28px;
+  bottom: 0;
+  background: var(--bg-light);
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
 }
 .welcome h1 { font-size: 24px; color: var(--text-heading); font-weight: 400; }
 .welcome h1 .hl-name { color: var(--primary); }
@@ -300,26 +489,73 @@ onMounted(() => {
   pointer-events: none;
   z-index: 0;
 }
-
-/* ═══ 热力 ═══ */
-.heat-row {
+.banner-greeting {
   display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.banner-plane {
+  height: 48px;
+  width: auto;
+  opacity: 0.95;
+  margin-left: 30px;
+}
+
+/* ═══ 热力+卡片叠 ═══ */
+.heat-area {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+.heat-card {
+  flex: 1;
+  max-width: 650px;
+  min-width: 0;
   background: var(--bg-light);
   border-radius: 12px;
-  margin-bottom: 20px;
-  overflow: hidden;
+  padding: 14px 20px;
   border: 1.5px dashed var(--border-dashed);
 }
-.heat-left {
-  flex: 1;
-  padding: 14px 0 14px 20px;
-  min-width: 0;
+.heat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.date-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dp-btn {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border-dashed);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--primary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.dp-btn:hover {
+  background: var(--bg-light);
+}
+.dp-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 64px;
+  text-align: center;
 }
 .hl {
   font-size: 13px;
   font-weight: 700;
   color: var(--primary);
-  margin-bottom: 6px;
   letter-spacing: 0.06em;
 }
 .heat-grid {
@@ -328,6 +564,7 @@ onMounted(() => {
   grid-template-rows: repeat(7, 1fr);
   gap: 3px;
   max-width: 520px;
+  margin: 0 auto;
 }
 .hs {
   aspect-ratio: 1;
@@ -338,6 +575,13 @@ onMounted(() => {
 .hs.l2 { background: rgba(37,99,235,0.35); }
 .hs.l3 { background: rgba(37,99,235,0.6); }
 .hs.l4 { background: var(--primary); }
+.hs.today {
+  outline: 2px solid #2563EB;
+  outline-offset: -2px;
+  border-radius: 3px;
+  position: relative;
+  z-index: 1;
+}
 .heat-foot {
   display: flex;
   align-items: center;
@@ -359,43 +603,195 @@ onMounted(() => {
 .hf-num { font-size: 14px; font-weight: 700; color: var(--primary); }
 .hf-lbl { font-size: 11px; color: var(--text-muted); }
 
-/* 右：4统计 2×2 */
-.heat-right {
-  width: 240px;
-  flex-shrink: 0;
-  padding: 12px 16px 12px 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  align-content: center;
+/* 右：卡片叠 */
+.stack-wrapper {
+  display: flex;
+  align-items: center;
+  padding-top: 18px;
+  padding-right: 8px;
+  margin-left: 40px;
+  gap: 20px;
 }
-.s2-item {
+.card-stack {
+  width: 224px;
+  flex-shrink: 0;
+  position: relative;
+  height: 238px;
+}
+.qitu-slogan {
+  flex: none;
+  width: 320px;
+  min-height: 180px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  gap: 3px;
-  background: rgba(255,255,255,0.65);
-  border-radius: 8px;
-  padding: 12px 6px 10px;
+  gap: 12px;
+  white-space: nowrap;
+  position: relative;
+  margin-left: 22px;
+  padding: 0 10px;
 }
-.s2-num {
-  font-size: 22px;
+.qitu-slogan::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 46px;
+  width: 168px;
+  height: 28px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(37,99,235,0.14), rgba(14,165,233,0.06));
+  z-index: 0;
+}
+.qitu-slogan::after {
+  content: '';
+  width: 252px;
+  height: 12px;
+  background: url("data:image/svg+xml,%3Csvg width='252' height='12' viewBox='0 0 252 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 6 C42 2 76 10 116 6 S190 2 232 6' stroke='%2393C5FD' stroke-width='1.7' stroke-dasharray='7 5' stroke-linecap='round' fill='none'/%3E%3Cpath d='M238 3 L249 6 L238 9' stroke='%2393C5FD' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E") center/contain no-repeat;
+  opacity: .82;
+  margin-top: 2px;
+}
+.qs-brand {
+  position: relative;
+  z-index: 1;
+  color: #2563EB;
+  font-size: 58px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  line-height: .9;
+  text-shadow: 0 10px 24px rgba(37,99,235,0.12);
+}
+.qs-text {
+  position: relative;
+  z-index: 1;
+  color: #475569;
+  font-size: 23px;
   font-weight: 800;
-  color: var(--primary);
-  line-height: 1.1;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  font-style: italic;
+  transform: none;
+  margin-left: 0;
 }
-.s2-lbl {
-  font-size: 11px;
-  color: var(--text-muted);
+.stack-card {
+  position: absolute;
+  top: 0;
+  left: calc(var(--stack-offset) * 22px);
+  width: calc(100% - 54px);
+  height: 210px;
+  z-index: var(--stack-z);
+  border-radius: 12px;
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: left 0.45s cubic-bezier(0.34, 1.3, 0.5, 1),
+              transform 0.55s cubic-bezier(0.34, 1.3, 0.5, 1),
+              box-shadow 0.4s ease,
+              z-index 0s linear 0.25s;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.10);
+  color: #fff;
+  will-change: left, transform;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+/* 半透明覆盖层，保证文字可读 */
+.stack-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.06) 58%, rgba(37,99,235,0.04) 100%);
+  border-radius: 12px;
+  z-index: 0;
+  pointer-events: none;
+}
+.stack-card > * {
+  position: relative;
+  z-index: 1;
+}
+.stack-card.active {
+  left: 0;
+  z-index: 30;
+  box-shadow: 0 12px 32px rgba(37,99,235,0.18);
+  transform: scale(1.05) translateY(-2px);
+  transition: left 0.45s cubic-bezier(0.34, 1.3, 0.5, 1),
+              transform 0.55s cubic-bezier(0.34, 1.3, 0.5, 1),
+              box-shadow 0.4s ease,
+              z-index 0s linear 0s;
+}
+.stack-card.active::before {
+  background: linear-gradient(135deg, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0.10) 56%, rgba(14,165,233,0.05) 100%);
+}
+.stack-click-tabs {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  z-index: 20;
+}
+.stack-tab {
+  width: 34px;
+  height: 18px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.18s ease;
+}
+.stack-tab::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  top: 50%;
+  height: 3px;
+  border-radius: 999px;
+  background: #BFDBFE;
+  transform: translateY(-50%);
+  box-shadow: 0 1px 4px rgba(37,99,235,0.10);
+}
+.stack-tab:hover,
+.stack-tab.active {
+  transform: translateY(-1px);
+}
+.stack-tab:hover::before,
+.stack-tab.active::before {
+  height: 4px;
+  background: #2563EB;
+  box-shadow: 0 3px 8px rgba(37,99,235,0.22);
+}
+.sc-num {
+  font-size: 30px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.sc-lbl {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.92);
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 
 /* ═══ 主网格 ═══ */
 .main-grid {
   display: grid;
-  grid-template-columns: 1fr 260px;
-  gap: 16px;
+  grid-template-columns: 2fr 1fr;
+  gap: 40px;
 }
 .main-grid > div {
   display: flex;
@@ -408,7 +804,7 @@ onMounted(() => {
 .light-card {
   background: var(--bg-light);
   border-radius: 12px;
-  padding: 18px;
+  padding: 14px 16px;
   border: 1.5px dashed var(--border-dashed);
 }
 .lc-title {
@@ -439,9 +835,16 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
+  padding: 7px 12px;
   border-bottom: 1px solid rgba(37,99,235,0.10);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s, padding-left 0.15s;
+  border-radius: 4px;
+  margin: 0 -12px;
 }
+.rec-item:hover { background: rgba(37,99,235,0.04); padding-left: 16px; }
 .rec-item:last-child { border-bottom: none; }
 .rec-item .ri { font-size: 13px; color: var(--primary); }
 .rec-item .rt {
@@ -458,7 +861,7 @@ onMounted(() => {
 .op-item {
   display: flex;
   justify-content: space-between;
-  padding: 8px 0;
+  padding: 6px 0;
   border-bottom: 1px solid rgba(37,99,235,0.10);
 }
 .op-item:last-child { border-bottom: none; }

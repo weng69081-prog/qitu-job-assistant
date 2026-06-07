@@ -1,15 +1,15 @@
 <template>
-  <div class="wrong-page">
-    <!-- ═══════ 页面标题 ═══════ -->
-    <div class="section-header">
-      <div class="section-title">
-        <X :size="16" class="icon-blue" />
-        笔试错题本
-        <span class="badge">{{ stats.total }} 题</span>
-      </div>
-      <button class="btn-outline" style="padding:6px 16px" @click="goBack">
-        <ArrowLeft :size="16" class="icon-blue" /> 返回
-      </button>
+  <div class="ew-center-page">
+    <div class="ew-card">
+    <!-- ═══ 返回按钮（左上） ═══ -->
+    <button class="back-circle-btn" @click="goBack">
+      <ArrowLeft :size="16" class="icon-blue" /> 返回
+    </button>
+
+    <!-- ═══ 标题+小猫 ═══ -->
+    <div class="ew-header">
+      <img src="/src/assets/exam-cat.png" class="ew-cat" alt="" />
+      <h1 class="ew-title">笔试错题本</h1>
     </div>
 
     <!-- ═══════ 统计概览 ═══════ -->
@@ -257,6 +257,7 @@
         </div>
       </div>
     </el-dialog>
+    </div>
   </div>
 </template>
 
@@ -266,7 +267,8 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import axios from 'axios'
 import { useCareerStore } from '../stores/career'
-
+import PageBanner from '../components/PageBanner.vue'
+ 
 const store = useCareerStore()
 const router = useRouter()
 
@@ -436,7 +438,7 @@ async function loadData(page = 1) {
     if (filterStatus.value) params.status = filterStatus.value
 
     const { data } = await axios.get('/api/exam/wrong-questions', { params })
-    items.value = data.items || []
+    items.value = data.wrong_questions || []
     total.value = data.total || data.count || 0
   } catch (e) {
     console.error('加载错题失败', e)
@@ -546,13 +548,113 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ═══════════════════════════════════════════════
-   页面容器
-   ═══════════════════════════════════════════════ */
-.wrong-page {
-  max-width: 860px;
-  margin: 0 auto;
+/* ═══════ 页面居中容器 ═══════ */
+.ew-center-page {
+  --bg-card: #fff;
+  --bg-alt: #f8faff;
+  --radius-md: 18px;
+  --radius-sm: 12px;
+  --border: #bfdbfe;
+  --border-light: #dbeafe;
+  --shadow-md: 0 16px 36px rgba(37,99,235,.06);
+  --text-heading: #1e293b;
+  --text-body: #475569;
+  --text-muted: #94a3b8;
+  --primary-bg: #eff6ff;
+  --primary: #2563eb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 32px 0;
 }
+.ew-card {
+  width: min(720px, calc(100vw - 60px));
+  padding: 52px 32px 36px;
+  background: #fff;
+  border: 1.5px dashed var(--border);
+  border-radius: 22px;
+  box-shadow: 0 16px 36px rgba(37,99,235,.06);
+  position: relative;
+  overflow: hidden;
+}
+/* ═══ 折角 ═══ */
+.ew-card::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 48px; height: 48px;
+  background: linear-gradient(135deg, transparent 50%, #EFF6FF 50%);
+  border-radius: 0 22px 0 0;
+}
+.ew-card::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 48px; height: 48px;
+  background: linear-gradient(135deg, transparent 50%, #BFDBFE 50%);
+  border-radius: 0 22px 0 0;
+  opacity: .15;
+}
+
+/* ═══ 标题区 ═══ */
+.ew-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.ew-cat { width: 36px; height: 36px; object-fit: contain; }
+.ew-title { font-size: 20px; font-weight: 900; color: var(--text-heading); }
+
+.back-circle-btn {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: 2px solid var(--primary);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--primary);
+  font: inherit;
+  font-weight: 900;
+  font-size: 14px;
+  cursor: pointer;
+  transition: box-shadow .2s;
+}
+.back-circle-btn:hover {
+  box-shadow: 0 4px 14px rgba(37,99,235,.18);
+}
+
+/* ═══════ 内容容器 ═══════ */
+.wrong-content {
+  position: relative;
+  max-width: 960px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1.5px dashed #BFDBFE;
+  border-radius: 22px;
+  padding: 20px 24px;
+  box-shadow: 0 16px 36px rgba(37,99,235,.06);
+}
+
+/* ═══════ 统计卡片网格（3列） ═══════ */
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.stat-card {
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #f8faff, #fff);
+  border: 1px solid #DBEAFE;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: box-shadow .2s;
+}
+.stat-card:hover { box-shadow: 0 4px 12px rgba(37,99,235,.08); }
 
 /* ═══════════════════════════════════════════════
    错题卡片列表
@@ -565,9 +667,11 @@ onMounted(() => {
 
 .wrong-card {
   padding: 18px 20px;
+  border-left: 3px solid transparent;
   transition: all 0.25s;
 }
 .wrong-card:hover {
+  border-left-color: #2563EB;
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
@@ -791,8 +895,8 @@ onMounted(() => {
    响应式
    ═══════════════════════════════════════════════ */
 @media (max-width: 640px) {
-  .wrong-page {
-    padding: 0;
+  .ew-center-page {
+    padding: 16px 0;
   }
   .filter-bar .filter-group {
     min-width: 100% !important;

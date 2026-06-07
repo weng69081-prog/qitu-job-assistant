@@ -1,9 +1,10 @@
 """
-求职投递助手 API — 仿真岗位数据 + AI分析 + 投递台账
+求职投递助手 API — 岗位数据 + AI分析 + 投递台账 + Agent搜索入口
 """
 import json, os, re, requests, random
 from datetime import datetime
-from fastapi import APIRouter, Query, HTTPException
+from urllib.parse import quote_plus
+from fastapi import APIRouter, Query, HTTPException, Body
 from sqlalchemy.orm import Session
 from database import get_db, SessionLocal
 from models import DeliveryJob, DeliveryTracking
@@ -465,6 +466,117 @@ def search_company_website(company_name: str) -> str:
 
 
 # ── API: 获取岗位列表 ──
+def _safe_json_loads(value, default=None):
+    if default is None:
+        default = []
+    try:
+        if isinstance(value, str):
+            return json.loads(value)
+        return value or default
+    except Exception:
+        return default
+
+
+def _build_apply_search_url(company: str, title: str, city: str = "") -> str:
+    query = f"{company} {title} {city} 官方招聘 投递入口".strip()
+    return f"https://www.baidu.com/s?wd={quote_plus(query)}"
+
+
+def _job_to_card(j: DeliveryJob, source_note: str = "启途岗位库"):
+    return {
+        "id": j.id,
+        "company_name": j.company_name,
+        "company_logo": j.company_logo,
+        "company_website": j.company_website,
+        "company_size": j.company_size,
+        "industry": j.industry,
+        "job_title": j.job_title,
+        "job_type": j.job_type,
+        "city": j.city,
+        "address": j.address,
+        "salary_text": j.salary_text,
+        "salary_min": j.salary_min,
+        "salary_max": j.salary_max,
+        "education": j.education,
+        "experience": j.experience,
+        "publish_time": j.publish_time,
+        "deadline": j.deadline,
+        "has_exam": j.has_exam,
+        "source": j.source,
+        "source_note": source_note,
+        "apply_url": str(j.apply_url or "") or _build_apply_search_url(str(j.company_name or ""), str(j.job_title or ""), str(j.city or "")),
+        "match_reason": f"与「{str(j.job_title or '')}」方向相关，可查看JD后决定是否投递。",
+    }
+
+
+@router.post("/agent-search")
+def agent_search(payload: dict = Body({})):
+    """Agent式岗位搜索：先查本地岗位库，搜不到时自动放宽，并给真实搜索入口。"""
+    seed_jobs()
+    target = (payload.get("target") or payload.get("keyword") or "").strip()
+    city = (payload.get("city") or "").strip()
+    major = (payload.get("major") or "").strip()
+    skills = (payload.get("skills") or "").strip()
+    education = (payload.get("education") or "").strip()
+
+    db = get_db().__next__()
+    try:
+        query = db.query(DeliveryJob)
+        if target:
+            query = query.filter(
+                DeliveryJob.job_title.contains(target) |
+                DeliveryJob.company_name.contains(target) |
+                DeliveryJob.job_type.contains(target)
+            )
+        if city:
+            query = query.filter(DeliveryJob.city == city)
+        exact = query.order_by(DeliveryJob.id.desc()).limit(8).all()
+
+        relaxed_steps = []
+        jobs = exact
+        if not jobs and city:
+            relaxed_steps.append(f"没有找到「{city}」的精确结果，已先放宽城市。")
+            query = db.query(DeliveryJob)
+            if target:
+                query = query.filter(
+                    DeliveryJob.job_title.contains(target) |
+                    DeliveryJob.company_name.contains(target) |
+                    DeliveryJob.job_type.contains(target)
+                )
+            jobs = query.order_by(DeliveryJob.id.desc()).limit(8).all()
+        if not jobs and target:
+            relaxed_steps.append("没有找到精确岗位名，已按岗位大类和能力关键词放宽。")
+            tokens = [x for x in re.split(r"[，,、/\s]+", f"{target} {skills} {major}") if len(x) >= 2]
+            query = db.query(DeliveryJob)
+            if tokens:
+                token = tokens[0]
+                query = query.filter(
+                    DeliveryJob.job_title.contains(token) |
+                    DeliveryJob.job_description.contains(token) |
+                    DeliveryJob.industry.contains(token)
+                )
+            jobs = query.order_by(DeliveryJob.id.desc()).limit(8).all()
+
+        search_query = " ".join(x for x in [target, city, major, education, "实习 校招 官方招聘"] if x)
+        search_url = f"https://www.baidu.com/s?wd={quote_plus(search_query or '校招 实习 官方招聘')}"
+        cards = [_job_to_card(j, "启途岗位库匹配") for j in jobs]
+        for card in cards:
+            card["apply_url"] = _build_apply_search_url(card["company_name"], card["job_title"], card["city"])
+
+        return {
+            "ok": True,
+            "mode": "exact" if exact else "relaxed" if cards else "external_search",
+            "summary": "已按人的目标岗位、城市和背景检索；结果不足时不会编假岗位，会给出真实搜索入口。",
+            "relaxed_steps": relaxed_steps,
+            "jobs": cards,
+            "external_search_url": search_url,
+            "jd_paste_hint": "如果搜索结果不准，可以复制真实JD到岗位详情/自定义材料里继续分析差距。",
+        }
+    finally:
+        db.close()
+
+
+# ── API: 获取岗位列表 ──
 @router.get("/jobs")
 def list_jobs(
     company_size: str = "",
@@ -525,6 +637,7 @@ def list_jobs(
                 "publish_time": j.publish_time,
                 "deadline": j.deadline,
                 "has_exam": j.has_exam,
+                "apply_url": j.apply_url or _build_apply_search_url(j.company_name, j.job_title, j.city),
                 "source": j.source,
             } for j in jobs],
         }
@@ -818,7 +931,7 @@ def my_apps_stats(token: str = Query(...)):
             DeliveryTracking.user_id == uid
         ).all()
         total = len(records)
-        pending = sum(1 for r in records if r.status in ("已查看", "待面试"))
+        pending = sum(1 for r in records if r.status in ("已查看", "待投递", "已投递", "HR已查看", "待面试"))
         interviewing = sum(1 for r in records if r.status == "待面试")
         offer = sum(1 for r in records if r.status in ("已offer", "面试通过"))
         rejected = sum(1 for r in records if r.status in ("已拒", "已关闭"))

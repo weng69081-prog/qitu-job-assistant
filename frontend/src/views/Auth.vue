@@ -151,15 +151,8 @@ async function doLogin() {
     localStorage.setItem('token', data.token)
     if (remember.value) localStorage.setItem('user', JSON.stringify(data.user))
     else sessionStorage.setItem('user', JSON.stringify(data.user))
-    if (data.needs_profile) {
-      localStorage.setItem('needs_profile', 'true')
-      ElMessage.info('首次登录，请先完善基础信息～')
-      router.push('/profile-setup')
-    } else {
-      localStorage.removeItem('needs_profile')
-      ElMessage.success(`欢迎回来，${data.user.nickname || data.user.username}！`)
-      router.push('/career')
-    }
+    ElMessage.success(`欢迎回来，${data.user.nickname || data.user.username}！`)
+    router.push('/career')
   } catch (e) {
     loginErrors.password = '用户名或密码错误'
   } finally { loading.value = false }
@@ -190,7 +183,7 @@ async function doRegister() {
 .auth-page {
   min-height: 100vh;
   width: 100%;
-  background: url('/bg_hd.jpg') center/cover no-repeat fixed;
+  background: url('/auth-bg-watercolor-clean.png') center/cover no-repeat fixed;
   display: flex;
   align-items: center;
   justify-content: center;

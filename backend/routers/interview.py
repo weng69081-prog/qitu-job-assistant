@@ -636,13 +636,14 @@ def chat_start(data: dict = Body({})):
 {mode_desc}
 面试规则：
 1. 先热情问候，然后自然地开始提问
-2. 根据候选人的回答进行追问和深入探讨
-3. 如果候选人回答不够好，可以给提示或换个角度问
-4. 每次回答后给出简短的建设性反馈（不用打分）
-5. 当话题充分展开后，自然过渡到下一个主题
-6. 保持专业友好的面试氛围
-7. 你的回复控制在80-150字，精炼有重点
-8. 不要一次问多个问题，一次只问一个"""
+2. 【重要】第一问从候选人的背景开始：学历、专业方向、学习经历或对岗位的理解。**绝不要直接问「项目经历」或要求介绍项目**——候选人可能是低年级或无项目经验的学生。
+3. 根据候选人的回答进行追问和深入探讨
+4. 如果候选人回答不够好，可以给提示或换个角度问
+5. 每次回答后给出简短的建设性反馈（不用打分）
+6. 当话题充分展开后，自然过渡到下一个主题
+7. 保持专业友好的面试氛围
+8. 你的回复控制在80-150字，精炼有重点
+9. 不要一次问多个问题，一次只问一个"""
 
     _conv_store[session_id] = {
         "job": job,
@@ -660,7 +661,7 @@ def chat_start(data: dict = Body({})):
         max_tokens=300
     )
     if not first_msg:
-        first_msg = f"你好！欢迎参加{job}的面试。请先简单做个自我介绍吧。"
+        first_msg = f"你好！欢迎参加{job}岗位的模拟面试。请先简单说说你的专业背景和学习经历吧。"
 
     _conv_store[session_id]["messages"].append({"role": "assistant", "content": first_msg})
 
@@ -839,5 +840,181 @@ def upload_recording(file: UploadFile = File(...), session_id: str = Form("")):
         import shutil
         shutil.copyfileobj(file.file, f)
     return {"recording_url": f"/resumes/{fid}", "file_id": fid}
+
+
+# ═══════════════════════════════════════════════
+# 种子数据接口（开发/预览用）
+# ═══════════════════════════════════════════════
+
+@router.post("/seed")
+def seed_mock_data(force: bool = Query(False)):
+    """插入模拟数据，填充面试历史/错题/收藏等页面
+    - force=true 时先清空所有现有数据再重新插入
+    """
+    from database import SessionLocal
+    from datetime import datetime, timedelta
+    import random
+
+    db = SessionLocal()
+
+    if force:
+        # 清空现有数据
+        db.query(SessionModel).delete()
+        db.query(WrongQuestion).delete()
+        db.query(SavedQuestion).delete()
+        db.commit()
+    else:
+        # 检查已有数据，避免重复插入
+        existing = db.query(SessionModel).count()
+        if existing > 0:
+            db.close()
+            return {"message": f"已有 {existing} 条面试记录，跳过种子"}
+
+    jobs_pool = [
+        ("前端工程师", "计算机类"),
+        ("后端开发工程师", "计算机类"),
+        ("数据分析师", "经管财会类"),
+        ("产品经理", "经管财会类"),
+        ("软件工程师", "计算机类"),
+        ("前端工程开发师", "计算机类"),
+    ]
+
+    now = datetime.utcnow()
+
+    # ── 6条模拟面试记录 ──
+    for i in range(6):
+        job, cat = jobs_pool[i]
+        avg = random.randint(62, 88)
+        hi = min(100, avg + random.randint(5, 14))
+        lo = max(0, avg - random.randint(6, 18))
+        mode = "basic" if i % 2 == 0 else "stress"
+        created = now - timedelta(days=15 - i * 2, hours=random.randint(0, 23))
+
+        qa_items = [
+            {
+                "question": f"请解释{['闭包','事件循环','原型链','虚拟DOM','状态管理','组件通信'][i%6]}在前端开发中的作用。",
+                "user_answer": f"我的理解是{'闭包是指函数能够记住并访问其词法作用域' if i < 3 else '通过事件循环机制实现异步处理'}……",
+                "sample_answer": f"{['闭包是函数与声明时作用域的组合','事件循环是JS运行时处理异步回调的机制','原型链是实现JS继承的核心机制','虚拟DOM通过diff算法减少真实DOM操作','状态管理让应用数据流变得可预测','组件通信通过props和事件向上传递'][i%6]}",
+                "difficulty": random.choice(["简单", "中等", "困难"]),
+                "score": random.randint(50, 95),
+            },
+            {
+                "question": f"请结合项目经验谈谈{['数据库设计','接口性能优化','前端工程化','多端适配','代码评审流程','自动化部署'][i%6]}。",
+                "user_answer": "在之前的课程项目中，我主要负责后端API开发和数据库表结构设计……",
+                "sample_answer": f"以电商系统为例，先进行需求分析，再进行{['数据库ER图设计','接口压测和SQL优化','Webpack构建配置','响应式布局方案','Code Review规则','CI/CD流水线搭建'][i%6]}",
+                "difficulty": random.choice(["中等", "困难"]),
+                "score": random.randint(55, 92),
+            },
+            {
+                "question": f"假如让你设计一个{['高并发','实时协作','数据可视化','搜索系统','支付模块','消息推送'][i%6]}方案，你会怎么考虑？",
+                "user_answer": "我会从几个方面考虑……首先分析业务需求和数据量级……",
+                "sample_answer": f"从{['缓存+限流','WebSocket+OT算法','ECharts+增量更新','倒排索引+分词','事务+对账机制','长连接+离线消息'][i%6]}等技术角度进行选型",
+                "difficulty": "困难",
+                "score": random.randint(45, 88),
+            },
+            {
+                "question": "你是如何处理团队协作中的需求变更的？请举例。",
+                "user_answer": "我们会先评估变更的影响范围，然后和产品沟通优先级……",
+                "sample_answer": "通过敏捷迭代和每日站会及时同步变更，评估工时影响后决定是否纳入当前Sprint",
+                "difficulty": "中等",
+                "score": random.randint(60, 95),
+            },
+            {
+                "question": "介绍一下你学过或使用过的一个框架/工具的原理。",
+                "user_answer": f"以{['Vue','React','Django','Spring Boot','Flask','Express'][i%6]}为例，它的核心思想是……",
+                "sample_answer": f"{['Vue通过数据驱动和组件化构建UI','React采用声明式组件和虚拟DOM架构','Django遵循MTV模式内置ORM与Admin','Spring Boot提供自动配置简化Spring开发','Flask轻量灵活适合微服务','Express是Node.js最流行的Web框架'][i%6]}",
+                "difficulty": random.choice(["简单", "中等"]),
+                "score": random.randint(65, 98),
+            },
+        ]
+
+        dims = {
+            "专业知识掌握度": random.randint(60, 92),
+            "语言表达与逻辑": random.randint(55, 90),
+            "临场应变能力": random.randint(50, 88),
+            "岗位匹配度": random.randint(58, 90),
+        }
+
+        session = SessionModel(
+            job=job,
+            category=cat,
+            mode=mode,
+            total_questions=5,
+            average_score=avg,
+            highest_score=hi,
+            lowest_score=lo,
+            answers_json=json.dumps(qa_items),
+            dimensions_json=json.dumps(dims),
+            strengths_json=json.dumps([
+                "回答结构清晰，逻辑性强",
+                "能结合课程项目实例说明",
+                "态度积极，善于反思",
+            ]),
+            weaknesses_json=json.dumps([
+                "部分技术概念不够深入",
+                "缺乏大规模项目实战经验",
+                "表达有时偏啰嗦",
+            ]),
+            suggestions_json=json.dumps([
+                "建议补充大规模项目中的技术选型与架构设计实践",
+                "针对薄弱知识点整理专属复习笔记",
+                "面试过程中注意控制语速，突出重点",
+            ]),
+            created_at=created,
+        )
+        db.add(session)
+
+    # ── 6条模拟错题（面试错题） ──
+    wrong_pool = [
+        ("进程与线程的区别", "简单", "请解释进程和线程的区别", "进程是资源分配的基本单位，线程是CPU调度的基本单位", "进程之间相互独立，线程共享进程的内存空间"),
+        ("RESTful API设计", "中等", "什么是RESTful API的核心原则", "资源通过URI标识，使用HTTP方法操作资源", "RESTful API应遵循无状态、统一接口、可缓存等原则"),
+        ("HTTP与HTTPS区别", "中等", "HTTPS是如何保证安全的", "通过SSL/TLS加密传输，使用数字证书验证身份", "HTTPS在HTTP基础上增加了SSL/TLS协议层"),
+        ("数据库索引原理", "困难", "数据库索引是如何加速查询的", "通过B+树结构减少磁盘IO次数", "索引类似于书的目录，通过快速定位数据页减少扫描"),
+        ("Vue响应式原理", "中等", "Vue2的响应式系统是如何工作的", "通过Object.defineProperty劫持数据属性", "通过数据劫持+发布订阅模式实现响应式"),
+        ("事件循环机制", "困难", "请解释JavaScript的事件循环机制", "JS是单线程，通过事件循环处理异步操作", "事件循环分为宏任务和微任务队列"),
+    ]
+    for qi, (kp, diff, q, ua, ca) in enumerate(wrong_pool):
+        wq = WrongQuestion(
+            question_id=100 + qi,
+            question_type="interview",
+            career="计算机类",
+            category=kp,
+            difficulty=diff,
+            question=q,
+            user_answer=f"我记得{ua[:20]}……",
+            correct_answer=ca,
+            analysis=f"这是一道关于「{kp}」的{'基础' if diff != '困难' else '进阶'}概念题。{ca}。建议结合实战加深理解。",
+            wrong_count=random.randint(1, 3),
+            last_wrong_at=now - timedelta(days=random.randint(1, 14)),
+            mastered=random.choice([0, 1]),
+        )
+        db.add(wq)
+
+    # ── 6条模拟收藏（面试题 + 笔试题） ──
+    saved_pool = [
+        ("RESTful API设计原则", "面试题", "计算机类", "请问RESTful API的核心设计原则有哪些？请结合实际项目说明。"),
+        ("数据库事务特性ACID", "面试题", "计算机类", "请解释数据库事务的ACID特性，并说明它们在并发场景下的作用。"),
+        ("前端性能优化策略", "面试题", "计算机类", "列举几种前端性能优化的手段，说明其原理和适用场景。"),
+        ("TCP三次握手与四次挥手", "笔试题", "计算机类", "请简述TCP三次握手和四次挥手的过程及各状态含义。"),
+        ("this指向与箭头函数", "笔试题", "计算机类", "关于JavaScript中的this指向，以下代码输出什么？"),
+        ("CSS盒子模型理解", "笔试题", "计算机类", "请解释标准盒子模型和IE盒子模型的区别。"),
+    ]
+    for idx, (kp, qt, cat, q) in enumerate(saved_pool):
+        sq = SavedQuestion(
+            question_id=200 + idx,
+            question_type="exam" if qt == "笔试题" else "interview",
+            career=cat,
+            category=kp,
+            difficulty=random.choice(["简单", "中等"]),
+            question=q,
+            note="这道题很经典，值得反复练习" if idx < 3 else "面试常考，需要深入理解",
+        )
+        db.add(sq)
+
+    db.commit()
+    db.close()
+    return {
+        "message": f"种子数据已创建：6条面试记录 + {len(wrong_pool)}条错题 + {len(saved_pool)}条收藏"
+    }
 
 

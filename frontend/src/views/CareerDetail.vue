@@ -1,31 +1,119 @@
 <template>
   <div class="career-detail-page">
-    <!-- ═══ 头部：返回 + 岗位名称 + 收藏按钮 ═══ -->
-    <div class="detail-topbar">
-      <button class="btn-back" @click="$router.back()">
-        <ArrowLeft :size="16" class="icon-blue" />
-        <span>返回</span>
-      </button>
-      <div class="detail-topbar-center">
-        <span class="detail-topbar-icon"><i :class="getIcon(careerData.career || '')"></i></span>
-        <h1 class="detail-topbar-title">{{ careerData.career || '加载中…' }}</h1>
+    <!-- ═══ 头部：职业封面区 ═══ -->
+    <div class="detail-topbar detail-hero">
+      <div class="detail-hero-paper">
+        <div class="hero-copy">
+          <button class="btn-back" @click="$router.back()">
+            <ArrowLeft :size="16" class="icon-blue" />
+            <span>返回职业探索</span>
+          </button>
+          <span class="hero-eyebrow">职业详情 · 启途方向卡</span>
+          <div class="detail-topbar-center">
+            <span class="detail-topbar-icon" aria-hidden="true">
+              <svg viewBox="0 0 48 48" fill="none">
+                <rect x="10" y="12" width="28" height="24" rx="7" fill="#EFF6FF" stroke="#2563EB" stroke-width="2.2" />
+                <path d="M17 21h14M17 27h9" stroke="#2563EB" stroke-width="2.2" stroke-linecap="round" />
+                <path d="M18 12c.8-4 3.1-6 6-6s5.2 2 6 6" stroke="#93C5FD" stroke-width="2.2" stroke-linecap="round" />
+                <circle cx="34" cy="32" r="6.2" fill="#FFFFFF" stroke="#0EA5E9" stroke-width="2" />
+                <path d="M31.5 32.2l1.8 1.8 3.5-4" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M9 38h30" stroke="#BFDBFE" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 4" />
+              </svg>
+            </span>
+            <h1 class="detail-topbar-title">{{ careerData.career || '加载中…' }}</h1>
+          </div>
+          <p class="hero-desc">把岗位职责、能力要求、薪资参考和成长路线放在一张清晰的职业地图里。</p>
+          <div class="hero-tag-strip">
+            <span v-for="tag in (careerData.hard_requirements || []).slice(0, 4)" :key="tag">{{ tag }}</span>
+            <span v-if="!(careerData.hard_requirements || []).length">岗位职责</span>
+            <span v-if="!(careerData.hard_requirements || []).length">能力要求</span>
+            <span v-if="!(careerData.hard_requirements || []).length">成长路线</span>
+          </div>
+        </div>
+
+        <div class="hero-side">
+          <div class="hero-watermark">QITU</div>
+          <div class="hero-metrics">
+            <div class="hero-metric">
+              <span>薪资参考</span>
+              <strong>{{ careerData.salary || '7K-20K' }}</strong>
+            </div>
+            <div class="hero-metric">
+              <span>入门难度</span>
+              <strong>{{ careerData.difficulty || '初级' }}</strong>
+            </div>
+            <div class="hero-metric">
+              <span>匹配度</span>
+              <strong>{{ careerData.match || 85 }}%</strong>
+            </div>
+          </div>
+          <div class="hero-pathline">
+            <span>了解岗位</span>
+            <i></i>
+            <span>补齐能力</span>
+            <i></i>
+            <span>收藏路线</span>
+          </div>
+          <button
+            class="hero-bookmark-btn"
+            :class="{ active: isBookmarked }"
+            @click="toggleBookmark"
+            :title="isBookmarked ? '取消收藏' : '收藏此岗位'"
+          >
+            <Star :size="17" class="icon-blue" :class="isBookmarked ? 'fas fa-star' : 'far fa-star'" />
+            <span>{{ isBookmarked ? '已收藏路线' : '收藏并生成路线' }}</span>
+          </button>
+        </div>
       </div>
-      <el-button
-        size="small"
-        :type="isBookmarked ? 'warning' : 'default'"
-        circle
-        @click="toggleBookmark"
-        :title="isBookmarked ? '取消收藏' : '收藏此岗位'"
-      >
-        <Star :size="16" class="icon-blue" :class="isBookmarked ? 'fas fa-star' : 'far fa-star'" />
-      </el-button>
     </div>
 
-    <div v-if="loading" class="loading-state"><i class="fas fa-spinner fa-spin"></i> 加载中…</div>
+    <div v-if="loading" class="loading-state detail-loading"><i class="fas fa-spinner fa-spin"></i> 加载中…</div>
     <template v-else-if="careerData.career">
+      <div class="detail-main-grid">
+
+      <aside class="detail-side-rail">
+        <section class="side-card salary-side-card">
+          <span class="side-kicker">薪资与趋势</span>
+          <strong>{{ careerData.salary || '7K-20K' }}</strong>
+          <p>{{ careerData.trend || '关注岗位能力要求，按阶段补齐项目经验。' }}</p>
+        </section>
+        <section class="side-card">
+          <span class="side-kicker">适合这样的你</span>
+          <p>{{ careerData.suitable_audience || '暂无' }}</p>
+        </section>
+        <section class="side-card side-card-soft">
+          <span class="side-kicker">避坑提示</span>
+          <p>{{ careerData.avoid_tips || '暂无' }}</p>
+        </section>
+        <section class="side-card side-video-card">
+          <div class="side-video-head">
+            <span class="side-kicker">职业入门视频推荐</span>
+            <el-radio-group v-model="videoSort" size="small" @change="loadVideos">
+              <el-radio-button value="hot">热门</el-radio-button>
+              <el-radio-button value="new">最新</el-radio-button>
+            </el-radio-group>
+          </div>
+          <div v-if="videoLoading" class="side-video-loading">正在搜索B站视频…</div>
+          <div v-else-if="videoList.length > 0" class="side-video-list">
+            <article v-for="(v, idx) in videoList.slice(0, 4)" :key="v.bvid || idx" class="side-video-item" @click="openVideo(v)">
+              <div class="side-video-thumb">
+                <img v-if="v.pic" :src="v.pic" :alt="cleanTitle(v.title)" @error="onCoverError($event, v)" />
+                <span v-else>{{ idx + 1 }}</span>
+              </div>
+              <div class="side-video-info">
+                <h4>{{ cleanTitle(v.title) || '入门视频' }}</h4>
+                <p><span v-if="v.author">{{ v.author }}</span><span v-if="v.play">{{ formatCount(v.play) }}播放</span></p>
+              </div>
+            </article>
+          </div>
+          <div v-else class="side-video-empty">暂无推荐视频</div>
+        </section>
+      </aside>
+
+      <div class="detail-content-flow">
 
       <!-- ═══ 模块1：岗位总览 ═══ -->
-      <section class="card detail-section">
+      <section class="card detail-section overview-panel">
         <div class="section-header">
           <h3 class="section-title"><i class="fas fa-clipboard-list"></i> 岗位总览</h3>
         </div>
@@ -115,27 +203,6 @@
         </table>
       </section>
 
-      <!-- ═══ 模块5：适配人群&避坑提示 ═══ -->
-      <section class="card detail-section">
-        <div class="section-header">
-          <h3 class="section-title"><Users :size="16" class="icon-blue" /> 适配人群 &amp; 避坑提示</h3>
-        </div>
-        <div class="tip-block suitable">
-          <div class="tip-icon"><CheckCircle :size="16" :color="'#059669'" /></div>
-          <div>
-            <strong>适合这样的你</strong>
-            <p>{{ careerData.suitable_audience || '暂无' }}</p>
-          </div>
-        </div>
-        <div class="tip-block avoid">
-          <div class="tip-icon"><TriangleAlert :size="16" :color="'#C85A20'" /></div>
-          <div>
-            <strong>避坑提示</strong>
-            <p>{{ careerData.avoid_tips || '暂无' }}</p>
-          </div>
-        </div>
-      </section>
-
       <!-- ═══ ⚡ AI 智能分析 ═══ -->
       <section class="card detail-section ai-analysis-section">
         <div class="section-header">
@@ -170,7 +237,7 @@
             <div class="ai-growth-title"><i class="fas fa-signal"></i> AI 推荐的成长路径</div>
             <div class="ai-growth-steps">
               <div v-for="(step, i) in aiAnalysis.growth_path" :key="i" class="ai-growth-step">
-                <div class="ai-step-dot" :style="{background: ['#3D5A80','#BFA895','#C85A20'][i % 3]}"></div>
+                <div class="ai-step-dot" :style="{background: ['#2563EB','#0EA5E9','#60A5FA'][i % 3]}"></div>
                 <span>{{ step }}</span>
               </div>
             </div>
@@ -184,139 +251,19 @@
         </div>
       </section>
 
-      <!-- ═══ 模块6：📺 职业入门学习视频推荐 ═══ -->
-      <section class="card detail-section">
-        <div class="section-header">
-          <h3 class="section-title"><i class="fas fa-tv"></i> 职业入门学习视频推荐</h3>
+      <!-- ═══ 模块6：成长路线入口 ═══ -->
+      <section class="card detail-section roadmap-entry-section">
+        <div class="roadmap-entry-copy">
+          <span class="roadmap-kicker">成长路线</span>
+          <h3>把课程、证书、任务和资源拆成一条能照着走的路线</h3>
+          <p>详情页先保持轻盈，完整路线放到单独页面里看，更适合收藏后长期跟踪。</p>
         </div>
-        <div class="video-filter-bar">
-          <el-radio-group v-model="videoSort" size="small" @change="loadVideos">
-            <el-radio-button value="hot"><i class="fas fa-fire"></i> 热门</el-radio-button>
-            <el-radio-button value="new"><Clock :size="16" class="icon-blue" /> 最新</el-radio-button>
-          </el-radio-group>
-        </div>
-        <div v-if="videoLoading" class="loading-state" style="padding:20px 0"><i class="fas fa-spinner fa-spin"></i> 正在搜索B站视频…</div>
-        <div v-else-if="videoList.length > 0" class="detail-video-grid">
-          <div v-for="(v, idx) in videoList" :key="v.bvid || idx" class="detail-video-card">
-            <!-- 封面 -->
-            <div class="dv-cover" v-if="v.pic" @click="openVideo(v)">
-              <img :src="v.pic" :alt="v.title" @error="onCoverError($event, v)" />
-              <span class="dv-duration" v-if="v.duration">{{ v.duration }}</span>
-              <div class="dv-overlay"><i class="fas fa-play-circle"></i> 去B站学习</div>
-            </div>
-            <div class="dv-cover dv-cover-placeholder" v-else @click="openVideo(v)">
-              <div class="dv-placeholder-icon"><Film :size="16" class="icon-blue" /></div>
-              <span class="dv-placeholder-title">{{ cleanTitle(v.title).slice(0, 10) || '入门视频' }}</span>
-            </div>
-            <!-- 信息 -->
-            <div class="dv-info">
-              <div class="dv-title" :title="cleanTitle(v.title)">{{ cleanTitle(v.title) }}</div>
-              <div class="dv-meta">
-                <span v-if="v.author"><User :size="16" class="icon-blue" /> {{ v.author }}</span>
-                <span v-if="v.play"><Play :size="16" class="icon-blue" /> {{ formatCount(v.play) }}</span>
-                <el-button
-                  size="small"
-                  circle
-                  :type="store.isVideoBookmarked(v.bvid) ? 'warning' : 'default'"
-                  @click.stop="toggleVideoBookmark(v)"
-                  class="dv-star-btn"
-                >
-                  <Star :size="16" class="icon-blue" :class="store.isVideoBookmarked(v.bvid) ? 'fas fa-star' : 'far fa-star'" />
-                </el-button>
-              </div>
-              <a :href="v.url" target="_blank" rel="noopener noreferrer" class="dv-link" @click.stop="store.recordVideoClick(careerData.career)">
-                <i class="fas fa-external-link-alt"></i> 去B站学习
-              </a>
-            </div>
-          </div>
-        </div>
-        <div v-else class="empty-state" style="padding:20px 0">
-          <i class="fas fa-video-slash"></i>
-          <p>暂无推荐视频</p>
-        </div>
+        <button class="roadmap-entry-btn" @click="goRoadmap">
+          <span>查看完整成长路线</span>
+          <i>→</i>
+        </button>
       </section>
 
-      <!-- ═══ 模块7：成长路线（收藏岗位直接展示） ═══ -->
-      <section class="card detail-section" v-if="isBookmarked && pathData.length">
-        <div class="section-header">
-          <h3 class="section-title">
-            <i class="fas fa-map-signs"></i> 成长路线
-            <span class="path-subtitle">（{{ careerData.career }}方向专属规划）</span>
-          </h3>
-        </div>
-        <div v-if="pathLoading" class="loading-state"><i class="fas fa-spinner fa-spin"></i> 加载中…</div>
-        <div v-else class="semester-timeline">
-          <div v-for="(sem, idx) in pathData" :key="sem.phase" class="sem-item">
-            <div class="sem-marker">
-              <div class="sem-dot" :style="{background: semColors[idx % semColors.length]}"></div>
-              <div class="sem-line" v-if="idx < pathData.length - 1"></div>
-            </div>
-            <div class="sem-content card">
-              <div class="sem-header">
-                <span class="sem-phase">{{ sem.phase }}</span>
-                <span class="sem-goal" v-if="sem.goals"><i class="fas fa-bullseye" style="font-size:11px"></i> {{ sem.goals }}</span>
-              </div>
-              <div class="sem-courses" v-if="sem.courses?.length">
-                <div class="sem-subtitle"><i class="fas fa-book"></i> 推荐课程</div>
-                <el-tag v-for="c in sem.courses" :key="c" size="small" type="primary" effect="plain">{{ c }}</el-tag>
-              </div>
-              <div class="sem-certs" v-if="sem.certificates?.length">
-                <div class="sem-subtitle"><i class="fas fa-medal"></i> 推荐证书</div>
-                <el-tag v-for="cert in sem.certificates" :key="cert" size="small" type="warning" effect="plain">{{ cert }}</el-tag>
-              </div>
-              <div class="sem-resources" v-if="sem.resources?.length">
-                <div class="sem-subtitle"><i class="fas fa-book-open"></i> 推荐资源</div>
-                <el-tag v-for="r in sem.resources" :key="r" size="small" type="success" effect="plain">{{ r }}</el-tag>
-              </div>
-              <div class="sem-tasks">
-                <div v-for="(task, ti) in sem.tasks" :key="ti" class="task-item" @click="toggleTask(sem.phase, ti)">
-                  <span class="task-cb">
-<component :is="getTaskDone(sem.phase, ti) ? 'CheckCircle' : 'Square'" :size="16" :color="getTaskDone(sem.phase, ti) ? '#059669' : '#94a3b8'" />
-                  </span>
-                  <span :class="['task-text', { done: getTaskDone(sem.phase, ti) }]">{{ task }}</span>
-                </div>
-              </div>
-              <div class="sem-tips" v-if="sem.tips"><Lightbulb :size="16" class="icon-blue" /> {{ sem.tips }}</div>
-              <!-- 📺 该阶段推荐视频 -->
-              <div class="sem-videos">
-                <div class="sem-video-toggle" @click="togglePhaseVideos(idx)">
-                  <span><i class="fas fa-tv"></i> 推荐学习视频</span>
-                  <span class="sem-video-arrow"><ChevronUp :size="16" class="icon-blue" :class="expandedPhaseIdx === idx ? 'fas fa-chevron-up' : 'fas fa-chevron-down'" /> {{ expandedPhaseIdx === idx ? '收起' : '展开' }}</span>
-                </div>
-                <div v-if="expandedPhaseIdx === idx" class="sem-video-list">
-                  <div v-if="phaseVideoLoading[idx]" class="sem-video-loading"><i class="fas fa-spinner fa-spin"></i> 搜索视频中…</div>
-                  <div v-else-if="(phaseVideos[idx] || []).length === 0" class="sem-video-empty"><i class="fas fa-video-slash"></i> 暂无相关视频</div>
-                  <div v-else v-for="(v, vi) in phaseVideos[idx]" :key="v.bvid || vi" class="sem-video-card">
-                    <div class="sv-cover" v-if="v.pic" @click="openVideo(v)">
-                      <img :src="v.pic" :alt="v.title" />
-                      <span class="sv-duration" v-if="v.duration">{{ v.duration }}</span>
-                    </div>
-                    <div class="sv-info">
-                      <div class="sv-title" :title="cleanTitle(v.title)">{{ cleanTitle(v.title) }}</div>
-                      <div class="sv-meta">
-                        <span v-if="v.author"><User :size="16" class="icon-blue" /> {{ v.author }}</span>
-                        <span v-if="v.play"><Play :size="16" class="icon-blue" /> {{ formatCount(v.play) }}</span>
-                      </div>
-                      <div class="sv-actions">
-                        <a :href="v.url" target="_blank" rel="noopener noreferrer" class="sv-link"><i class="fas fa-external-link-alt"></i> 去B站学习</a>
-                        <el-button
-                          size="small"
-                          circle
-                          :type="store.isVideoBookmarked(v.bvid) ? 'warning' : 'default'"
-                          @click.stop="togglePhaseVideoBookmark(v)"
-                          class="sv-star"
-                        >
-                          <Star :size="16" class="icon-blue" :class="store.isVideoBookmarked(v.bvid) ? 'fas fa-star' : 'far fa-star'" />
-                        </el-button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <!-- ═══ AI生成内容反馈 ═══ -->
       <section class="card detail-section" v-if="careerData.ai_generated">
@@ -340,6 +287,8 @@
         </el-button>
       </div>
 
+      </div>
+      </div>
     </template>
     <div v-else class="empty-state">
       <i class="fas fa-exclamation-circle"></i>
@@ -413,8 +362,7 @@ function onCoverError(e, v) {
   e.target.style.display = 'none'
   const parent = e.target.parentElement
   if (parent) {
-    parent.classList.add('dv-cover-placeholder')
-    parent.innerHTML = `<div class="dv-placeholder-icon"><Film :size="16" class="icon-blue" /></div><span class="dv-placeholder-title">${(v.title || '').slice(0, 10) || '入门视频'}</span>`
+    parent.innerHTML = `<span>${cleanTitle(v.title).slice(0, 2) || '课'}</span>`
   }
 }
 
@@ -429,7 +377,7 @@ function toggleVideoBookmark(video) {
 
 const isBookmarked = computed(() => store.isBookmarked(careerData.value.career))
 
-const ladderColors = ['#3D5A80','#3D5A80','#3D5A80','#3D5A80','#3D5A80','#3D5A80']
+const ladderColors = ['#2563EB','#0EA5E9','#60A5FA','#93C5FD','#2563EB','#0EA5E9']
 
 function getIcon(name) {
   const icons = {
@@ -444,11 +392,11 @@ function getIcon(name) {
 
 const radarItems = computed(() => {
   return [
-    { label: '专业技能', value: 80, color: '#3D5A80' },
-    { label: '沟通协作', value: 65, color: '#3D5A80' },
-    { label: '学习能力', value: 75, color: '#3D5A80' },
-    { label: '解决问题', value: 70, color: '#3D5A80' },
-    { label: '抗压能力', value: 60, color: '#3D5A80' },
+    { label: '专业技能', value: 80, color: '#2563EB' },
+    { label: '沟通协作', value: 65, color: '#0EA5E9' },
+    { label: '学习能力', value: 75, color: '#60A5FA' },
+    { label: '解决问题', value: 70, color: '#2563EB' },
+    { label: '抗压能力', value: 60, color: '#93C5FD' },
   ]
 })
 
@@ -456,7 +404,7 @@ const radarItems = computed(() => {
 const pathData = ref([])
 const pathLoading = ref(false)
 const doneMap = ref({})
-const semColors = ['#3D5A80','#3D5A80','#3D5A80','#3D5A80','#3D5A80','#3D5A80','#3D5A80']
+const semColors = ['#2563EB','#0EA5E9','#60A5FA','#93C5FD','#2563EB','#0EA5E9','#60A5FA']
 
 function getDoneKey(phase, idx) {
   return `${careerData.value.career || 'default'}_${phase}_${idx}`
@@ -506,6 +454,12 @@ async function loadSavedPath() {
 const phaseVideos = reactive({})
 const phaseVideoLoading = reactive({})
 const expandedPhaseIdx = ref(null)
+
+function goRoadmap() {
+  const name = careerData.value.career || route.params.careerId
+  if (!name) return
+  router.push(`/career/path/${encodeURIComponent(name)}`)
+}
 
 async function togglePhaseVideos(idx) {
   if (expandedPhaseIdx.value === idx) {
@@ -614,86 +568,349 @@ onMounted(async () => {
    ════════════════════════════════════════════ */
 
 .career-detail-page {
-  max-width: 800px;
-  margin: 0 auto;
-  padding-bottom: 100px;
+  width: auto;
+  max-width: none;
+  margin: 0 calc(var(--main-pad-x, 28px) * -1);
+  padding: 0 18px 100px;
+  color: #1E293B;
 }
 
-/* ── 顶部导航条 ── */
-.detail-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  gap: 12px;
+/* ── 顶部职业纸张栏 ── */
+.detail-topbar.detail-hero {
+  display: block;
+  margin-bottom: 18px;
 }
 .btn-back {
+  align-self: start;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-body);
-  font-size: 13px;
+  gap: 7px;
+  min-height: 38px;
+  margin-bottom: 10px;
+  padding: 0 14px;
+  background: rgba(255, 255, 255, .82);
+  border: 1px solid #BFDBFE;
+  border-radius: 999px;
+  color: #2563EB;
+  font-size: 14px;
+  font-weight: 900;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: transform .22s cubic-bezier(.16, 1, .3, 1), box-shadow .22s, border-color .22s;
   white-space: nowrap;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, .08);
 }
 .btn-back:hover {
-  background: var(--primary-bg);
-  border-color: var(--primary);
-  color: var(--primary);
+  transform: translateY(-1px);
+  border-color: #93C5FD;
+  box-shadow: 0 14px 28px rgba(37, 99, 235, .10);
+}
+.detail-hero-paper {
+  position: relative;
+  min-height: 232px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(440px, .55fr);
+  gap: 46px;
+  padding: 24px 42px 30px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 86% 8%, rgba(147, 197, 253, .26), transparent 32%),
+    linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 48%, #F8FBFF 100%);
+  border: 1px solid #CFE4FF;
+  border-radius: 30px 30px 12px 30px;
+  box-shadow: 0 22px 50px rgba(37, 99, 235, .11), inset 0 1px 0 rgba(255,255,255,.88);
+}
+.detail-hero-paper::after {
+  content: '';
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, rgba(191,219,254,.25) 0%, #fff 52%, #DBEAFE 53%, #BFDBFE 100%);
+  border-left: 1px solid #BFDBFE;
+  border-top: 1px solid #BFDBFE;
+  border-radius: 12px 0 0 0;
+  box-shadow: -8px -8px 18px rgba(37,99,235,.08);
+}
+.hero-copy,
+.hero-side {
+  position: relative;
+  z-index: 1;
+}
+.hero-eyebrow {
+  display: inline-flex;
+  width: max-content;
+  margin-bottom: 14px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #FFFFFF;
+  border: 1px solid #BFDBFE;
+  color: #2563EB;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: .08em;
 }
 .detail-topbar-center {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex: 1;
+  gap: 16px;
   min-width: 0;
 }
 .detail-topbar-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radius-sm);
-  background: var(--primary-bg);
+  width: 66px;
+  height: 66px;
+  border-radius: 20px;
+  background: #FFFFFF;
+  border: 1px solid #BFDBFE;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--primary);
-  font-size: 17px;
+  color: #2563EB;
   flex-shrink: 0;
+  box-shadow: 0 14px 30px rgba(37,99,235,.10);
+}
+.detail-topbar-icon svg {
+  width: 46px;
+  height: 46px;
+  display: block;
 }
 .detail-topbar-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-heading);
+  font-size: clamp(38px, 4vw, 56px);
+  font-weight: 900;
+  color: #1E293B;
   margin: 0;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.hero-desc {
+  max-width: 66ch;
+  margin: 18px 0 0 82px;
+  color: #475569;
+  font-size: 17px;
+  line-height: 1.9;
+}
+.hero-tag-strip {
+  margin: 18px 0 0 82px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 680px;
+}
+.hero-tag-strip span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .74);
+  border: 1px solid #BFDBFE;
+  color: #2563EB;
+  font-size: 14px;
+  font-weight: 900;
+}
+.hero-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 18px;
+  min-width: 0;
+  padding-right: 92px;
+}
+.hero-watermark {
+  position: absolute;
+  right: -8px;
+  top: -22px;
+  color: rgba(37, 99, 235, .10);
+  font-size: 68px;
+  font-weight: 900;
+  letter-spacing: .10em;
+  line-height: 1;
+}
+.hero-metrics {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  width: min(100%, 362px);
+}
+.hero-metric {
+  position: relative;
+  min-height: 58px;
+  padding: 11px 14px;
+  background: rgba(255, 255, 255, .76);
+  border: 1px solid #DBEAFE;
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, .055);
+}
+.hero-metric span {
+  display: block;
+  margin-bottom: 4px;
+  color: #64748B;
+  font-size: 13px;
+  font-weight: 800;
+}
+.hero-metric strong {
+  color: #2563EB;
+  font-size: 23px;
+  line-height: 1;
+  font-weight: 900;
+}
+.hero-pathline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: min(100%, 362px);
+  color: #2563EB;
+  font-size: 15px;
+  font-weight: 900;
+}
+.hero-pathline i {
+  flex: 1;
+  min-width: 30px;
+  height: 2px;
+  background-image: linear-gradient(to right, #93C5FD 55%, transparent 0);
+  background-size: 9px 2px;
+}
+.hero-bookmark-btn {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 20px;
+  width: min(100%, 362px);
+  border: 1px solid #BFDBFE;
+  border-radius: 16px;
+  background: #FFFFFF;
+  color: #2563EB;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform .22s cubic-bezier(.16, 1, .3, 1), background .22s, box-shadow .22s;
+  box-shadow: 0 12px 26px rgba(37,99,235,.10);
+}
+.hero-bookmark-btn:hover {
+  transform: translateY(-1px);
+  background: #EFF6FF;
+}
+.hero-bookmark-btn.active {
+  background: #2563EB;
+  border-color: #2563EB;
+  color: #FFFFFF;
+}
+.hero-bookmark-btn.active .icon-blue {
+  color: #FFFFFF;
+}
+.detail-loading {
+  min-height: 260px;
+}
+.detail-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(500px, 32vw, 560px);
+  gap: 28px;
+  align-items: start;
+}
+.detail-content-flow {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 18px;
+  min-width: 0;
+}
+.detail-side-rail {
+  position: sticky;
+  top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: calc(100vh - 44px);
+  order: 2;
+}
+.detail-content-flow > .detail-section {
+  grid-column: span 12;
+}
+.detail-content-flow > .detail-section:nth-of-type(2),
+.detail-content-flow > .detail-section:nth-of-type(3) {
+  grid-column: span 6;
+}
+.side-card {
+  position: relative;
+  padding: 18px 18px 17px;
+  background: #FFFFFF;
+  border: 1px solid #DBEAFE;
+  border-radius: 18px;
+  box-shadow: 0 14px 32px rgba(37, 99, 235, .06);
+}
+.side-card::before {
+  content: none;
+}
+.side-kicker {
+  display: block;
+  margin-bottom: 9px;
+  color: #2563EB;
+  font-size: 14px;
+  font-weight: 900;
+}
+.side-card strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #1E293B;
+  font-size: 25px;
+  line-height: 1.05;
+  font-weight: 900;
+}
+.side-card p {
+  margin: 0;
+  color: #475569;
+  font-size: 15px;
+  line-height: 1.75;
+}
+.salary-side-card {
+  background: linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 78%);
+}
+.side-card-soft {
+  border-style: dashed;
+  background: #F8FBFF;
+}
 
 /* ── 模块卡片 ── */
 .detail-section {
-  margin-bottom: 16px;
+  margin-bottom: 0;
+  position: relative;
+  background: #FFFFFF;
+  border: 1px solid #DBEAFE;
+  border-radius: 18px;
+  padding: 24px 26px;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, .04);
 }
 .detail-section:deep(.section-header) {
-  margin-bottom: 14px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #BFDBFE;
+}
+.detail-section:deep(.section-title) {
+  color: #1E293B;
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
 }
 
 /* ── 岗位总览 ── */
 .overview-text {
-  color: var(--text-body);
-  line-height: 1.7;
-  font-size: 14px;
-  margin-bottom: 16px;
+  color: #334155;
+  line-height: 1.85;
+  font-size: 17px;
+  margin-bottom: 18px;
 }
 .growth-ladder {
-  margin-top: 12px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border-light);
+  margin-top: 14px;
+  padding: 16px;
+  border-top: 1px dashed #BFDBFE;
+  background: #F8FBFF;
+  border-radius: 14px;
 }
 .ladder-title {
   font-size: 13px;
@@ -747,6 +964,11 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px dashed #E0ECFF;
+}
+.wf-item:last-child {
+  border-bottom: 0;
 }
 .wf-num {
   width: 28px;
@@ -791,9 +1013,10 @@ onMounted(async () => {
 }
 .radar-panel {
   margin-top: 16px;
-  padding: 16px;
-  background: var(--bg-alt);
-  border-radius: var(--radius-md);
+  padding: 18px;
+  background: #EFF6FF;
+  border: 1px dashed #BFDBFE;
+  border-radius: 16px;
 }
 .radar-panel-title {
   font-size: 13px;
@@ -861,51 +1084,16 @@ onMounted(async () => {
   color: var(--text-body);
 }
 
-/* ── 适配人群 ── */
-.tip-block {
-  display: flex;
-  gap: 12px;
-  padding: 14px 16px;
-  border-radius: var(--radius-sm);
-  margin-bottom: 10px;
-}
-.tip-block.suitable {
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
-}
-.tip-block.avoid {
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-}
-.tip-icon {
-  font-size: 20px;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-.tip-block strong {
-  display: block;
-  font-size: 14px;
-  color: var(--text-heading);
-  margin-bottom: 4px;
-}
-.tip-block p {
-  font-size: 13px;
-  color: var(--text-body);
-  line-height: 1.6;
-  margin: 0;
-}
-
 /* ── 底部固定按钮 ── */
 .detail-footer {
-  position: fixed;
-  bottom: 0;
-  left: 248px;
-  right: 0;
-  padding: 14px 28px;
-  background: var(--bg-card);
-  border-top: 1px solid var(--border);
-  z-index: 10;
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+  grid-column: span 12;
+  position: static;
+  padding: 18px;
+  background: #EFF6FF;
+  border: 1px dashed #93C5FD;
+  border-radius: 18px;
+  z-index: auto;
+  box-shadow: none;
 }
 .footer-bookmark-btn {
   width: 100%;
@@ -919,28 +1107,29 @@ onMounted(async () => {
 
 /* ═══ AI 智能分析模块 ═══ */
 .ai-analysis-section {
-  border: 1px solid rgba(61, 90, 128, 0.15);
-  border-left: 4px solid #3D5A80;
+  border: 1px solid #BFDBFE;
+  background: linear-gradient(135deg, #FFFFFF 0%, #EFF6FF 100%);
 }
 .section-badge {
   font-size: 11px;
-  background: linear-gradient(135deg, #3D5A80, #2C4460);
+  background: #2563EB;
   color: #fff;
-  padding: 2px 10px;
-  border-radius: 10px;
-  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 800;
   letter-spacing: 0.5px;
 }
 .ai-summary {
-  background: linear-gradient(135deg, #f0f2f6, #e8ecf2);
-  border-radius: 10px;
-  padding: 16px;
+  background: #FFFFFF;
+  border: 1px dashed #BFDBFE;
+  border-radius: 14px;
+  padding: 18px;
   margin-bottom: 16px;
 }
 .ai-label {
   font-size: 12px;
-  color: #3D5A80;
-  font-weight: 600;
+  color: #2563EB;
+  font-weight: 900;
   margin-bottom: 6px;
 }
 .ai-label i {
@@ -971,12 +1160,13 @@ onMounted(async () => {
   width: 32px;
   height: 32px;
   min-width: 32px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #3D5A80, #2C4460);
+  border-radius: 10px;
+  background: #DBEAFE;
+  border: 1px solid #BFDBFE;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #2563EB;
   font-size: 14px;
 }
 .ai-item-label {
@@ -994,15 +1184,16 @@ onMounted(async () => {
   line-height: 1.5;
 }
 .ai-growth {
-  background: linear-gradient(135deg, #fdf6ef, #faf0e6);
-  border-radius: 10px;
-  padding: 14px 16px;
+  background: #FFFFFF;
+  border: 1px solid #DBEAFE;
+  border-radius: 14px;
+  padding: 16px 18px;
   margin-bottom: 12px;
 }
 .ai-growth-title {
   font-size: 12px;
-  font-weight: 600;
-  color: #BFA895;
+  font-weight: 900;
+  color: #2563EB;
   margin-bottom: 10px;
 }
 .ai-growth-title i {
@@ -1044,135 +1235,173 @@ onMounted(async () => {
   font-size: 13px;
 }
 
-/* ── 视频推荐模块 ── */
-.video-filter-bar {
-  margin-bottom: 14px;
+/* ── 视频推荐模块（右侧栏小卡） ── */
+.side-video-card {
+  padding: 16px 17px 18px;
+  flex: 1;
+  min-height: 390px;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #FFFFFF 0%, #F8FBFF 100%);
 }
-.detail-video-grid {
+.side-video-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.side-video-head .side-kicker {
+  margin-bottom: 0;
+}
+.side-video-head :deep(.el-radio-button__inner) {
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 8px !important;
+}
+.side-video-loading,
+.side-video-empty {
+  flex: 1;
+  min-height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748B;
+  font-size: 14px;
+  background: #F8FBFF;
+  border: 1px dashed #BFDBFE;
+  border-radius: 14px;
+}
+.side-video-list {
+  flex: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: 1fr;
+  gap: 10px;
+  align-content: start;
+}
+.side-video-item {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
   gap: 14px;
-}
-.detail-video-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  transition: all 0.25s;
-}
-.detail-video-card:hover {
-  border-color: var(--primary-light);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-}
-.dv-cover {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16/9;
-  overflow: hidden;
-  background: var(--bg-alt);
+  align-items: center;
+  min-height: 84px;
+  height: auto;
+  padding: 9px 12px 9px 9px;
+  background: #FFFFFF;
+  border: 1px solid #DBEAFE;
+  border-radius: 14px;
   cursor: pointer;
+  transition: transform .2s, border-color .2s, box-shadow .2s;
 }
-.dv-cover img {
+.side-video-item:hover {
+  transform: translateY(-1px);
+  border-color: #93C5FD;
+  box-shadow: 0 12px 24px rgba(37,99,235,.08);
+}
+.side-video-thumb {
+  width: 132px;
+  height: 74px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563EB;
+  font-weight: 900;
+}
+.side-video-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s;
+  display: block;
 }
-.detail-video-card:hover .dv-cover img {
-  transform: scale(1.05);
+.side-video-info {
+  min-width: 0;
 }
-.dv-duration {
-  position: absolute;
-  bottom: 6px;
-  right: 6px;
-  background: rgba(0,0,0,0.7);
-  color: white;
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 500;
-}
-.dv-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  opacity: 0;
-  transition: opacity 0.25s;
-  color: white;
-  font-size: 13px;
-  font-weight: 600;
-}
-.detail-video-card:hover .dv-overlay {
-  opacity: 1;
-}
-.dv-cover-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #eef0ff, #f0f8ff);
-  cursor: pointer;
-}
-.dv-placeholder-icon {
-  font-size: 28px;
-  color: var(--primary-light);
-  margin-bottom: 4px;
-}
-.dv-placeholder-title {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-.dv-info {
-  padding: 10px 12px 12px;
-}
-.dv-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-heading);
+.side-video-info h4 {
+  margin: 0 0 7px;
+  color: #1E293B;
+  font-size: 15px;
+  line-height: 1.35;
+  font-weight: 900;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin-bottom: 6px;
-  line-height: 1.4;
 }
-.dv-meta {
+.side-video-info p {
   display: flex;
-  gap: 10px;
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0;
+  color: #64748B;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+/* ── 成长路线入口 ── */
+.roadmap-entry-section {
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px 30px;
+  background:
+    radial-gradient(circle at 92% 18%, rgba(147,197,253,.22), transparent 28%),
+    linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 72%);
 }
-.dv-meta i {
-  margin-right: 2px;
+.roadmap-kicker {
+  display: inline-flex;
+  margin-bottom: 8px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #FFFFFF;
+  border: 1px solid #BFDBFE;
+  color: #2563EB;
+  font-size: 12px;
+  font-weight: 900;
 }
-.dv-star-btn {
-  margin-left: auto;
-  width: 24px !important;
-  height: 24px !important;
-  font-size: 11px !important;
+.roadmap-entry-copy h3 {
+  max-width: 620px;
+  margin: 0 0 8px;
+  color: #1E293B;
+  font-size: 24px;
+  line-height: 1.22;
+  font-weight: 900;
 }
-.dv-link {
+.roadmap-entry-copy p {
+  margin: 0;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.roadmap-entry-btn {
+  flex: none;
+  min-height: 52px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  background: #C85A20;
-  color: white;
-  font-size: 11px;
-  padding: 5px 12px;
-  border-radius: 20px;
-  text-decoration: none;
-  font-weight: 500;
-  transition: background 0.2s;
+  gap: 10px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 16px;
+  background: #2563EB;
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 16px 30px rgba(37,99,235,.22);
+  transition: transform .22s, box-shadow .22s, background .22s;
 }
-.dv-link:hover {
-  background: #B54E1A;
+.roadmap-entry-btn:hover {
+  transform: translateY(-2px);
+  background: #1D4ED8;
+  box-shadow: 0 20px 36px rgba(37,99,235,.26);
+}
+.roadmap-entry-btn i {
+  font-style: normal;
+  font-size: 18px;
 }
 
 /* ── 成长路线（嵌入详情页） ── */
@@ -1217,8 +1446,9 @@ onMounted(async () => {
   margin-bottom: 4px;
 }
 .sem-content.card {
-  border-color: var(--border-light);
-  background: var(--bg-alt);
+  border-color: #DBEAFE;
+  background: #F8FBFF;
+  box-shadow: none;
 }
 .sem-header {
   display: flex;
@@ -1299,14 +1529,14 @@ onMounted(async () => {
 
 /* ── AI生成内容反馈 ── */
 .ai-feedback-banner {
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  border-radius: var(--radius-md);
+  background: #EFF6FF;
+  border: 1px dashed #93C5FD;
+  border-radius: 16px;
   padding: 16px;
 }
 .ai-feedback-banner p {
   font-size: 13px;
-  color: #92400e;
+  color: #2563EB;
   margin-bottom: 12px;
   display: flex;
   align-items: flex-start;
@@ -1435,21 +1665,117 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  background: #C85A20;
+  background: #2563EB;
   color: white;
   font-size: 10px;
-  padding: 4px 10px;
-  border-radius: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
   text-decoration: none;
-  font-weight: 500;
-  transition: background 0.2s;
+  font-weight: 800;
+  transition: background 0.2s, transform .2s;
 }
 .sv-link:hover {
-  background: #B54E1A;
+  background: #1D4ED8;
+  transform: translateY(-1px);
 }
 .sv-star {
   width: 24px !important;
   height: 24px !important;
   font-size: 10px !important;
+}
+
+@media (max-width: 1180px) {
+  .career-detail-page {
+    max-width: 100%;
+    padding-inline: 0;
+  }
+  .detail-topbar.detail-hero {
+    grid-template-columns: 1fr;
+  }
+  .btn-back {
+    width: max-content;
+  }
+  .detail-hero-paper {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .hero-desc,
+  .hero-tag-strip {
+    margin-left: 0;
+  }
+  .hero-side {
+    align-items: stretch;
+    padding-right: 0;
+  }
+  .hero-metrics,
+  .hero-pathline,
+  .hero-bookmark-btn {
+    width: 100%;
+  }
+  .hero-watermark {
+    right: 0;
+    top: -10px;
+  }
+  .detail-main-grid {
+    grid-template-columns: 1fr;
+  }
+  .detail-side-rail {
+    position: static;
+    order: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-height: 0;
+  }
+  .side-video-card {
+    grid-column: span 2;
+    min-height: 0;
+  }
+  .detail-content-flow > .detail-section,
+  .detail-content-flow > .detail-section:nth-of-type(2),
+  .detail-content-flow > .detail-section:nth-of-type(3) {
+    grid-column: span 12;
+  }
+}
+
+@media (max-width: 720px) {
+  .career-detail-page {
+    padding-bottom: 72px;
+  }
+  .detail-hero-paper {
+    padding: 22px 20px 24px;
+    border-radius: 22px 22px 10px 22px;
+  }
+  .detail-topbar-center {
+    align-items: flex-start;
+  }
+  .detail-topbar-title {
+    white-space: normal;
+    font-size: 30px;
+  }
+  .hero-pathline {
+    align-items: flex-start;
+  }
+  .hero-pathline i {
+    display: none;
+  }
+  .detail-section {
+    padding: 18px;
+    border-radius: 16px;
+  }
+  .detail-side-rail {
+    grid-template-columns: 1fr;
+  }
+  .side-video-card {
+    grid-column: auto;
+  }
+  .side-video-list {
+    grid-template-columns: 1fr;
+  }
+  .ai-grid {
+    grid-template-columns: 1fr;
+  }
+  .detail-video-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

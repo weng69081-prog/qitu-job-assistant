@@ -1,18 +1,17 @@
 <template>
   <div class="savedlist-page">
+    <!-- ═══ 返回按钮（左上） ═══ -->
+    <button class="back-circle-btn" @click="$router.back()">
+      <ArrowLeft :size="16" class="icon-blue" /> 返回
+    </button>
+
     <!-- ═══ Banner ═══ -->
     <PageBanner fullwidth
       title="面试收藏夹"
       description="收藏值得反复练习的面试题目，随时回顾，稳步提升"
       :icon="'Star'"
       variant="primary"
-    >
-      <template #actions>
-        <button class="banner-back-btn" @click="$router.back()">
-          <ArrowLeft :size="16" class="icon-blue" /> 返回
-        </button>
-      </template>
-    </PageBanner>
+    />
 
     <!-- ═══ 紧凑统计条 ═══ -->
     <section class="stat-ribbon">
@@ -154,7 +153,40 @@ onMounted(() => { loadInterviewSaved() })
 </script>
 
 <style scoped>
-.savedlist-page { }
+.savedlist-page {
+  position: relative;
+  width: min(960px, calc(100vw - 48px));
+  margin: 0 auto;
+  padding: 0 0 2.4rem;
+}
+.back-circle-btn {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: 2px solid var(--primary);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--primary);
+  font: inherit;
+  font-weight: 900;
+  font-size: 14px;
+  cursor: pointer;
+  transition: box-shadow .2s;
+}
+.back-circle-btn:hover {
+  box-shadow: 0 4px 14px rgba(37,99,235,.18);
+}
+.stat-ribbon,
+.zone-list {
+  width: min(960px, calc(100vw - 48px));
+  margin-left: auto;
+  margin-right: auto;
+}
 
 /* ═══ 紧凑统计条 ═══ */
 .stat-ribbon {
@@ -174,20 +206,20 @@ onMounted(() => { loadInterviewSaved() })
   transition: all 0.2s;
 }
 .stat-cell:hover {
-  border-color: rgba(61,90,128,.2);
-  box-shadow: 0 2px 8px rgba(61,90,128,.06);
+  border-color: rgba(37,99,235,.22);
+  box-shadow: 0 2px 8px rgba(37,99,235,.08);
 }
 .sc-icon {
   width: 22px; height: 22px;
   border-radius: 6px;
   display: flex; align-items: center; justify-content: center;
   font-size: 11px;
-  background: rgba(232,168,56,.1);
-  color: #E8A838;
+  background: #EFF6FF;
+  color: #2563EB;
   flex-shrink: 0;
 }
-.sc-icon.sc-cat { background: rgba(61,90,128,.1); color: #3D5A80; }
-.sc-icon.sc-date { background: rgba(191,168,149,.1); color: #BFA895; }
+.sc-icon.sc-cat { background: #EFF6FF; color: #2563EB; }
+.sc-icon.sc-date { background: #E0F2FE; color: #0EA5E9; }
 .sc-icon.sc-note { background: rgba(103,194,58,.1); color: #67c23a; }
 .sc-body {
   display: flex;
@@ -211,7 +243,7 @@ onMounted(() => { loadInterviewSaved() })
 .saved-card:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
-  border-color: rgba(61,90,128,.15);
+  border-color: rgba(37,99,235,.18);
 }
 
 .sc-top {
@@ -260,16 +292,16 @@ onMounted(() => { loadInterviewSaved() })
 .sc-note {
   font-size: 12px;
   color: var(--text-body);
-  background: rgba(61,90,128,.04);
+  background: #EFF6FF;
   border-radius: var(--radius-sm);
   padding: 6px 10px;
   margin-bottom: 10px;
-  border: 1px solid rgba(61,90,128,.08);
+  border: 1px solid #BFDBFE;
   display: flex;
   align-items: flex-start;
   gap: 5px;
 }
-.sc-note i { color: #BFA895; font-size: 11px; margin-top: 1px; }
+.sc-note i { color: #0EA5E9; font-size: 11px; margin-top: 1px; }
 
 /* ── 操作按钮 ── */
 .sc-actions {
@@ -297,7 +329,7 @@ onMounted(() => { loadInterviewSaved() })
 .banner-back-btn:hover { background: rgba(255,255,255,.2); }
 
 .btn-sm { padding: 4px 10px !important; font-size: 11px !important; }
-.btn-primary-outline { border-color: #3D5A80 !important; color: #3D5A80 !important; }
+.btn-primary-outline { border-color: #2563EB !important; color: #2563EB !important; }
 .btn-danger { border-color: #fecaca !important; color: #dc2626 !important; }
 
 /* ── 分页 ── */
@@ -311,9 +343,9 @@ onMounted(() => { loadInterviewSaved() })
 .empty-icon-wrap {
   width: 52px; height: 52px;
   border-radius: 50%;
-  background: rgba(232,168,56,.08);
+  background: #EFF6FF;
   display: flex; align-items: center; justify-content: center;
   margin: 0 auto 10px;
 }
-.empty-icon { font-size: 22px; color: #E8A838; }
+.empty-icon { font-size: 22px; color: #2563EB; }
 </style>

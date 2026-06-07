@@ -97,9 +97,9 @@
               <!-- Data polygon -->
               <polygon
                 :points="radarDataPoints"
-                fill="var(--primary, #3D5A80)"
+                fill="var(--primary, #2563EB)"
                 fill-opacity="0.15"
-                stroke="var(--primary, #3D5A80)"
+                stroke="var(--primary, #2563EB)"
                 stroke-width="1.8"
               />
               <!-- Data points -->
@@ -108,7 +108,7 @@
                 :key="'pt' + pi"
                 :cx="pt.cx" :cy="pt.cy"
                 r="3"
-                fill="var(--primary, #3D5A80)"
+                fill="var(--primary, #2563EB)"
               />
               <!-- Labels -->
               <text
@@ -155,7 +155,7 @@
             <span class="ring-chart-value">{{ averageScore }}</span>
           </div>
           <div class="ring-chart-item">
-            <div class="ring-chart" :style="ringGradient(averageScore, '#3D5A80')"></div>
+            <div class="ring-chart" :style="ringGradient(averageScore, '#2563EB')"></div>
             <span class="ring-chart-label"><BarChart :size="16" class="icon-blue" /> 综合表现</span>
             <span class="ring-chart-value">{{ averageScore }}</span>
           </div>
@@ -272,7 +272,7 @@
         <!-- Special Analysis Grid (kept from original) -->
         <div class="special-grid grid-4">
           <div class="special-card">
-            <div class="special-circle" :style="ringGradient(specialScores.emotion, '#3D5A80')">
+            <div class="special-circle" :style="ringGradient(specialScores.emotion, '#2563EB')">
               <div class="special-circle-inner">
                 <Smile :size="16" class="icon-blue" />
               </div>
@@ -281,7 +281,7 @@
             <span class="special-score">{{ specialScores.emotion }}</span>
           </div>
           <div class="special-card">
-            <div class="special-circle" :style="ringGradient(specialScores.body, '#3D5A80')">
+            <div class="special-circle" :style="ringGradient(specialScores.body, '#2563EB')">
               <div class="special-circle-inner">
                 <User :size="16" class="icon-blue" />
               </div>
@@ -290,7 +290,7 @@
             <span class="special-score">{{ specialScores.body }}</span>
           </div>
           <div class="special-card">
-            <div class="special-circle" :style="ringGradient(specialScores.overall, '#3D5A80')">
+            <div class="special-circle" :style="ringGradient(specialScores.overall, '#2563EB')">
               <div class="special-circle-inner">
                 <BarChart :size="16" class="icon-blue" />
               </div>
@@ -299,7 +299,7 @@
             <span class="special-score">{{ specialScores.overall }}</span>
           </div>
           <div class="special-card">
-            <div class="special-circle" :style="ringGradient(specialScores.comprehensive, '#3D5A80')">
+            <div class="special-circle" :style="ringGradient(specialScores.comprehensive, '#2563EB')">
               <div class="special-circle-inner">
                 <Trophy :size="16" class="icon-blue" />
               </div>
@@ -332,11 +332,11 @@ function toggleQA(idx) { expandedQA.value[idx] = !expandedQA.value[idx] }
 // Helpers
 function barColor(val) { return val >= 70 ? '#67c23a' : val >= 50 ? '#e6a23c' : '#f56c6c' }
 function scoreBg(val) { return val >= 70 ? '#67c23a' : val >= 50 ? '#e6a23c' : '#f56c6c' }
-function ringGradient(val, color = '#3D5A80') {
+function ringGradient(val, color = '#2563EB') {
   const pct = Math.min(100, Math.max(0, val))
   return `background: conic-gradient(${color} 0deg ${pct * 3.6}deg, #f0f0f0 ${pct * 3.6}deg 360deg)`
 }
-const dimColors = ['#3D5A80', '#3D5A80', '#3D5A80', '#3D5A80', '#3D5A80']
+const dimColors = ['#2563EB', '#2563EB', '#2563EB', '#2563EB', '#2563EB']
 
 // Computed
 const overallScore = computed(() => {
@@ -397,7 +397,7 @@ const relativeTime = computed(() => {
 
 const bigRingGradient = computed(() => {
   const pct = Math.min(100, Math.max(0, overallScore.value))
-  return { background: `conic-gradient(#3D5A80 0deg ${pct * 3.6}deg, #e8e8f8 ${pct * 3.6}deg 360deg)` }
+  return { background: `conic-gradient(#2563EB 0deg ${pct * 3.6}deg, #e8e8f8 ${pct * 3.6}deg 360deg)` }
 })
 
 const specialScores = computed(() => {
@@ -504,9 +504,9 @@ onMounted(async () => {
 
 /* ─── Page Layout ─── */
 .report-page {
-  max-width: 800px;
+  width: min(1100px, calc(100vw - var(--sidebar-width) - 40px));
   margin: 0 auto;
-  padding: 0 1rem 2rem;
+  padding: 0 0 2.4rem;
 }
 
 /* ─── Back Button ─── */
@@ -529,11 +529,14 @@ onMounted(async () => {
 
 /* ─── Core Stats Card (环形评分 + 核心统计) ─── */
 .core-stats-card {
-  display: flex;
+  display: grid;
+  grid-template-columns: 140px 1fr;
   align-items: center;
-  gap: 1.8rem;
+  gap: 1.6rem;
   padding: 1.6rem 1.8rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
+  border: 1.5px dashed #BFDBFE;
+  background: linear-gradient(135deg, #FFFFFF 0%, #EFF6FF 100%);
 }
 
 .core-score-section {
@@ -570,7 +573,7 @@ onMounted(async () => {
 .score-number {
   font-size: 1.6rem;
   font-weight: 800;
-  color: var(--primary, #3D5A80);
+  color: var(--primary, #2563EB);
   line-height: 1.2;
 }
 
@@ -607,7 +610,7 @@ onMounted(async () => {
 
 .stat-icon {
   font-size: 1.15rem;
-  color: var(--primary, #3D5A80);
+  color: var(--primary, #2563EB);
   width: 24px;
   text-align: center;
   flex-shrink: 0;
@@ -645,10 +648,11 @@ onMounted(async () => {
 /* ─── Card Base ─── */
 .card {
   background: var(--bg-card, #fff);
-  border-radius: var(--radius-lg, 12px);
-  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06));
-  padding: 1.4rem 1.6rem;
-  margin-bottom: 1rem;
+  border-radius: 20px;
+  box-shadow: 0 16px 36px rgba(37,99,235,.06);
+  border: 1px solid #DBEAFE;
+  padding: 1.6rem 1.8rem;
+  margin-bottom: 1.2rem;
 }
 
 /* ─── Section Header / Title ─── */
@@ -670,7 +674,7 @@ onMounted(async () => {
 
 .section-title i {
   font-size: 1rem;
-  color: var(--primary, #3D5A80);
+  color: var(--primary, #2563EB);
 }
 
 /* ─── Tag Pill (count badge) ─── */
@@ -814,7 +818,7 @@ onMounted(async () => {
   border-radius: var(--radius-md, 10px);
   padding: 0.9rem 1rem;
   margin-bottom: 0.7rem;
-  border-left: 3px solid var(--primary, #3D5A80);
+  border-left: 3px solid var(--primary, #2563EB);
   transition: box-shadow 0.2s;
 }
 
@@ -835,7 +839,7 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--primary, #3D5A80);
+  background: var(--primary, #2563EB);
   color: #fff;
   font-size: 0.72rem;
   font-weight: 600;
@@ -902,7 +906,7 @@ onMounted(async () => {
 .qa-expand-btn {
   background: none;
   border: none;
-  color: var(--primary, #3D5A80);
+  color: var(--primary, #2563EB);
   font-size: 0.78rem;
   cursor: pointer;
   padding: 0;
@@ -965,7 +969,7 @@ onMounted(async () => {
 
 .analysis-strength .analysis-card-icon { color: #67c23a; }
 .analysis-weakness .analysis-card-icon { color: #e6a23c; }
-.analysis-suggestion .analysis-card-icon { color: var(--primary, #3D5A80); }
+.analysis-suggestion .analysis-card-icon { color: var(--primary, #2563EB); }
 
 .analysis-card-title {
   font-size: 0.88rem;
@@ -1027,7 +1031,7 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   font-size: 1.15rem;
-  color: var(--primary, #3D5A80);
+  color: var(--primary, #2563EB);
 }
 
 .special-label {

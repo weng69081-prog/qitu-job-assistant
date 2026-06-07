@@ -1,18 +1,17 @@
 <template>
   <div class="wronglist-page">
+    <!-- ═══ 返回按钮（左上） ═══ -->
+    <button class="back-circle-btn" @click="$router.back()">
+      <ArrowLeft :size="16" class="icon-blue" /> 返回
+    </button>
+
     <!-- ═══ Banner ═══ -->
     <PageBanner fullwidth
       title="面试错题本"
       description="回顾每次面试中的失误，针对性强化训练，提升面试表现"
       icon="fa-xmark"
       variant="primary"
-    >
-      <template #actions>
-        <button class="banner-back-btn" @click="$router.back()">
-          <ArrowLeft :size="16" class="icon-blue" /> 返回
-        </button>
-      </template>
-    </PageBanner>
+    />
 
     <!-- ═══ 紧凑统计条 ═══ -->
     <section class="stat-ribbon">
@@ -161,14 +160,43 @@
           <div class="review-label">
             <CheckCheck :size="16" class="icon-blue" /> 参考回答
           </div>
-          <div class="review-value review-answer-correct">{{ reviewItem.correct_answer || reviewItem.sample_answer || '暂无' }}</div>
+          <div class="review-value review-answer-correct">{{ reviewItem.correct_answer || reviewItem.sample_answer || '暂无参考回答' }}</div>
         </div>
 
-        <div class="review-block" v-if="reviewItem.analysis">
+        <!-- 错因分析 -->
+        <div class="review-block review-analysis-block">
           <div class="review-label">
             <FileText :size="16" class="icon-blue" /> AI分析
           </div>
-          <div class="review-value review-analysis">{{ reviewItem.analysis }}</div>
+          <div class="review-value review-analysis">{{ reviewItem.analysis || '暂无AI分析。开始面试模拟后，AI会分析你的回答并给出改进建议。' }}</div>
+        </div>
+
+        <!-- 答题记录 -->
+        <div class="review-meta-grid">
+          <div class="review-meta-item">
+            <XCircle :size="16" class="icon-blue" />
+            <span>答错 <b>{{ reviewItem.wrong_count || 1 }}</b> 次</span>
+          </div>
+          <div class="review-meta-item" v-if="reviewItem.last_wrong_at">
+            <Clock :size="16" class="icon-blue" />
+            <span>最近出错 <b>{{ reviewItem.last_wrong_at }}</b></span>
+          </div>
+          <div class="review-meta-item" v-if="reviewItem.category">
+            <Layers :size="16" class="icon-blue" />
+            <span>知识点分类：<b>{{ reviewItem.category }}</b></span>
+          </div>
+        </div>
+
+        <!-- 提升建议（固定展示结构，就算暂空也显示框架） -->
+        <div class="review-tip-block">
+          <div class="review-label">
+            <Lightbulb :size="16" class="icon-blue" /> 提升建议
+          </div>
+          <ul class="review-tip-list">
+            <li><b>梳理思路</b> — 先明确问题的核心考点，再组织回答结构</li>
+            <li><b>积累术语</b> — 把相关关键词和常用表达记录下来</li>
+            <li><b>模拟练习</b> — 回到面试模块再练一题同类题目巩固</li>
+          </ul>
         </div>
 
         <div class="review-footer">
@@ -250,7 +278,40 @@ onMounted(() => { loadInterviewWrong() })
 </script>
 
 <style scoped>
-.wronglist-page { }
+.wronglist-page {
+  position: relative;
+  width: min(960px, calc(100vw - 48px));
+  margin: 0 auto;
+  padding: 0 0 2.4rem;
+}
+.back-circle-btn {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: 2px solid var(--primary);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--primary);
+  font: inherit;
+  font-weight: 900;
+  font-size: 14px;
+  cursor: pointer;
+  transition: box-shadow .2s;
+}
+.back-circle-btn:hover {
+  box-shadow: 0 4px 14px rgba(37,99,235,.18);
+}
+.stat-ribbon,
+.zone-list {
+  width: min(960px, calc(100vw - 48px));
+  margin-left: auto;
+  margin-right: auto;
+}
 
 /* ═══ 紧凑统计条 ═══ */
 .stat-ribbon {
@@ -272,8 +333,8 @@ onMounted(() => { loadInterviewWrong() })
   overflow: hidden;
 }
 .stat-cell:hover {
-  border-color: rgba(61,90,128,.2);
-  box-shadow: 0 2px 8px rgba(61,90,128,.06);
+  border-color: rgba(37,99,235,.22);
+  box-shadow: 0 2px 8px rgba(37,99,235,.08);
 }
 .sc-icon {
   width: 22px; height: 22px;
@@ -286,7 +347,7 @@ onMounted(() => { loadInterviewWrong() })
 }
 .sc-icon.sc-done { background: rgba(103,194,58,.1); color: #67c23a; }
 .sc-icon.sc-pending { background: rgba(230,162,60,.1); color: #e6a23c; }
-.stat-cell-highlight .sc-icon { background: rgba(61,90,128,.1); color: #3D5A80; }
+.stat-cell-highlight .sc-icon { background: #EFF6FF; color: #2563EB; }
 .sc-body {
   display: flex;
   flex-direction: column;
@@ -342,25 +403,25 @@ onMounted(() => { loadInterviewWrong() })
 .filter-tab i { font-size: .7rem; }
 .filter-tab.active {
   background: #fff;
-  color: #3D5A80;
+  color: #2563EB;
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(61,90,128,.08);
+  box-shadow: 0 1px 3px #BFDBFE;
 }
-.filter-tab:hover:not(.active) { color: #3D5A80; }
+.filter-tab:hover:not(.active) { color: #2563EB; }
 .btn-text-sm {
   background: transparent;
   border: 1px solid var(--border);
   padding: 5px 12px;
   border-radius: 7px;
   font-size: 12px;
-  color: #3D5A80;
+  color: #2563EB;
   cursor: pointer;
   transition: all .2s;
   display: flex;
   align-items: center;
   gap: 4px;
 }
-.btn-text-sm:hover { background: rgba(61,90,128,.06); border-color: #3D5A80; }
+.btn-text-sm:hover { background: rgba(37,99,235,.08); border-color: #2563EB; }
 
 /* ── 错题卡片 ── */
 .wrong-card {
@@ -375,7 +436,7 @@ onMounted(() => { loadInterviewWrong() })
 .wrong-card:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
-  border-color: rgba(61,90,128,.15);
+  border-color: rgba(37,99,235,.18);
 }
 
 .wc-top {
@@ -493,11 +554,11 @@ onMounted(() => { loadInterviewWrong() })
 .empty-icon-wrap {
   width: 52px; height: 52px;
   border-radius: 50%;
-  background: rgba(61,90,128,.06);
+  background: rgba(37,99,235,.08);
   display: flex; align-items: center; justify-content: center;
   margin: 0 auto 10px;
 }
-.empty-icon { font-size: 22px; color: #3D5A80; }
+.empty-icon { font-size: 22px; color: #2563EB; }
 
 /* ── 回顾弹窗 ── */
 .review-dialog :deep(.el-dialog__header) { padding-bottom: 6px; }
@@ -534,8 +595,56 @@ onMounted(() => { loadInterviewWrong() })
   background: rgba(103,194,58,.04);
 }
 .review-analysis {
-  border-left: 3px solid #3D5A80;
-  background: rgba(61,90,128,.03);
+  border-left: 3px solid #2563EB;
+  background: #EFF6FF;
 }
+.review-analysis-block { margin-top: -6px; }
+.review-meta-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #F8FAFC;
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+.review-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.review-meta-item b { color: var(--text-body); font-weight: 700; }
+.review-tip-block {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  background: #FFF7ED;
+  border: 1.5px dashed #FED7AA;
+  border-radius: 14px;
+}
+.review-tip-block .review-label { color: #C2410C; }
+.review-tip-list {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.review-tip-list li {
+  position: relative;
+  padding-left: 18px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #9A3412;
+  line-height: 1.5;
+}
+.review-tip-list li::before {
+  content: '💡';
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 12px;
+}
+.review-tip-list li:last-child { margin-bottom: 0; }
+.review-tip-list li b { font-weight: 700; color: #7C2D12; }
 .review-footer { text-align: center; margin-top: 6px; }
 </style>

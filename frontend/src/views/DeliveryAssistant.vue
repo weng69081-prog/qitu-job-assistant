@@ -3,40 +3,68 @@
     <!-- ═══ 页面顶部 Banner ═══ -->
     <div class="banner-wrap">
       <PageBanner fullwidth
-        title="求职投递助手"
-        description="智能匹配岗位、一键投递、追踪面试全流程进度"
+        title="投递助手"
+        description="记录投递进展，提醒及时跟进"
         :icon="'Send'"
         variant="primary"
+        cat-src="/src/assets/delivery-cat.png"
+        cat-alt="小橘投递"
+        :path-items="['岗位记录', '投递进度', '跟进提醒']"
       />
-      <img src="/src/assets/delivery-cat.png" class="banner-cat" alt="小橘投递">
     </div>
     <!-- ══════════════════════════════════════════════════════════
          一、顶部标题 & 用户求职信息栏
          ══════════════════════════════════════════════════════════ -->
     <section class="zone-header">
-      <div class="user-info-bar card">
-        <div class="info-item">
-          <MapPin :size="16" class="icon-blue" />
-          <span class="info-label">意向城市</span>
-          <span class="info-value">{{ userProfile.city || '未设置' }}</span>
+      <div class="user-info-bar">
+        <div class="uib-top">
+          <div class="uib-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <span>求职意向</span>
+          </div>
+          <div class="uib-hint">点值直接编辑，Enter保存</div>
         </div>
-        <div class="info-divider"></div>
-        <div class="info-item">
-          <Crosshair :size="16" class="icon-blue" />
-          <span class="info-label">目标岗位</span>
-          <span class="info-value">{{ userProfile.job_targets || '未设置' }}</span>
-        </div>
-        <div class="info-divider"></div>
-        <div class="info-item">
-          <Coins :size="16" class="icon-blue" />
-          <span class="info-label">期望薪资</span>
-          <span class="info-value">{{ userProfile.salary || '未设置' }}</span>
-        </div>
-        <div class="info-divider"></div>
-        <div class="info-item">
-          <Tags :size="16" class="icon-blue" />
-          <span class="info-label">技能标签</span>
-          <span class="info-value tag-value">{{ userProfile.skills || '未设置' }}</span>
+        <div class="uib-fields">
+          <div class="uib-field" :class="{ editing: editingField === 'city' }">
+            <MapPin :size="14" class="icon-blue" />
+            <span class="uib-fname">意向城市</span>
+            <template v-if="editingField === 'city'">
+              <input v-model="editForm.city" class="uib-input"
+                @blur="saveField('city')" @keydown.enter="saveField('city')"
+                placeholder="如：北京、上海" />
+            </template>
+            <span v-else class="uib-fval" @click="startEdit('city')">{{ userProfile.city || '未设置' }}</span>
+          </div>
+          <div class="uib-field" :class="{ editing: editingField === 'job_targets' }">
+            <Crosshair :size="14" class="icon-blue" />
+            <span class="uib-fname">目标岗位</span>
+            <template v-if="editingField === 'job_targets'">
+              <input v-model="editForm.job_targets" class="uib-input"
+                @blur="saveField('job_targets')" @keydown.enter="saveField('job_targets')"
+                placeholder="如：前端开发、产品经理" />
+            </template>
+            <span v-else class="uib-fval" @click="startEdit('job_targets')">{{ userProfile.job_targets || '未设置' }}</span>
+          </div>
+          <div class="uib-field" :class="{ editing: editingField === 'salary' }">
+            <Coins :size="14" class="icon-blue" />
+            <span class="uib-fname">期望薪资</span>
+            <template v-if="editingField === 'salary'">
+              <input v-model="editForm.salary" class="uib-input"
+                @blur="saveField('salary')" @keydown.enter="saveField('salary')"
+                placeholder="如：8k-12k、面议" />
+            </template>
+            <span v-else class="uib-fval" @click="startEdit('salary')">{{ userProfile.salary || '未设置' }}</span>
+          </div>
+          <div class="uib-field" :class="{ editing: editingField === 'skills' }">
+            <Tags :size="14" class="icon-blue" />
+            <span class="uib-fname">技能标签</span>
+            <template v-if="editingField === 'skills'">
+              <input v-model="editForm.skills" class="uib-input"
+                @blur="saveField('skills')" @keydown.enter="saveField('skills')"
+                placeholder="如：Vue、Python、PS" />
+            </template>
+            <span v-else class="uib-fval" @click="startEdit('skills')">{{ userProfile.skills || '未设置' }}</span>
+          </div>
         </div>
       </div>
     </section>
@@ -66,6 +94,31 @@
          三、推荐岗位 Tab
          ══════════════════════════════════════════════════════════ -->
     <template v-if="activeTab === 'recommend'">
+      <section class="agent-search-card">
+        <div class="agent-copy">
+          <span class="agent-kicker">QITU AGENT</span>
+          <h2>让 Agent 按真实目标搜岗位</h2>
+          <p>输入目标岗位、城市和个人背景；搜不到精确岗位时自动放宽条件，并给真实招聘搜索入口，不硬塞假岗位。</p>
+        </div>
+        <div class="agent-form">
+          <el-input v-model="agentForm.target" placeholder="目标岗位，如 产品实习 / 新媒体运营 / 银行柜员" clearable />
+          <el-input v-model="agentForm.city" placeholder="城市，如 北京 / 上海 / 郑州，可留空" clearable />
+          <el-input v-model="agentForm.major" placeholder="专业/学历，如 计算机大一 / 市场营销本科" clearable />
+          <el-input v-model="agentForm.skills" placeholder="技能/经历，如 Python、剪辑、社团运营" clearable />
+          <el-button type="primary" :loading="agentSearching" @click="runAgentSearch">
+            <Search :size="16" class="icon-blue" /> Agent 搜岗位
+          </el-button>
+        </div>
+        <div v-if="agentResult" class="agent-result">
+          <div class="agent-result-head">
+            <b>{{ agentResult.summary }}</b>
+            <el-button v-if="agentResult.external_search_url" size="small" plain @click="openWebsite(agentResult.external_search_url)">打开真实搜索入口</el-button>
+          </div>
+          <p v-for="step in agentResult.relaxed_steps" :key="step" class="agent-step">{{ step }}</p>
+          <p v-if="!agentResult.jobs?.length" class="agent-empty">没有找到精确匹配。建议点开真实搜索入口，或复制 JD 后再做差距分析。</p>
+        </div>
+      </section>
+
       <!-- 筛选栏 & 批量操作栏 -->
     <section class="zone-filter">
       <div class="filter-bar">
@@ -197,6 +250,9 @@
               </el-button>
               <el-button size="small" plain @click.stop="openWebsite(job.company_website)">
                 <Building2 :size="16" class="icon-blue" /> 公司官网
+              </el-button>
+              <el-button size="small" type="primary" @click.stop="openApplyAndTrack(job)">
+                <Rocket :size="16" class="icon-blue" /> 打开投递入口
               </el-button>
               <el-button
                 size="small"
@@ -750,12 +806,17 @@
           </template>
         </el-table-column>
       </el-table>
-    </section>
-  </div>
+</section>
+    </div>
+    <!-- ═══ 品牌 Footer ═══ -->
+    <div class="brand-footer">
+      <div>启途 · <span class="qitu-up">QITU</span></div>
+      <div class="qitu-sl">向上生长，自有答案</div>
+    </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, reactive, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
@@ -772,6 +833,39 @@ const currentPage = ref(1)
 const pageSize = 20
 const totalPages = computed(() => Math.ceil(totalJobs.value / pageSize))
 
+// ── 求职信息行内编辑 ──
+const editingField = ref('')
+const editForm = reactive({ city: '', job_targets: '', salary: '', skills: '' })
+
+function startEdit(field) {
+  editForm[field] = userProfile.value[field] || ''
+  editingField.value = field
+  // auto-focus needs nextTick
+  nextTick(() => {
+    const el = document.querySelector('.uib-field.editing input')
+    if (el) el.focus()
+  })
+}
+
+async function saveField(field) {
+  const val = editForm[field].trim()
+  editingField.value = ''
+  const token = getToken()
+  if (!token) return
+  const params = new URLSearchParams({ token, [field]: val })
+  try {
+    const resp = await fetch(`/api/user/profile?${params}`, { method: 'POST' })
+    if (resp.ok) {
+      userProfile.value[field] = val
+      // also update agentForm
+      if (field === 'city') agentForm.value.city = val
+      if (field === 'job_targets') agentForm.value.target = val
+      if (field === 'skills') agentForm.value.skills = val
+      ElMessage.success('已保存')
+    }
+  } catch { /* ignore */ }
+}
+
 const filterOptions = ref({ cities: [], job_types: [], company_sizes: [] })
 const filters = ref({
   company_size: '',
@@ -781,6 +875,16 @@ const filters = ref({
   publish_time: '',
   keyword: '',
 })
+
+const agentForm = ref({
+  target: '',
+  city: '',
+  major: '',
+  skills: '',
+  education: '',
+})
+const agentSearching = ref(false)
+const agentResult = ref(null)
 
 // 选中状态
 const selectedIds = ref(new Set())
@@ -825,6 +929,9 @@ const selectedNewStatus = ref('')
 const statusChangeNote = ref('')
 
 const statusOptions = [
+  { value: '待投递', label: '待投递（已打开入口）', cls: 'pending' },
+  { value: '已投递', label: '已投递（已提交简历）', cls: 'applied' },
+  { value: 'HR已查看', label: 'HR已查看', cls: 'viewed' },
   { value: '已查看', label: '已查看（浏览过岗位）', cls: 'viewed' },
   { value: '待面试', label: '待面试（已获面试邀请）', cls: 'interview' },
   { value: '面试通过', label: '面试通过', cls: 'passed' },
@@ -835,6 +942,9 @@ const statusOptions = [
 
 function statusClass(status) {
   const map = {
+    '待投递': 'pending',
+    '已投递': 'applied',
+    'HR已查看': 'viewed',
     '已查看': 'viewed',
     '待面试': 'interview',
     '面试通过': 'passed',
@@ -860,9 +970,14 @@ async function apiGet(url) {
   }
 }
 
-async function apiPost(url) {
+async function apiPost(url, body = null) {
   try {
-    const resp = await fetch(url, { method: 'POST' })
+    const options = { method: 'POST' }
+    if (body) {
+      options.headers = { 'Content-Type': 'application/json' }
+      options.body = JSON.stringify(body)
+    }
+    const resp = await fetch(url, options)
     if (!resp.ok) return null
     return await resp.json()
   } catch {
@@ -893,6 +1008,11 @@ async function loadUserProfile() {
   const data = await apiGet(`/api/user/profile?token=${token}`)
   if (data) {
     userProfile.value = data.profile || {}
+    agentForm.value.target = userProfile.value.job_targets || ''
+    agentForm.value.city = userProfile.value.city || ''
+    agentForm.value.skills = userProfile.value.skills || ''
+    agentForm.value.major = userProfile.value.major || ''
+    agentForm.value.education = userProfile.value.education || ''
   }
 }
 
@@ -930,6 +1050,32 @@ async function loadJobs() {
 }
 
 // ── 批量操作 ──
+async function runAgentSearch() {
+  if (!agentForm.value.target && !agentForm.value.skills && !agentForm.value.major) {
+    ElMessage.warning('先输入目标岗位或个人背景')
+    return
+  }
+  agentSearching.value = true
+  const data = await apiPost('/api/delivery/agent-search', agentForm.value)
+  agentSearching.value = false
+  if (!data) {
+    ElMessage.error('Agent 搜索失败，请稍后再试')
+    return
+  }
+  agentResult.value = data
+  if (data.jobs?.length) {
+    jobs.value = data.jobs
+    totalJobs.value = data.jobs.length
+    selectedIds.value = new Set()
+    ElMessage.success(`Agent 找到 ${data.jobs.length} 个可分析岗位`)
+  } else {
+    jobs.value = []
+    totalJobs.value = 0
+    ElMessage.info('没有精确岗位，已给出真实搜索入口')
+  }
+}
+
+// ── 批量操作 ──
 function selectAll() {
   if (allSelected.value) {
     selectedIds.value = new Set()
@@ -958,9 +1104,20 @@ function toggleSelect(id) {
 async function batchApply() {
   const selected = jobs.value.filter(j => selectedIds.value.has(j.id))
   for (const job of selected) {
-    window.open(job.company_website, '_blank')
+    await openApplyAndTrack(job, false)
   }
-  ElMessage.success(`已打开 ${selected.length} 个岗位投递链接`)
+  ElMessage.success(`已打开 ${selected.length} 个真实投递入口，并记录进度`)
+}
+
+async function openApplyAndTrack(job, showMessage = true) {
+  const url = job.apply_url || job.company_website
+  if (url && url.startsWith('http')) {
+    window.open(url, '_blank')
+    await addToTracking(job, '待投递', false)
+    if (showMessage) ElMessage.success('已打开真实投递入口，并记录到投递清单')
+  } else {
+    ElMessage.info('暂未找到可打开的投递入口')
+  }
 }
 
 async function batchAddToList() {
@@ -1033,9 +1190,9 @@ function openWebsite(url) {
   }
 }
 
-function goApplyPage() {
-  if (detailJob.value?.apply_url) {
-    window.open(detailJob.value.apply_url, '_blank')
+async function goApplyPage() {
+  if (detailJob.value) {
+    await openApplyAndTrack(detailJob.value)
   }
 }
 
@@ -1183,25 +1340,30 @@ function inTracking(jobId) {
   return trackingRecords.value.some(r => r.job_id === jobId)
 }
 
-async function addToTracking(job) {
+async function addToTracking(job, status = '已查看', showMessage = true) {
   const token = getToken()
   if (!token) {
     ElMessage.warning('请先登录')
     return
   }
   const result = await apiPost(
-    `/api/delivery/tracking?token=${token}&job_id=${job.id}&company_name=${encodeURIComponent(job.company_name)}&job_title=${encodeURIComponent(job.job_title)}&company_logo=${encodeURIComponent(job.company_logo || '')}&company_size=${encodeURIComponent(job.company_size || '')}&industry=${encodeURIComponent(job.industry || '')}&status=已查看`
+    `/api/delivery/tracking?token=${token}&job_id=${job.id}&company_name=${encodeURIComponent(job.company_name)}&job_title=${encodeURIComponent(job.job_title)}&company_logo=${encodeURIComponent(job.company_logo || '')}&company_size=${encodeURIComponent(job.company_size || '')}&industry=${encodeURIComponent(job.industry || '')}&status=${encodeURIComponent(status)}`
   )
   if (result) {
-    ElMessage.success(result.action === 'updated' ? '已更新投递记录' : '已加入投递清单')
+    if (showMessage) ElMessage.success(result.action === 'updated' ? '已更新投递记录' : '已加入投递清单')
     await loadTracking()
   }
 }
 
 async function updateStatus(row) {
   const token = getToken()
-  await apiPost(`/api/delivery/tracking/${row.id}?token=${token}&status=${encodeURIComponent(row.status)}`)
-  ElMessage.success(`状态已更新为「${row.status}」`)
+  const resp = await fetch(`/api/delivery/tracking/${row.id}?token=${token}&status=${encodeURIComponent(row.status)}`, { method: 'PUT' })
+  if (resp.ok) {
+    ElMessage.success(`状态已更新为「${row.status}」`)
+    await Promise.all([loadTracking(), loadMyAppsStats()])
+  } else {
+    ElMessage.error('状态更新失败，请稍后再试')
+  }
 }
 
 async function deleteTracking(row) {
@@ -1235,21 +1397,6 @@ function openDetailById(jobId) {
 .delivery-page {
   position: relative;
 }
-.banner-wrap {
-  position: relative;
-}
-.banner-cat {
-  position: absolute;
-  bottom: 0px;
-  right: 320px;
-  width: 60px;
-  height: auto;
-  pointer-events: none;
-  z-index: 0;
-  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.18));
-  transition: transform 0.3s ease;
-}
-
 /* ── 区域一：顶部标题 & 用户信息栏 ── */
 .zone-header {
   margin-bottom: 20px;
@@ -1265,55 +1412,182 @@ function openDetailById(jobId) {
   margin-bottom: 18px;
 }
 
+/* ── 求职意向栏（首页横幅风格） ── */
 .user-info-bar {
+  background: linear-gradient(117deg, #EFF6FF 8.64%, #DBEAFE 87.69%);
+  border: 1.5px solid #BFDBFE;
+  border-radius: 16px;
+  padding: 18px 24px;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0;
-  padding: 14px 20px;
-  border-radius: var(--radius-md);
-  background: var(--bg-alt);
-  border: 1px solid var(--border-light);
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 4px 16px rgba(37,99,235,.06);
 }
-
-.info-item {
+.uib-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.uib-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 16px;
-  font-size: 13px;
+  font-weight: 800;
+  font-size: 16px;
+  color: #1E293B;
 }
-
-.info-item:first-child {
-  padding-left: 0;
+.uib-hint {
+  font-size: 12px;
+  color: #64748B;
+  font-weight: 400;
 }
-
-.info-icon {
-  width: 16px;
-  color: var(--primary);
-  font-size: 14px;
-  text-align: center;
+.uib-fields {
+  display: flex;
+  align-items: center;
+  gap: 0;
 }
-
-.info-label {
-  color: var(--text-muted);
+.uib-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-right: 1px solid rgba(37,99,235,.15);
+  flex: 1;
+  min-width: 0;
+  background: rgba(255,255,255,.45);
+  border-radius: 0;
+}
+.uib-field:first-child {
+  border-radius: 10px 0 0 10px;
+}
+.uib-field:last-child {
+  border-right: none;
+  border-radius: 0 10px 10px 0;
+}
+.uib-fname {
+  font-size: 12px;
+  color: #475569;
   white-space: nowrap;
   font-weight: 500;
 }
-
-.info-value {
-  color: var(--text-heading);
-  font-weight: 600;
+.uib-fval {
+  font-size: 13px;
+  color: #1E293B;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 5px;
+  transition: all .15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  background: rgba(255,255,255,.6);
+  border: 1px solid transparent;
+}
+.uib-fval:hover {
+  background: #fff;
+  border-color: #BFDBFE;
+  color: #2563EB;
+}
+.uib-input {
+  flex: 1;
+  min-width: 80px;
+  padding: 5px 10px;
+  border: 1.5px solid #2563EB;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
+.uib-field.editing {
+  background: rgba(255,255,255,.8);
 }
 
-.tag-value {
+/* ── 真实投递 Agent ── */
+.agent-search-card {
+  margin: 0 0 16px;
+  padding: 16px 18px;
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1.1fr);
+  gap: 22px;
+  border-radius: 26px 10px 26px 26px;
+  background:
+    radial-gradient(circle at 8% 12%, rgba(14,165,233,.13), transparent 24%),
+    linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 70%);
+  border: 1.5px dashed #BFDBFE;
+  box-shadow: 0 18px 40px rgba(37,99,235,.07);
+}
+.agent-copy {
+  position: relative;
+  min-height: 150px;
+}
+.agent-copy::after {
+  content: 'QITU';
+  position: absolute;
+  right: 8px;
+  bottom: -4px;
+  color: rgba(37,99,235,.08);
+  font-size: 50px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.agent-kicker {
   color: var(--primary);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .16em;
 }
-
-.info-divider {
-  width: 1px;
-  height: 20px;
-  background: var(--border);
+.agent-copy h2 {
+  margin: 9px 0 8px;
+  color: var(--text-heading);
+  font-size: 25px;
+  line-height: 1.25;
+  font-weight: 900;
+}
+.agent-copy p,
+.agent-step,
+.agent-empty {
+  color: var(--text-light);
+  line-height: 1.7;
+  font-size: 14px;
+}
+.agent-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-content: start;
+}
+.agent-form .el-button {
+  min-height: 38px;
+  border-radius: 12px;
+  box-shadow: 6px 6px 14px rgba(37,99,235,.12), -6px -6px 14px rgba(255,255,255,.88);
+}
+.agent-result {
+  grid-column: 1 / -1;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.78);
+  border: 1px solid #DBEAFE;
+}
+.agent-result-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  color: var(--text-heading);
+}
+.agent-step {
+  margin-top: 6px;
+  padding-left: 12px;
+  border-left: 3px solid #93C5FD;
+}
+.agent-empty {
+  margin-top: 8px;
+  color: #D97706;
 }
 
 /* ── 区域二：筛选栏 & 批量操作 ── */
@@ -1947,6 +2221,18 @@ function openDetailById(jobId) {
   border: 1px solid #d9ecff;
 }
 
+.status-pending {
+  background: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid #BFDBFE;
+}
+
+.status-applied {
+  background: #F0F9FF;
+  color: #0EA5E9;
+  border: 1px solid #BAE6FD;
+}
+
 .status-interview {
   background: #fdf6ec;
   color: #E6A23C;
@@ -2049,6 +2335,27 @@ function openDetailById(jobId) {
 
 .status-dot.status-viewed {
   background: #409EFF;
+}
+
+.status-dot.status-pending {
+  background: #2563EB;
+}
+
+.status-dot.status-applied {
+  background: #0EA5E9;
+}
+
+@media (max-width: 900px) {
+  .agent-search-card {
+    grid-template-columns: 1fr;
+    padding: 18px;
+  }
+  .agent-form {
+    grid-template-columns: 1fr;
+  }
+  .job-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .status-dot.status-interview {
