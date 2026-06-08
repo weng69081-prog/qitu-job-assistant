@@ -252,12 +252,10 @@ async function save() {
 .setup-card {
   width: 480px;
   max-width: 100%;
-  background: rgba(255,255,255,0.60);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: rgba(255,255,255,0.05);
   border-radius: 14px;
   padding: 28px 30px 30px;
-  box-shadow: 0 8px 48px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45);
   position: relative;
   border: 1px solid rgba(255,255,255,0.35);
 }
