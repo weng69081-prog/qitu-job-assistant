@@ -101,7 +101,7 @@ def get_activities(limit: int = 5):
 @router.get("/heatmap")
 def get_heatmap(year: int = 0, month: int = 0):
     """返回指定年月活跃格子数据（基于面试/笔试记录日期）"""
-    from datetime import datetime
+    from datetime import datetime, date
     now = datetime.now()
     y = year if year > 0 else now.year
     m = month if month >= 0 else now.month
@@ -130,16 +130,19 @@ def get_heatmap(year: int = 0, month: int = 0):
             day = int(d.split("-")[2])
             active_days.add(day)
 
-    # 构建 28 列 × 7 行的数据
     import calendar
     total_days = calendar.monthrange(y, m)[1]
+    today = date.today()
+    is_current_month = y == today.year and m == today.month
+
     data = []
-    for day in range(1, 197):  # 196 = 28*7, 只取真实天数
+    for day in range(1, 197):  # 196 = 28*7
         if day <= total_days:
-            if day in active_days:
-                # 根据活跃次数分等级
-                level = random.choice(["l1", "l2", "l3", "l4"])
-                data.append(level)
+            # 未来日期全部留空
+            if is_current_month and day > today.day:
+                data.append("")
+            elif day in active_days:
+                data.append("l2")  # 有活动标记中等级
             else:
                 data.append("")
         else:

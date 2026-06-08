@@ -165,7 +165,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useCareerStore } from '../stores/career'
 import axios from 'axios'
 import bg1 from '../assets/cards/card-bg-1.jpg'
@@ -223,38 +223,26 @@ const heatMonth = ref(nowDate.getMonth()) // 0-indexed
 
 const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月']
 
-// 用年月做种子，生成稳定随机热力数据（196格，28×7）
-function seededRand(seed) {
-  let s = seed
-  return function() {
-    s = (s * 9301 + 49297) % 233280
-    return s / 233280
+// 从后端加载真实热力图数据
+const heatData = ref([])
+const heatLoading = ref(false)
+
+async function loadHeatmap() {
+  heatLoading.value = true
+  try {
+    const { data } = await axios.get('/api/dashboard/heatmap', {
+      params: { year: heatYear.value, month: heatMonth.value + 1 }
+    })
+    heatData.value = data.data || []
+  } catch {
+    heatData.value = []
+  } finally {
+    heatLoading.value = false
   }
 }
-const heatData = computed(() => {
-  const seed = heatYear.value * 100 + heatMonth.value + 1
-  const rand = seededRand(seed)
-  const now = new Date()
-  const daysInMonth = new Date(heatYear.value, heatMonth.value + 1, 0).getDate()
-  const isCurrentMonth = heatYear.value === now.getFullYear() && heatMonth.value === now.getMonth()
-  const today = now.getDate()
 
-  const data = []
-  for (let i = 0; i < 196; i++) {
-    // 如果是当前月份，未来日期（含超出当月天数的格子）全部留空
-    if (isCurrentMonth && (i >= daysInMonth || i >= today)) {
-      data.push('')
-      continue
-    }
-    const r = rand()
-    if (r < 0.35) data.push('')
-    else if (r < 0.6) data.push('l1')
-    else if (r < 0.78) data.push('l2')
-    else if (r < 0.9) data.push('l3')
-    else data.push('l4')
-  }
-  return data
-})
+// 月份切换时重新加载
+watch([heatYear, heatMonth], loadHeatmap)
 
 // 今天是第几天（当月），用于标记格子
 const todayCellIdx = computed(() => {
@@ -265,7 +253,6 @@ const todayCellIdx = computed(() => {
 
 const heatDaysMonth = computed(() => heatData.value.filter(l => l !== '').length)
 const heatDaysStreak = computed(() => {
-  // 用 heatData 算连续活跃天数
   let maxStreak = 0, cur = 0
   for (const l of heatData.value) {
     if (l !== '') { cur++; maxStreak = Math.max(maxStreak, cur) }
@@ -274,7 +261,6 @@ const heatDaysStreak = computed(() => {
   return maxStreak
 })
 const heatWeekCount = computed(() => {
-  // 取后28个（最近一周）中的活跃数
   return heatData.value.slice(-28).filter(l => l !== '').length
 })
 
@@ -450,6 +436,8 @@ onMounted(() => {
 
   // 从后端加载首页数据（推荐、统计、活动）
   loadDashboardData()
+  // 加载热力图
+  loadHeatmap()
 })
 </script>
 
