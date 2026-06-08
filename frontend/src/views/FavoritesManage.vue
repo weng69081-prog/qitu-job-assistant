@@ -120,7 +120,7 @@ onMounted(() => { loadIQ(); loadEQ() })
 
 <style scoped>
 .fm-page { width: 100%; display: flex; justify-content: center; padding: 28px 0; }
-.fm-container { width: min(740px, calc(100vw - 60px)); padding: 36px 28px 24px; background: #fff; border-radius: 22px; box-shadow: 0 16px 36px rgba(37,99,235,.06); position: relative; }
+.fm-container { width: min(740px, calc(100vw - 60px)); padding: 36px 28px 24px; background: #fff; border-radius: 22px; box-shadow: 0 16px 36px rgba(37,99,235,.06); position: relative; display: flex; flex-direction: column; min-height: calc(100vh - 56px); }
 .back-btn {
   position: absolute; left: 0; top: 4px;
   display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px;
@@ -163,5 +163,5 @@ onMounted(() => { loadIQ(); loadEQ() })
 .opt.ou { background: #FEF2F2; }
 .an { margin-top: 6px; padding-top: 6px; border-top: 1px solid #DBEAFE; font-size: 12px; color: #64748b; line-height: 1.6; }
 
-.fm-footer { text-align: center; margin-top: 24px; padding-top: 12px; border-top: 1px solid #E2E8F0; font-size: 11px; color: #94a3b8; }
+.fm-footer { text-align: center; margin-top: auto; padding-top: 16px; border-top: 1px solid #E2E8F0; font-size: 11px; color: #94a3b8; }
 </style>
