@@ -234,8 +234,18 @@ function seededRand(seed) {
 const heatData = computed(() => {
   const seed = heatYear.value * 100 + heatMonth.value + 1
   const rand = seededRand(seed)
+  const now = new Date()
+  const daysInMonth = new Date(heatYear.value, heatMonth.value + 1, 0).getDate()
+  const isCurrentMonth = heatYear.value === now.getFullYear() && heatMonth.value === now.getMonth()
+  const today = now.getDate()
+
   const data = []
   for (let i = 0; i < 196; i++) {
+    // 如果是当前月份，未来日期（含超出当月天数的格子）全部留空
+    if (isCurrentMonth && (i >= daysInMonth || i >= today)) {
+      data.push('')
+      continue
+    }
     const r = rand()
     if (r < 0.35) data.push('')
     else if (r < 0.6) data.push('l1')
