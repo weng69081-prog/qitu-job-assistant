@@ -59,14 +59,15 @@ app.include_router(delivery.router)
 app.include_router(assistant.router)
 app.include_router(dashboard.router)
 
+# ═══ 健康检查（必须放在静态文件挂载前，否则被SPA拦截） ═══
+@app.get("/api/health")
+def health():
+    return {"status": "ok", "message": "启途·AI求职助手 API 已启动"}
+
 # ═══ 生产环境：托管前端静态文件 ═══
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend" / "dist"
 if FRONTEND_DIR.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
-
-@app.get("/api/health")
-def health():
-    return {"status": "ok", "message": "启途·AI求职助手 API 已启动"}
 
 if __name__ == "__main__":
     import uvicorn

@@ -179,5 +179,65 @@
     "source": "user_added",
     "major_category": "计算机类",
     "created_at": "2026-05-28T07:47:23.290684"
+  },
+  {
+    "career": "AI工程师",
+    "match": 95,
+    "difficulty": "中级",
+    "salary": "15K-40K",
+    "short_intro": "设计、开发和优化AI算法模型的技术专家",
+    "responsibilities": [
+      "设计、训练和部署机器学习/深度学习模型",
+      "参与数据预处理、特征工程和模型优化",
+      "与产品、数据团队协作，将AI技术落地到业务场景",
+      "跟踪最新AI研究，探索新技术在业务中的应用"
+    ],
+    "hard_requirements": [
+      "精通Python及主流AI框架（如TensorFlow、PyTorch）",
+      "扎实的数学和统计学基础（线性代数、概率论等）",
+      "具备机器学习/深度学习项目实战经验"
+    ],
+    "soft_requirements": [
+      "良好的逻辑思维和问题解决能力",
+      "持续学习新技术的热情",
+      "团队协作与跨部门沟通能力"
+    ],
+    "growth_path": [
+      "初级(1-2年,15K-25K)→参与基础模型开发与优化",
+      "中级(2-4年,25K-35K)→主导AI项目落地与技术选型",
+      "高级(4年+,35K-50K+)→带领团队、制定AI战略与架构"
+    ],
+    "trend": "AI技术加速渗透各行业，大模型与边缘计算需求激增",
+    "keywords": [
+      "机器学习",
+      "深度学习",
+      "模型优化"
+    ],
+    "work_type": "研究类",
+    "suitable_audience": "逻辑思维强、热爱技术、有数学和编程背景的人",
+    "avoid_tips": "不喜欢持续学习、对数学和编程缺乏兴趣的人",
+    "salary_tag": "15KK起",
+    "salary_table": [
+      {
+        "level": "应届/初级（0-2年）",
+        "range": "8K-15K"
+      },
+      {
+        "level": "中级（2-4年）",
+        "range": "15K-22K"
+      },
+      {
+        "level": "高级（4-6年）",
+        "range": "22K-30K"
+      },
+      {
+        "level": "资深/专家（6年+）",
+        "range": "30K-50K+"
+      }
+    ],
+    "ai_generated": true,
+    "source": "user_added",
+    "major_category": "计算机类",
+    "created_at": "2026-06-08T06:18:27.819280"
   }
 ]
