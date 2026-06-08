@@ -128,7 +128,7 @@
               <span class="sl-sub">{{ wrongTotal }} 道待回顾</span>
             </div>
           </router-link>
-          <router-link to="/favorites" class="sidelink-card">
+          <router-link to="/favorites?tab=exam" class="sidelink-card">
             <div class="sl-icon"><Star :size="20" class="icon-blue" /></div>
             <div class="sl-body">
               <span class="sl-title">我的收藏</span>
