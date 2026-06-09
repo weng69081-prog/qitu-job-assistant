@@ -512,7 +512,7 @@ onMounted(() => {
   background: var(--bg-light);
   border-radius: 12px;
   padding: 14px 20px;
-  border: 1.5px solid var(--border-dashed);
+  border: 1.5px dashed var(--border-dashed);
 }
 .heat-header {
   display: flex;
@@ -803,7 +803,7 @@ onMounted(() => {
   background: var(--bg-light);
   border-radius: 12px;
   padding: 14px 16px;
-  border: 1.5px solid var(--border-dashed);
+  border: 1.5px dashed var(--border-dashed);
 }
 .lc-title {
   font-size: 13px;
