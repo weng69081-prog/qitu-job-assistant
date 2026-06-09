@@ -2266,5 +2266,1229 @@
     ],
     "answer": "B",
     "analysis": "费米估算用已知量推导未知量。例如：北京约600万人，假设平均每3人有1辆车（200万辆车），每辆车每周加油一次，每个加油站每天服务约300辆车... 层层推导。"
+  },
+  {
+    "knowledge_point": "Java核心",
+    "category": "专业",
+    "career": "Java开发工程师",
+    "difficulty": "easy",
+    "question_type": "single_choice",
+    "question": "Java中，下列哪个关键字用于实现接口？",
+    "options": [
+      {
+        "key": "A",
+        "value": "extends"
+      },
+      {
+        "key": "B",
+        "value": "implements"
+      },
+      {
+        "key": "C",
+        "value": "abstract"
+      },
+      {
+        "key": "D",
+        "value": "interface"
+      }
+    ],
+    "answer": "B",
+    "analysis": "Java用implements关键字实现接口，用extends继承类。"
+  },
+  {
+    "knowledge_point": "Java核心",
+    "category": "专业",
+    "career": "Java开发工程师",
+    "difficulty": "easy",
+    "question_type": "single_choice",
+    "question": "Java中，final关键字修饰的类意味着什么？",
+    "options": [
+      {
+        "key": "A",
+        "value": "该类可以被继承"
+      },
+      {
+        "key": "B",
+        "value": "该类不能被继承"
+      },
+      {
+        "key": "C",
+        "value": "该类是抽象类"
+      },
+      {
+        "key": "D",
+        "value": "该类必须实现接口"
+      }
+    ],
+    "answer": "B",
+    "analysis": "final类不能被子类继承。final方法不能重写。final变量是常量。"
+  },
+  {
+    "knowledge_point": "Java核心",
+    "category": "专业",
+    "career": "Java开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "HashMap和Hashtable的区别是什么？",
+    "options": [
+      {
+        "key": "A",
+        "value": "HashMap线程安全，Hashtable不安全"
+      },
+      {
+        "key": "B",
+        "value": "HashMap允许null键和值，Hashtable不允许"
+      },
+      {
+        "key": "C",
+        "value": "Hashtable性能更好"
+      },
+      {
+        "key": "D",
+        "value": "两者没有区别"
+      }
+    ],
+    "answer": "B",
+    "analysis": "HashMap非线程安全、允许null；Hashtable线程安全但不允许null。推荐ConcurrentHashMap替代Hashtable。"
+  },
+  {
+    "knowledge_point": "Java核心",
+    "category": "专业",
+    "career": "Java开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "以下哪个不是Java的访问修饰符？",
+    "options": [
+      {
+        "key": "A",
+        "value": "public"
+      },
+      {
+        "key": "B",
+        "value": "private"
+      },
+      {
+        "key": "C",
+        "value": "protected"
+      },
+      {
+        "key": "D",
+        "value": "internal"
+      }
+    ],
+    "answer": "D",
+    "analysis": "Java的访问修饰符：public、protected、default（不加）、private。internal是C#的。"
+  },
+  {
+    "knowledge_point": "Java核心",
+    "category": "专业",
+    "career": "Java开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "String、StringBuilder、StringBuffer的区别是？",
+    "options": [
+      {
+        "key": "A",
+        "value": "String不可变，StringBuilder线程不安全，StringBuffer线程安全"
+      },
+      {
+        "key": "B",
+        "value": "三者都不可变"
+      },
+      {
+        "key": "C",
+        "value": "StringBuffer性能最好"
+      },
+      {
+        "key": "D",
+        "value": "StringBuilder线程安全"
+      }
+    ],
+    "answer": "A",
+    "analysis": "String不可变（每次修改创建新对象）。StringBuilder非线程安全性能好。StringBuffer线程安全。"
+  },
+  {
+    "knowledge_point": "JVM",
+    "category": "专业",
+    "career": "Java开发工程师",
+    "difficulty": "hard",
+    "question_type": "single_choice",
+    "question": "哪些对象可以作为GC Roots？",
+    "options": [
+      {
+        "key": "A",
+        "value": "所有对象"
+      },
+      {
+        "key": "B",
+        "value": "栈局部变量、静态变量、JNI引用"
+      },
+      {
+        "key": "C",
+        "value": "只有null对象"
+      },
+      {
+        "key": "D",
+        "value": "只有大对象"
+      }
+    ],
+    "answer": "B",
+    "analysis": "GC Roots：虚拟机栈引用、方法区静态属性引用、方法区常量引用、JNI引用。"
+  },
+  {
+    "knowledge_point": "JVM",
+    "category": "专业",
+    "career": "Java开发工程师",
+    "difficulty": "hard",
+    "question_type": "single_choice",
+    "question": "Java内存区域中，哪个是所有线程共享的？",
+    "options": [
+      {
+        "key": "A",
+        "value": "程序计数器"
+      },
+      {
+        "key": "B",
+        "value": "虚拟机栈"
+      },
+      {
+        "key": "C",
+        "value": "堆和方法区"
+      },
+      {
+        "key": "D",
+        "value": "本地方法栈"
+      }
+    ],
+    "answer": "C",
+    "analysis": "堆和方法区线程共享。程序计数器、虚拟机栈、本地方法栈线程私有。"
+  },
+  {
+    "knowledge_point": "Spring",
+    "category": "专业",
+    "career": "Java开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "@Autowired和@Resource的区别？",
+    "options": [
+      {
+        "key": "A",
+        "value": "@Autowired按类型，@Resource按名称"
+      },
+      {
+        "key": "B",
+        "value": "两者完全相同"
+      },
+      {
+        "key": "C",
+        "value": "@Resource按类型"
+      },
+      {
+        "key": "D",
+        "value": "@Autowired是Java标准"
+      }
+    ],
+    "answer": "A",
+    "analysis": "@Autowired（Spring）默认按类型装配，@Resource（JSR-250）默认按名称装配。"
+  },
+  {
+    "knowledge_point": "Spring",
+    "category": "专业",
+    "career": "Java开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "@SpringBootApplication包含了哪些注解？",
+    "options": [
+      {
+        "key": "A",
+        "value": "@Configuration + @EnableAutoConfiguration + @ComponentScan"
+      },
+      {
+        "key": "B",
+        "value": "@Spring + @Boot"
+      },
+      {
+        "key": "C",
+        "value": "@Controller + @Service + @Repository"
+      },
+      {
+        "key": "D",
+        "value": "@RequestMapping + @RestController"
+      }
+    ],
+    "answer": "A",
+    "analysis": "@SpringBootApplication = @Configuration + @EnableAutoConfiguration + @ComponentScan。"
+  },
+  {
+    "knowledge_point": "Spring",
+    "category": "专业",
+    "career": "Java开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "事务传播行为REQUIRED的含义是？",
+    "options": [
+      {
+        "key": "A",
+        "value": "支持当前事务，没有则新建"
+      },
+      {
+        "key": "B",
+        "value": "必须存在事务"
+      },
+      {
+        "key": "C",
+        "value": "不支持事务"
+      },
+      {
+        "key": "D",
+        "value": "新建并挂起当前"
+      }
+    ],
+    "answer": "A",
+    "analysis": "REQUIRED：有事务则加入，没有则新建。最常用的传播行为。"
+  },
+  {
+    "knowledge_point": "数据库",
+    "category": "专业",
+    "career": "Java开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "MyBatis中#{}和${}的区别？",
+    "options": [
+      {
+        "key": "A",
+        "value": "#{}预编译防SQL注入，${}直接拼接"
+      },
+      {
+        "key": "B",
+        "value": "${}更安全"
+      },
+      {
+        "key": "C",
+        "value": "功能相同"
+      },
+      {
+        "key": "D",
+        "value": "#{}用于表名"
+      }
+    ],
+    "answer": "A",
+    "analysis": "#{}用PreparedStatement预编译防注入。${}直接替换字符串有注入风险，仅用于动态SQL（表名/排序）。"
+  },
+  {
+    "knowledge_point": "场景题",
+    "category": "专业",
+    "career": "Java开发工程师",
+    "difficulty": "hard",
+    "question_type": "judge",
+    "question": "判断：单例模式中，双重检查锁定(DCL)需要加volatile关键字保证线程安全。",
+    "options": [
+      {
+        "key": "对",
+        "value": "正确"
+      },
+      {
+        "key": "错",
+        "value": "错误"
+      }
+    ],
+    "answer": "对",
+    "analysis": "DCL中instance = new Singleton()不是原子操作（分配内存->初始化->赋值），volatile禁止指令重排序。"
+  },
+  {
+    "knowledge_point": "场景题",
+    "category": "专业",
+    "career": "Java开发工程师",
+    "difficulty": "hard",
+    "question_type": "single_choice",
+    "question": "ArrayList和LinkedList各自适用场景是？",
+    "options": [
+      {
+        "key": "A",
+        "value": "ArrayList随机查找，LinkedList频繁增删"
+      },
+      {
+        "key": "B",
+        "value": "LinkedList随机查找"
+      },
+      {
+        "key": "C",
+        "value": "ArrayList频繁增删"
+      },
+      {
+        "key": "D",
+        "value": "完全可互换"
+      }
+    ],
+    "answer": "A",
+    "analysis": "ArrayList：随机访问O(1)，插入删除O(n)。LinkedList：头尾插入O(1)，随机访问O(n)。"
+  },
+  {
+    "knowledge_point": "并发编程",
+    "category": "专业",
+    "career": "Java开发工程师",
+    "difficulty": "hard",
+    "question_type": "single_choice",
+    "question": "synchronized和ReentrantLock的区别不包括？",
+    "options": [
+      {
+        "key": "A",
+        "value": "synchronized自动释放锁"
+      },
+      {
+        "key": "B",
+        "value": "ReentrantLock支持公平锁"
+      },
+      {
+        "key": "C",
+        "value": "ReentrantLock支持可中断等待"
+      },
+      {
+        "key": "D",
+        "value": "synchronized支持超时等待"
+      }
+    ],
+    "answer": "D",
+    "analysis": "synchronized关键字自动释放锁，不可中断。ReentrantLock支持公平锁、可中断、tryLock超时、多个Condition。"
+  },
+  {
+    "knowledge_point": "Python基础",
+    "category": "专业",
+    "career": "Python开发工程师",
+    "difficulty": "easy",
+    "question_type": "single_choice",
+    "question": "列表和元组的主要区别是？",
+    "options": [
+      {
+        "key": "A",
+        "value": "列表可变，元组不可变"
+      },
+      {
+        "key": "B",
+        "value": "元组可变"
+      },
+      {
+        "key": "C",
+        "value": "功能完全相同"
+      },
+      {
+        "key": "D",
+        "value": "元组不能重复"
+      }
+    ],
+    "answer": "A",
+    "analysis": "列表可变（增删改），元组创建后不可变。元组可用作字典键。"
+  },
+  {
+    "knowledge_point": "Python基础",
+    "category": "专业",
+    "career": "Python开发工程师",
+    "difficulty": "easy",
+    "question_type": "single_choice",
+    "question": "以下哪个是可变对象？",
+    "options": [
+      {
+        "key": "A",
+        "value": "字符串"
+      },
+      {
+        "key": "B",
+        "value": "整数"
+      },
+      {
+        "key": "C",
+        "value": "列表"
+      },
+      {
+        "key": "D",
+        "value": "元组"
+      }
+    ],
+    "answer": "C",
+    "analysis": "可变对象：list、dict、set。不可变对象：int、float、str、tuple、frozenset。"
+  },
+  {
+    "knowledge_point": "Python基础",
+    "category": "专业",
+    "career": "Python开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "深拷贝和浅拷贝的区别？",
+    "options": [
+      {
+        "key": "A",
+        "value": "浅拷贝复制引用，深拷贝递归复制子对象"
+      },
+      {
+        "key": "B",
+        "value": "浅拷贝递归复制"
+      },
+      {
+        "key": "C",
+        "value": "没有区别"
+      },
+      {
+        "key": "D",
+        "value": "浅拷贝更慢"
+      }
+    ],
+    "answer": "A",
+    "analysis": "浅拷贝(copy.copy)只复制对象本身，嵌套对象仍引用。深拷贝(copy.deepcopy)递归复制全部。"
+  },
+  {
+    "knowledge_point": "Python进阶",
+    "category": "专业",
+    "career": "Python开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "装饰器的主要作用是？",
+    "options": [
+      {
+        "key": "A",
+        "value": "在不修改原函数代码的情况下扩展功能"
+      },
+      {
+        "key": "B",
+        "value": "改变变量类型"
+      },
+      {
+        "key": "C",
+        "value": "提高运行速度"
+      },
+      {
+        "key": "D",
+        "value": "自动导入模块"
+      }
+    ],
+    "answer": "A",
+    "analysis": "装饰器在函数执行前后添加额外功能（日志、鉴权、计时等），不修改原函数代码。"
+  },
+  {
+    "knowledge_point": "Python进阶",
+    "category": "专业",
+    "career": "Python开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "GIL对多线程的影响是什么？",
+    "options": [
+      {
+        "key": "A",
+        "value": "多线程无法利用多核CPU并行计算"
+      },
+      {
+        "key": "B",
+        "value": "多线程更快"
+      },
+      {
+        "key": "C",
+        "value": "GIL只影响异步"
+      },
+      {
+        "key": "D",
+        "value": "Python 3无GIL"
+      }
+    ],
+    "answer": "A",
+    "analysis": "GIL保证同一时刻只有一个线程执行Python字节码。CPU密集用多进程，IO密集用多线程/异步。"
+  },
+  {
+    "knowledge_point": "Python进阶",
+    "category": "专业",
+    "career": "Python开发工程师",
+    "difficulty": "hard",
+    "question_type": "single_choice",
+    "question": "生成器和迭代器的关系是？",
+    "options": [
+      {
+        "key": "A",
+        "value": "生成器是迭代器的一种，用yield实现"
+      },
+      {
+        "key": "B",
+        "value": "没有关系"
+      },
+      {
+        "key": "C",
+        "value": "迭代器是生成器的一种"
+      },
+      {
+        "key": "D",
+        "value": "生成器只能用于循环"
+      }
+    ],
+    "answer": "A",
+    "analysis": "生成器函数调用返回生成器对象。所有生成器都是迭代器（有__iter__和__next__）。"
+  },
+  {
+    "knowledge_point": "异步编程",
+    "category": "专业",
+    "career": "Python开发工程师",
+    "difficulty": "hard",
+    "question_type": "single_choice",
+    "question": "async/await和线程并发的区别？",
+    "options": [
+      {
+        "key": "A",
+        "value": "async协作式调度，线程抢占式调度"
+      },
+      {
+        "key": "B",
+        "value": "async支持多核"
+      },
+      {
+        "key": "C",
+        "value": "线程协作式"
+      },
+      {
+        "key": "D",
+        "value": "完全相同"
+      }
+    ],
+    "answer": "A",
+    "analysis": "async在单线程内协作式（await主动让出）。线程由OS抢占式调度，可能随时切换。"
+  },
+  {
+    "knowledge_point": "Web框架",
+    "category": "专业",
+    "career": "Python开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "FastAPI相比Flask的核心优势？",
+    "options": [
+      {
+        "key": "A",
+        "value": "自动OpenAPI文档、异步支持、类型校验、高性能"
+      },
+      {
+        "key": "B",
+        "value": "Flask更慢"
+      },
+      {
+        "key": "C",
+        "value": "Flask不支持路由"
+      },
+      {
+        "key": "D",
+        "value": "FastAPI不支持REST"
+      }
+    ],
+    "answer": "A",
+    "analysis": "FastAPI基于Starlette+Pydantic：自动API文档、参数验证、原生异步、高性能（接近NodeJS/Go）。"
+  },
+  {
+    "knowledge_point": "数据库",
+    "category": "专业",
+    "career": "Python开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "SQLAlchemy中，session.add()后不commit会发生什么？",
+    "options": [
+      {
+        "key": "A",
+        "value": "数据不会写入数据库"
+      },
+      {
+        "key": "B",
+        "value": "自动提交"
+      },
+      {
+        "key": "C",
+        "value": "抛出异常"
+      },
+      {
+        "key": "D",
+        "value": "数据丢失"
+      }
+    ],
+    "answer": "A",
+    "analysis": "session.add()只是将对象标记为待持久化，只有session.commit()才会真正写入数据库。rollback()可撤销未提交的操作。"
+  },
+  {
+    "knowledge_point": "测试",
+    "category": "专业",
+    "career": "Python开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "pytest中fixture的作用是？",
+    "options": [
+      {
+        "key": "A",
+        "value": "提供可复用的测试数据和环境设置"
+      },
+      {
+        "key": "B",
+        "value": "替换assert断言"
+      },
+      {
+        "key": "C",
+        "value": "加速测试执行"
+      },
+      {
+        "key": "D",
+        "value": "生成测试报告"
+      }
+    ],
+    "answer": "A",
+    "analysis": "fixture替代unittest中的setUp/tearDown，提供数据、连接、mock等测试前置条件，支持scope参数控制生命周期。"
+  },
+  {
+    "knowledge_point": "测试基础",
+    "category": "专业",
+    "career": "测试开发工程师",
+    "difficulty": "easy",
+    "question_type": "single_choice",
+    "question": "黑盒测试和白盒测试的主要区别？",
+    "options": [
+      {
+        "key": "A",
+        "value": "黑盒不看代码逻辑，白盒看代码逻辑"
+      },
+      {
+        "key": "B",
+        "value": "黑盒需要懂代码"
+      },
+      {
+        "key": "C",
+        "value": "白盒测试用户界面"
+      },
+      {
+        "key": "D",
+        "value": "无区别"
+      }
+    ],
+    "answer": "A",
+    "analysis": "黑盒（功能测试）基于需求规格测试功能。白盒（结构测试）基于代码逻辑覆盖。"
+  },
+  {
+    "knowledge_point": "测试基础",
+    "category": "专业",
+    "career": "测试开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "等价类划分和边界值分析的关系？",
+    "options": [
+      {
+        "key": "A",
+        "value": "两者概念不同，常结合使用"
+      },
+      {
+        "key": "B",
+        "value": "等价类包含边界值"
+      },
+      {
+        "key": "C",
+        "value": "边界值包含等价类"
+      },
+      {
+        "key": "D",
+        "value": "两者互斥"
+      }
+    ],
+    "answer": "A",
+    "analysis": "等价类划分：将输入域按等价关系分组，每组选代表值。边界值分析：重点测边界。实践中结合使用。"
+  },
+  {
+    "knowledge_point": "测试基础",
+    "category": "专业",
+    "career": "测试开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "测试用例设计最基本的要素不包括？",
+    "options": [
+      {
+        "key": "A",
+        "value": "测试步骤"
+      },
+      {
+        "key": "B",
+        "value": "预期结果"
+      },
+      {
+        "key": "C",
+        "value": "源代码路径"
+      },
+      {
+        "key": "D",
+        "value": "测试数据"
+      }
+    ],
+    "answer": "C",
+    "analysis": "测试用例要素：ID、名称、前置条件、步骤、数据、预期结果。源代码路径不属于用例要素。"
+  },
+  {
+    "knowledge_point": "自动化",
+    "category": "专业",
+    "career": "测试开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "Selenium中findElement和findElements的区别？",
+    "options": [
+      {
+        "key": "A",
+        "value": "findElement返回第一个，findElements返回全部列表"
+      },
+      {
+        "key": "B",
+        "value": "findElement返回全部"
+      },
+      {
+        "key": "C",
+        "value": "findElements返回第一个"
+      },
+      {
+        "key": "D",
+        "value": "返回类型相同"
+      }
+    ],
+    "answer": "A",
+    "analysis": "findElement返回WebElement（没有则抛异常）。findElements返回List<WebElement>（没有则返回空列表）。"
+  },
+  {
+    "knowledge_point": "自动化",
+    "category": "专业",
+    "career": "测试开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "接口测试中4xx状态码表示什么？",
+    "options": [
+      {
+        "key": "A",
+        "value": "客户端错误"
+      },
+      {
+        "key": "B",
+        "value": "服务器错误"
+      },
+      {
+        "key": "C",
+        "value": "成功"
+      },
+      {
+        "key": "D",
+        "value": "重定向"
+      }
+    ],
+    "answer": "A",
+    "analysis": "4xx客户端错误：400参数错、401未登录、403禁止、404不存在。5xx服务端错误。2xx成功。3xx重定向。"
+  },
+  {
+    "knowledge_point": "自动化",
+    "category": "专业",
+    "career": "测试开发工程师",
+    "difficulty": "hard",
+    "question_type": "single_choice",
+    "question": "Page Object模式的核心思想？",
+    "options": [
+      {
+        "key": "A",
+        "value": "每个页面封装一个类，页面变化只改一个类"
+      },
+      {
+        "key": "B",
+        "value": "所有测试写在一个文件"
+      },
+      {
+        "key": "C",
+        "value": "不封装直接操作元素"
+      },
+      {
+        "key": "D",
+        "value": "定位器写在测试方法中"
+      }
+    ],
+    "answer": "A",
+    "analysis": "Page Object：页面->类，元素->属性，操作->方法。页面变化只改对应类，测试代码可维护可复用。"
+  },
+  {
+    "knowledge_point": "性能测试",
+    "category": "专业",
+    "career": "测试开发工程师",
+    "difficulty": "hard",
+    "question_type": "single_choice",
+    "question": "QPS和响应时间的一般关系是？",
+    "options": [
+      {
+        "key": "A",
+        "value": "拐点前QPS上升响应时间平稳，拐点后急剧增长"
+      },
+      {
+        "key": "B",
+        "value": "QPS越高响应时间越短"
+      },
+      {
+        "key": "C",
+        "value": "无关系"
+      },
+      {
+        "key": "D",
+        "value": "QPS=响应时间×用户数"
+      }
+    ],
+    "answer": "A",
+    "analysis": "负载低于瓶颈时，QPS上升响应时间稳定。超过最优QPS后，系统过载，响应时间急剧攀升。"
+  },
+  {
+    "knowledge_point": "场景题",
+    "category": "专业",
+    "career": "测试开发工程师",
+    "difficulty": "hard",
+    "question_type": "single_choice",
+    "question": "偶现Bug的第一步处理是？",
+    "options": [
+      {
+        "key": "A",
+        "value": "记录复现步骤、环境、频率，分析触发条件"
+      },
+      {
+        "key": "B",
+        "value": "忽略"
+      },
+      {
+        "key": "C",
+        "value": "关闭"
+      },
+      {
+        "key": "D",
+        "value": "责备开发"
+      }
+    ],
+    "answer": "A",
+    "analysis": "偶现Bug关键在找规律：记录操作、数据、环境、时间，用二分法缩小范围，找出触发条件。"
+  },
+  {
+    "knowledge_point": "CI/CD",
+    "category": "专业",
+    "career": "测试开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "CI/CD中测试应该在哪个阶段执行？",
+    "options": [
+      {
+        "key": "A",
+        "value": "代码提交后自动触发"
+      },
+      {
+        "key": "B",
+        "value": "上线后再测"
+      },
+      {
+        "key": "C",
+        "value": "手动触发"
+      },
+      {
+        "key": "D",
+        "value": "不需要测试"
+      }
+    ],
+    "answer": "A",
+    "analysis": "CI/CD核心实践：代码提交后自动触发构建和测试流水线，尽早发现代码回归问题。"
+  },
+  {
+    "knowledge_point": "场景题",
+    "category": "专业",
+    "career": "测试开发工程师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "测试时间仅开发时间的1/3，策略是？",
+    "options": [
+      {
+        "key": "A",
+        "value": "优先测核心P0流程+冒烟测试，后续补回归"
+      },
+      {
+        "key": "B",
+        "value": "不测直接上线"
+      },
+      {
+        "key": "C",
+        "value": "只测UI"
+      },
+      {
+        "key": "D",
+        "value": "让开发自测"
+      }
+    ],
+    "answer": "A",
+    "analysis": "优先级：核心流程(P0)→冒烟→API→UI。确保主要功能可用，关键路径覆盖自动化回归。"
+  },
+  {
+    "knowledge_point": "设计基础",
+    "category": "专业",
+    "career": "UI/UX设计师",
+    "difficulty": "easy",
+    "question_type": "single_choice",
+    "question": "Fitts定律的基本内容是？",
+    "options": [
+      {
+        "key": "A",
+        "value": "点到目标的耗时取决于目标大小和距离"
+      },
+      {
+        "key": "B",
+        "value": "颜色越多越好"
+      },
+      {
+        "key": "C",
+        "value": "字体越大越好"
+      },
+      {
+        "key": "D",
+        "value": "动画越慢越好"
+      }
+    ],
+    "answer": "A",
+    "analysis": "Fitts定律：目标越大、距离越近，指向越快。启示：重要操作按钮要大，放易触及区域。"
+  },
+  {
+    "knowledge_point": "设计基础",
+    "category": "专业",
+    "career": "UI/UX设计师",
+    "difficulty": "easy",
+    "question_type": "single_choice",
+    "question": "以下哪个是正确的对比度设计？",
+    "options": [
+      {
+        "key": "A",
+        "value": "深色背景上白色文字"
+      },
+      {
+        "key": "B",
+        "value": "浅色背景上浅灰文字"
+      },
+      {
+        "key": "C",
+        "value": "黄背景上白字"
+      },
+      {
+        "key": "D",
+        "value": "红背景上绿字"
+      }
+    ],
+    "answer": "A",
+    "analysis": "深底白字对比度高。WCAG要求普通文本对比度>=4.5:1，大文本>=3:1。"
+  },
+  {
+    "knowledge_point": "交互设计",
+    "category": "专业",
+    "career": "UI/UX设计师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "尼尔森启发式评估中'一致性和标准'是指？",
+    "options": [
+      {
+        "key": "A",
+        "value": "系统内和行业内术语、操作保持一致"
+      },
+      {
+        "key": "B",
+        "value": "所有页面一样"
+      },
+      {
+        "key": "C",
+        "value": "按钮颜色相同"
+      },
+      {
+        "key": "D",
+        "value": "字体统一"
+      }
+    ],
+    "answer": "A",
+    "analysis": "一致性：产品内用语/图标/操作统一 + 遵循行业惯例（如购物车图标含义）。"
+  },
+  {
+    "knowledge_point": "交互设计",
+    "category": "专业",
+    "career": "UI/UX设计师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "用户画像(Persona)的主要作用？",
+    "options": [
+      {
+        "key": "A",
+        "value": "帮助团队建立对目标用户的共同理解"
+      },
+      {
+        "key": "B",
+        "value": "做Demo用"
+      },
+      {
+        "key": "C",
+        "value": "替代用户反馈"
+      },
+      {
+        "key": "D",
+        "value": "决定定价"
+      }
+    ],
+    "answer": "A",
+    "analysis": "用户画像是基于真实研究的典型用户模型，让设计决策始终以用户为中心。"
+  },
+  {
+    "knowledge_point": "设计原则",
+    "category": "专业",
+    "career": "UI/UX设计师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "好的导航设计最重要的原则是？",
+    "options": [
+      {
+        "key": "A",
+        "value": "让用户知道在哪、能去哪、怎么回去"
+      },
+      {
+        "key": "B",
+        "value": "导航越复杂越好"
+      },
+      {
+        "key": "C",
+        "value": "所有内容放首页"
+      },
+      {
+        "key": "D",
+        "value": "不要导航"
+      }
+    ],
+    "answer": "A",
+    "analysis": "好导航三要素：当前位置（面包屑）、可选去向（分类入口）、回退路径（返回/历史）。"
+  },
+  {
+    "knowledge_point": "工具",
+    "category": "专业",
+    "career": "UI/UX设计师",
+    "difficulty": "easy",
+    "question_type": "single_choice",
+    "question": "Figma相比Sketch的核心差异？",
+    "options": [
+      {
+        "key": "A",
+        "value": "Figma跨平台多人协作，Sketch仅Mac"
+      },
+      {
+        "key": "B",
+        "value": "Figma不支持矢量"
+      },
+      {
+        "key": "C",
+        "value": "Sketch全平台"
+      },
+      {
+        "key": "D",
+        "value": "功能完全相同"
+      }
+    ],
+    "answer": "A",
+    "analysis": "Figma：浏览器/客户端、实时多人协作、组件共享。Sketch：仅Mac、需插件、更成熟插件生态。"
+  },
+  {
+    "knowledge_point": "用户体验",
+    "category": "专业",
+    "career": "UI/UX设计师",
+    "difficulty": "hard",
+    "question_type": "single_choice",
+    "question": "表单放弃率高最常见的原因是？",
+    "options": [
+      {
+        "key": "A",
+        "value": "单向分步，每题一问反而提升完成率"
+      },
+      {
+        "key": "B",
+        "value": "表单太长、字段不明、反馈不清"
+      },
+      {
+        "key": "C",
+        "value": "表单太短"
+      },
+      {
+        "key": "D",
+        "value": "没有动画"
+      }
+    ],
+    "answer": "B",
+    "analysis": "放弃率高：过长（超过5-7字段）、必填太多不说明、反馈不清晰、无进度提示。分步可减轻认知负担。"
+  },
+  {
+    "knowledge_point": "设计系统",
+    "category": "专业",
+    "career": "UI/UX设计师",
+    "difficulty": "hard",
+    "question_type": "single_choice",
+    "question": "设计系统的核心价值不包括？",
+    "options": [
+      {
+        "key": "A",
+        "value": "限制设计师创造力"
+      },
+      {
+        "key": "B",
+        "value": "统一品牌体验"
+      },
+      {
+        "key": "C",
+        "value": "提升设计和开发效率"
+      },
+      {
+        "key": "D",
+        "value": "保证一致性"
+      }
+    ],
+    "answer": "A",
+    "analysis": "设计系统（组件+规范+文档）统一体验、提效、保一致，但不限制创造力，而是释放创造力用于解决真正的问题。"
+  },
+  {
+    "knowledge_point": "场景题",
+    "category": "专业",
+    "career": "UI/UX设计师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "用户反馈功能找不到，第一步做什么？",
+    "options": [
+      {
+        "key": "A",
+        "value": "热力图分析操作路径，排查分类/命名/可视性问题"
+      },
+      {
+        "key": "B",
+        "value": "直接移到首页"
+      },
+      {
+        "key": "C",
+        "value": "告诉用户仔细找"
+      },
+      {
+        "key": "D",
+        "value": "加闪烁动画"
+      }
+    ],
+    "answer": "A",
+    "analysis": "先做用户测试/热力图，排查：分类是否合理、命名是否直观、视觉是否突出。再针对性改进。"
+  },
+  {
+    "knowledge_point": "场景题",
+    "category": "专业",
+    "career": "UI/UX设计师",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "移动端底部Tab栏最佳选项数是？",
+    "options": [
+      {
+        "key": "A",
+        "value": "3-5个"
+      },
+      {
+        "key": "B",
+        "value": "1-2个"
+      },
+      {
+        "key": "C",
+        "value": "7-8个"
+      },
+      {
+        "key": "D",
+        "value": "越多越好"
+      }
+    ],
+    "answer": "A",
+    "analysis": "底部Tab推荐3-5个。太少浪费空间，太多拇指难触及。iOS HIG建议不超过5个。"
   }
 ]

@@ -43,7 +43,16 @@ CAREER_KNOWLEDGE_MAP = {
         "professional": ["机器学习基础", "深度学习", "NLP/CV", "模型评估", "场景题"]
     },
     "Java开发工程师": {
-        "professional": ["编程语言(Java/Python/Go)", "数据库与SQL", "网络协议", "系统设计", "算法与数据结构"]
+        "professional": ["Java核心", "JVM", "Spring", "数据库", "场景题", "并发编程"]
+    },
+    "Python开发工程师": {
+        "professional": ["Python基础", "Python进阶", "异步编程", "Web框架", "数据库", "测试"]
+    },
+    "测试开发工程师": {
+        "professional": ["测试基础", "自动化", "性能测试", "CI/CD", "场景题"]
+    },
+    "UI/UX设计师": {
+        "professional": ["设计基础", "交互设计", "设计原则", "用户体验", "设计系统", "工具", "场景题"]
     },
     "软件测试工程师": {
         "professional": ["测试基础理论", "SQL与数据库", "接口测试", "自动化测试", "Linux基础"]
@@ -54,9 +63,6 @@ CAREER_KNOWLEDGE_MAP = {
     "运维工程师": {
         "professional": ["Linux系统", "网络基础", "Docker/K8s", "CI/CD", "监控告警"]
     },
-    "UI/UX设计师": {
-        "professional": ["设计基础", "交互设计", "用户研究", "设计工具", "前端基础"]
-    },
     "运营专员": {
         "professional": ["内容运营", "用户运营", "数据分析", "活动策划", "新媒体"]
     },
@@ -65,9 +71,6 @@ CAREER_KNOWLEDGE_MAP = {
     },
     "全栈开发工程师": {
         "professional": ["前端开发", "后端开发", "数据库", "DevOps", "全栈架构"]
-    },
-    "Python开发工程师": {
-        "professional": ["编程语言(Java/Python/Go)", "数据库与SQL", "网络协议", "系统设计", "算法与数据结构"]
     },
 }
 
@@ -895,14 +898,16 @@ def generate_exam_questions(
 
         # 2. 如果本地题目不够，调用AI补充
         need_count = count - len(results)
-        if need_count > 0 and career and knowledge_point:
+        if need_count > 0 and career:
+            # 如果没有传knowledge_point，取该岗位第一个考点或"综合知识"
+            fallback_kp = knowledge_point or "综合知识"
             import asyncio
             loop = asyncio.new_event_loop()
             try:
                 ai_result = loop.run_until_complete(
                     generate_ai_questions(
                         career=career,
-                        knowledge_point=knowledge_point,
+                        knowledge_point=fallback_kp,
                         difficulty=difficulty or "medium",
                         question_type=question_type or "single_choice",
                         count=need_count,
