@@ -21,30 +21,35 @@ router = APIRouter(prefix="/api/exam", tags=["笔试专项练习"])
 # ═══════════════════════════════════════════════════════════════
 
 GENERAL_KNOWLEDGE_POINTS = [
-    "行测言语理解",
-    "行测数量关系",
-    "行测判断推理",
-    "行测资料分析",
+    "逻辑思维",
+    "沟通表达",
+    "综合素养",
 ]
 
 CAREER_KNOWLEDGE_MAP = {
     "前端开发工程师": {
-        "professional": ["HTML/CSS", "JavaScript", "前端框架(Vue/React)", "网络基础", "算法与数据结构"]
+        "professional": ["JavaScript核心", "Vue.js", "React", "CSS进阶", "性能优化", "工程化", "网络安全", "浏览器原理", "场景题", "TypeScript"]
     },
     "后端开发工程师": {
+        "professional": ["数据库", "缓存", "API设计", "消息队列", "分布式", "认证授权", "系统设计", "性能优化", "Docker/K8s", "场景题"]
+    },
+    "产品经理": {
+        "professional": ["需求分析", "产品设计", "数据分析", "项目管理", "竞品分析", "PRD写作", "用户增长", "用户研究"]
+    },
+    "数据分析师": {
+        "professional": ["SQL", "统计学", "业务分析", "数据可视化", "实验设计", "工具"]
+    },
+    "算法工程师": {
+        "professional": ["机器学习基础", "深度学习", "NLP/CV", "模型评估", "场景题"]
+    },
+    "Java开发工程师": {
         "professional": ["编程语言(Java/Python/Go)", "数据库与SQL", "网络协议", "系统设计", "算法与数据结构"]
     },
     "软件测试工程师": {
         "professional": ["测试基础理论", "SQL与数据库", "接口测试", "自动化测试", "Linux基础"]
     },
-    "数据分析师": {
-        "professional": ["SQL与数据库", "统计学基础", "Python数据分析", "业务分析思维", "Excel"]
-    },
     "网络安全工程师": {
         "professional": ["网络安全基础", "密码学", "操作系统安全", "网络攻防", "漏洞分析"]
-    },
-    "产品经理": {
-        "professional": ["产品设计", "用户研究", "数据分析", "项目管理", "行业分析"]
     },
     "运维工程师": {
         "professional": ["Linux系统", "网络基础", "Docker/K8s", "CI/CD", "监控告警"]
@@ -58,11 +63,11 @@ CAREER_KNOWLEDGE_MAP = {
     "市场营销": {
         "professional": ["市场分析", "营销策略", "数据分析", "品牌管理", "新媒体营销"]
     },
-    "算法工程师": {
-        "professional": ["机器学习", "深度学习", "数据结构", "数学基础", "编程能力"]
-    },
     "全栈开发工程师": {
         "professional": ["前端开发", "后端开发", "数据库", "DevOps", "全栈架构"]
+    },
+    "Python开发工程师": {
+        "professional": ["编程语言(Java/Python/Go)", "数据库与SQL", "网络协议", "系统设计", "算法与数据结构"]
     },
 }
 
@@ -620,6 +625,34 @@ def init_database():
         count = db.query(func.count(ExamQuestion.id)).scalar()
         if count > 0:
             return
+
+        # Try to load from seed_questions.json first (real interview questions)
+        import os
+        json_path = os.path.join(os.path.dirname(__file__), "../seed_questions.json")
+        if os.path.exists(json_path):
+            try:
+                with open(json_path, "r", encoding="utf-8") as f:
+                    questions = json.load(f)
+                for q in questions:
+                    eq = ExamQuestion(
+                        category=q.get("knowledge_point", ""),
+                        knowledge_point=q.get("knowledge_point", ""),
+                        career=q.get("career", ""),
+                        difficulty=q.get("difficulty", "medium"),
+                        question_type=q.get("question_type", "single"),
+                        question=q["question"],
+                        options_json=json.dumps(q.get("options", []), ensure_ascii=False),
+                        answer=q.get("answer", ""),
+                        analysis=q.get("analysis", ""),
+                        source=q.get("career", ""),
+                    )
+                    db.add(eq)
+                db.commit()
+                return
+            except Exception:
+                db.rollback()
+
+        # Fallback to hardcoded questions (legacy)
         for q in EXPANDED_MOCK_QUESTIONS:
             eq = ExamQuestion(
                 category=q["knowledge_point"],

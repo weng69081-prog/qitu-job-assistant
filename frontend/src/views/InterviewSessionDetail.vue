@@ -380,6 +380,10 @@ const suggestions = computed(() => {
   return session.value?.suggestions || []
 })
 
+const emotions = computed(() => {
+  return session.value?.emotions || []
+})
+
 const relativeTime = computed(() => {
   if (!session.value?.createdAt && !session.value?.date) return '--'
   const dateStr = session.value.createdAt || session.value.date
@@ -407,8 +411,17 @@ const specialScores = computed(() => {
   const dimVals = Object.values(dims)
   const dimAvg = dimVals.length > 0 ? Math.round(dimVals.reduce((a, b) => a + b, 0) / dimVals.length) : avg
 
+  // Real emotion score from accumulated camera readings
+  const emoList = emotions.value
+  let emotionScore = avg
+  if (emoList.length > 0) {
+    const weights = { '开心': 90, '自信': 85, '平静': 75, '困惑': 50, '紧张': 35, '焦虑': 30 }
+    const sum = emoList.reduce((acc, e) => acc + (weights[e.emotion] || 60), 0)
+    emotionScore = Math.round(sum / emoList.length)
+  }
+
   return {
-    emotion: Math.min(100, Math.max(0, dimAvg - 5)),
+    emotion: Math.min(100, Math.max(0, emotionScore)),
     body: Math.min(100, Math.max(0, dimAvg + 3)),
     overall: Math.min(100, Math.max(0, dimAvg)),
     comprehensive: Math.min(100, Math.max(0, avg))

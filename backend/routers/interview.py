@@ -211,6 +211,7 @@ def save_session(data: dict = Body({})):
         strengths_json=data.get("strengths_json", "[]"),
         weaknesses_json=data.get("weaknesses_json", "[]"),
         suggestions_json=data.get("suggestions_json", "[]"),
+        emotions_json=data.get("emotions_json", "[]"),
     )
     db.add(session)
     db.commit()
@@ -267,7 +268,11 @@ def get_session_detail(session_id: int):
     suggestions = []
     try: suggestions = json.loads(s.suggestions_json) if s.suggestions_json else []
     except: pass
-    
+
+    emotions = []
+    try: emotions = json.loads(s.emotions_json) if s.emotions_json else []
+    except: pass
+
     # 构造问答列表
     qa_items = []
     total_q = s.total_questions or 0
@@ -318,6 +323,7 @@ def get_session_detail(session_id: int):
         "strengths": strengths or [],
         "weaknesses": weaknesses or [],
         "suggestions": suggestions or [],
+        "emotions": emotions or [],
     }
 
 @router.get("/trend")

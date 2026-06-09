@@ -1368,7 +1368,8 @@ async function handleEndInterview() {
         suggestions_json: JSON.stringify([
           ...(data.suggestions || []),
           ...(riskEvents.value.length ? [`行为观察：本场记录 ${riskEvents.value.length} 条异常片段，仅供复盘，不作为作弊结论。`] : [])
-        ])
+        ]),
+        emotions_json: JSON.stringify(allExpressions.value)
       })
     } catch { /* silent */ }
 

@@ -21,6 +21,8 @@ class InterviewSession(Base):
     strengths_json = Column(Text, default="[]")
     weaknesses_json = Column(Text, default="[]")
     suggestions_json = Column(Text, default="[]")
+    # JSON: [{"emotion":"自信","confidence":85,"details":{...},"time":...}]
+    emotions_json = Column(Text, default="[]")
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
