@@ -6,3 +6,5 @@ __pycache__/
 interview.db
 venv/
 .venv/
+# 截图（本地开发用，不含代码逻辑）
+screenshots/

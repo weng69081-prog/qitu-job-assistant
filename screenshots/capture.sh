@@ -1,6 +1,6 @@
 #!/bin/bash
 # 截图更新脚本
-TOKEN="f4ce9760761d06f3a9c0d941b582ca61afe52c7cc560e36d24bfc0eee242f3fe"
+TOKEN="（已删除-请重新登录获取）"
 BASE="http://localhost:5173"
 OUTDIR="/Users/wendao/interview-agent/screenshots"
 
