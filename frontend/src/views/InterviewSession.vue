@@ -705,6 +705,24 @@ let captureTimer = null
 let captureCanvas = null
 
 async function toggleCamera(val) {
+  if (val && !window.__cameraPrivacyConsented) {
+    try {
+      await ElMessageBox.confirm(
+        '开启摄像头后，系统会定时截取画面发送到 AI 服务器进行表情分析（紧张/自信/困惑等），' +
+        '用于提升面试评分准确度。<br><br>' +
+        '<b>• 画面数据仅用于当前面试评分</b><br>' +
+        '<b>• 不会保存或外传你的视频</b><br>' +
+        '<b>• 可随时关闭摄像头</b>',
+        '使用摄像头须知',
+        { confirmButtonText: '我知道了，开始', cancelButtonText: '暂不使用',
+          dangerouslyUseHTMLString: true, type: 'info' }
+      )
+      window.__cameraPrivacyConsented = true
+    } catch {
+      cameraOn.value = false
+      return
+    }
+  }
   cameraToggling.value = true
   try {
     if (val) {
@@ -975,20 +993,69 @@ const speechSynthSupported = computed(() => {
   return !!window.speechSynthesis
 })
 
+// Pick the best Chinese voice available on macOS
+let cachedBestVoice = null
+let availableVoices = []
+function getBestChineseVoice() {
+  if (cachedBestVoice) return cachedBestVoice
+  const voices = window.speechSynthesis.getVoices()
+  availableVoices = voices
+  if (!voices.length) return null
+
+  // Better-sounding Chinese voices on modern macOS, in preference order
+  const preferredNames = [
+    // Any enhanced/premium/neural voice
+    v => /zh(-CN)?/.test(v.lang) && /(premium|enhanced|neural|high quality)/i.test(v.name),
+    // Apple's newer neural-capable voices (generally sound more natural)
+    v => /zh(-CN)?/.test(v.lang) && ['Eddy','Flo','Sandy','Reed','Shelley','Rocko'].includes(v.name),
+    // Fall back to Tingting (standard Chinese voice)
+    v => v.name === 'Tingting',
+    // Any Chinese voice
+    v => /zh(-CN)?/.test(v.lang),
+    // Any voice with Chinese support
+    v => /zh/.test(v.lang),
+  ]
+  for (const matcher of preferredNames) {
+    const hit = voices.find(matcher)
+    if (hit) { cachedBestVoice = hit; return hit }
+  }
+  return null
+}
+
+// Expose available voices for UI switching
+function getAvailableChineseVoices() {
+  const voices = window.speechSynthesis.getVoices()
+  return voices.filter(v => /zh/.test(v.lang))
+}
+
+// Try pre-load voices (they load async)
+if (window.speechSynthesis) {
+  window.speechSynthesis.getVoices() // trigger
+  window.speechSynthesis.onvoiceschanged = () => {
+    cachedBestVoice = null // reset so next call picks it up
+  }
+}
+
 function speakText(text) {
   if (!window.speechSynthesis) return
   // Clean HTML tags from text
   const cleanText = text.replace(/<[^>]*>/g, '')
+  const bestVoice = getBestChineseVoice()
+
+  function createUtterance(t) {
+    const u = new SpeechSynthesisUtterance(t)
+    u.lang = 'zh-CN'
+    u.rate = 1.0
+    u.pitch = 1.0
+    if (bestVoice) u.voice = bestVoice
+    return u
+  }
+
   // Split into smaller chunks for better handling
   const maxLen = 200
   if (cleanText.length <= maxLen) {
-    const utterance = new SpeechSynthesisUtterance(cleanText)
-    utterance.lang = 'zh-CN'
-    utterance.rate = 1.0
-    utterance.pitch = 1.0
-    window.speechSynthesis.speak(utterance)
+    window.speechSynthesis.speak(createUtterance(cleanText))
   } else {
-    // Speak in chunks
     const chunks = []
     for (let i = 0; i < cleanText.length; i += maxLen) {
       chunks.push(cleanText.slice(i, i + maxLen))
@@ -996,10 +1063,7 @@ function speakText(text) {
     let idx = 0
     function speakNext() {
       if (idx >= chunks.length) return
-      const u = new SpeechSynthesisUtterance(chunks[idx])
-      u.lang = 'zh-CN'
-      u.rate = 1.0
-      u.pitch = 1.0
+      const u = createUtterance(chunks[idx])
       u.onend = () => { idx++; speakNext() }
       window.speechSynthesis.speak(u)
     }
