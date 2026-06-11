@@ -55,16 +55,34 @@ def hash_pw(password: str, salt: str = "") -> tuple:
     h = hashlib.sha256((password + salt).encode()).hexdigest()
     return h, salt
 
-# ── 简易 token 生成 ──
-SESSIONS = {}  # token -> user_id
+# ── 持久化 token（存到 interview.db，后端重启不丢登录） ──
+from database import SessionLocal
+from models import UserSession
+
+def ensure_session_table():
+    """确保 user_sessions 表存在"""
+    from database import engine, Base
+    Base.metadata.create_all(bind=engine, tables=[UserSession.__table__])
 
 def make_token(user_id: int) -> str:
     tok = secrets.token_hex(32)
-    SESSIONS[tok] = user_id
+    ensure_session_table()
+    db = SessionLocal()
+    try:
+        db.merge(UserSession(token=tok, user_id=user_id))
+        db.commit()
+    finally:
+        db.close()
     return tok
 
 def get_user_id(token: str) -> int:
-    return SESSIONS.get(token)
+    ensure_session_table()
+    db = SessionLocal()
+    try:
+        s = db.query(UserSession).filter(UserSession.token == token).first()
+        return s.user_id if s else None
+    finally:
+        db.close()
 
 
 # ═══════════ 注册 ═══════════
@@ -110,7 +128,12 @@ def change_password(
         new_h, new_s = hash_pw(new_password)
         conn.execute("UPDATE users SET password_hash=? WHERE id=?", (new_h + ":" + new_s, uid))
     # 使旧 token 失效
-    SESSIONS.pop(token, None)
+    db = SessionLocal()
+    try:
+        db.query(UserSession).filter(UserSession.token == token).delete()
+        db.commit()
+    finally:
+        db.close()
     return {"ok": True}
 
 

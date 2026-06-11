@@ -148,3 +148,11 @@ class DeliveryTracking(Base):
     hr_feedback = Column(String(500), default="")
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
+
+
+class UserSession(Base):
+    """持久化用户会话，避免后端重启导致登录失效"""
+    __tablename__ = "user_sessions"
+    token = Column(String(128), primary_key=True)
+    user_id = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)

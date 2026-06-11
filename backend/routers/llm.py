@@ -18,15 +18,24 @@ MODEL = os.getenv("LLM_MODEL", "Qwen/Qwen3-32B")
 
 import urllib.request
 
-def chat(prompt: str, system: str = "", temperature: float = 0.7, max_tokens: int = 800) -> str:
-    """调 SiliconFlow Chat API，返回生成文本。失败返回空字符串并打印错误。"""
+def chat(prompt: str, system: str = "", temperature: float = 0.7, max_tokens: int = 800,
+         model: str = "", base_url: str = "", api_key: str = "") -> str:
+    """调 LLM Chat API，返回生成文本。失败返回空字符串。
+    
+    支持覆盖 model/base_url/api_key，不传则用默认配置。
+    满足各模块不同模型需求（面试用默认、投递用 MiMo 等）。
+    """
     messages = []
     if system:
         messages.append({"role": "system", "content": system})
     messages.append({"role": "user", "content": prompt})
 
+    use_model = model or MODEL
+    use_url = base_url or BASE_URL
+    use_key = api_key or API_KEY
+
     body = json.dumps({
-        "model": MODEL,
+        "model": use_model,
         "messages": messages,
         "temperature": temperature,
         "max_tokens": max_tokens,
@@ -34,10 +43,10 @@ def chat(prompt: str, system: str = "", temperature: float = 0.7, max_tokens: in
     }).encode("utf-8")
 
     req = urllib.request.Request(
-        f"{BASE_URL}/chat/completions",
+        f"{use_url}/chat/completions",
         data=body,
         headers={
-            "api-key": API_KEY,   # MiMo 使用 api-key header 鉴权
+            "api-key": use_key,
             "Content-Type": "application/json",
         },
     )
@@ -167,4 +176,40 @@ def chat_messages(messages: list, system: str = "", max_tokens: int = 1024, temp
         import traceback
         with open("/tmp/llm_error.log", "w") as f:
             f.write(f"[chat_messages] 调用失败: {e}\n{traceback.format_exc()}")
+        return ""
+
+
+# ── 异步版本（供 exam.py 等 async 路由复用） ──
+import httpx
+
+async def async_chat(prompt: str, system: str = "", temperature: float = 0.7, max_tokens: int = 800,
+                     model: str = "", base_url: str = "", api_key: str = "") -> str:
+    """异步调 LLM API。支持模型/URL/Key覆盖，不传则用默认配置。"""
+    use_model = model or MODEL
+    use_url = base_url or BASE_URL
+    use_key = api_key or API_KEY
+
+    messages = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    messages.append({"role": "user", "content": prompt})
+
+    payload = {
+        "model": use_model,
+        "messages": messages,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+    }
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            resp = await client.post(
+                f"{use_url}/chat/completions",
+                headers={"api-key": use_key, "Content-Type": "application/json"},
+                json=payload
+            )
+            if resp.status_code != 200:
+                return ""
+            data = resp.json()
+            return data["choices"][0]["message"]["content"].strip()
+    except Exception as e:
         return ""

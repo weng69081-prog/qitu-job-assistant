@@ -488,14 +488,7 @@ def get_mimo_api_key():
 
 async def generate_ai_questions(career: str, knowledge_point: str, difficulty: str,
                                  question_type: str, count: int):
-    """调用MiMo API生成笔试题目，写入数据库并返回"""
-    api_key = get_mimo_api_key()
-    if not api_key:
-        return {"error": "未配置MiMo API密钥，请在环境变量中设置MIMO_API_KEY或API_KEY"}
-
-    api_base = "https://api.xiaomimimo.com/v1"
-    model = "mimo-v2-flash"
-
+    """调用AI API生成笔试题目，写入数据库并返回"""
     prompt = f"""你是一个专业笔试题出题专家。请为"{career}"岗位生成{count}道关于"{knowledge_point}"的笔试题。
 
 要求：
@@ -520,101 +513,82 @@ async def generate_ai_questions(career: str, knowledge_point: str, difficulty: s
 
 每个题目必须包含完整的question、options、answer、analysis、knowledge_point、difficulty、question_type字段。"""
 
-    headers = {
-        "api-key": api_key,
-        "Content-Type": "application/json"
-    }
+    from routers.llm import async_chat
+    content = await async_chat(
+        prompt,
+        system="你是专业笔试题出题专家。输出必须是纯JSON数组，不要添加任何Markdown格式或额外文字。",
+        temperature=0.7, max_tokens=4096,
+        model="mimo-v2-flash", base_url="https://api.xiaomimimo.com/v1",
+        api_key=get_mimo_api_key()
+    )
 
-    payload = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": "你是专业笔试题出题专家。输出必须是纯JSON数组，不要添加任何Markdown格式或额外文字。"},
-            {"role": "user", "content": prompt}
-        ],
-        "temperature": 0.7,
-        "max_tokens": 4096,
-    }
+    if not content:
+        return {"error": "AI API调用失败"}
+
+    # 清理可能的 Markdown 代码块标记
+    content = content.strip()
+    if content.startswith("```json"):
+        content = content[7:]
+    if content.startswith("```"):
+        content = content[3:]
+    if content.endswith("```"):
+        content = content[:-3]
+    content = content.strip()
 
     try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(
-                f"{api_base}/chat/completions",
-                headers=headers,
-                json=payload
+        questions_data = json.loads(content)
+    except:
+        return {"error": "AI返回格式解析失败"}
+
+    if not isinstance(questions_data, list):
+        questions_data = [questions_data]
+
+    # 获取当前最大ID
+    db = SessionLocal()
+    try:
+        max_id = db.query(func.max(ExamQuestion.id)).scalar() or 0
+        next_id = max_id + 1
+
+        saved_questions = []
+        for i, q_data in enumerate(questions_data[:count]):
+            q_career = career
+            q_category = "专业" if career != "通用" else "通用"
+            q_knowledge = q_data.get("knowledge_point", knowledge_point)
+
+            eq = ExamQuestion(
+                category=q_knowledge,
+                difficulty=q_data.get("difficulty", difficulty),
+                question_type=q_data.get("question_type", question_type),
+                question=q_data.get("question", ""),
+                options_json=json.dumps(q_data.get("options", []), ensure_ascii=False),
+                answer=q_data.get("answer", ""),
+                analysis=q_data.get("analysis", ""),
+                source=q_career,
             )
-            if response.status_code != 200:
-                return {"error": f"AI API调用失败: HTTP {response.status_code}", "detail": response.text}
+            db.add(eq)
+            db.flush()
 
-            resp_data = response.json()
-            content = resp_data.get("choices", [{}])[0].get("message", {}).get("content", "")
+            saved_questions.append({
+                "id": eq.id,
+                "knowledge_point": q_knowledge,
+                "category": q_category,
+                "career": q_career,
+                "difficulty": eq.difficulty,
+                "question_type": eq.question_type,
+                "question": eq.question,
+                "options": q_data.get("options", []),
+                "answer": eq.answer,
+                "analysis": eq.analysis,
+            })
 
-            # 清理可能的 Markdown 代码块标记
-            content = content.strip()
-            if content.startswith("```json"):
-                content = content[7:]
-            if content.startswith("```"):
-                content = content[3:]
-            if content.endswith("```"):
-                content = content[:-3]
-            content = content.strip()
+        db.commit()
+        return {"questions": saved_questions, "source": "ai_generated"}
 
-            questions_data = json.loads(content)
-            if not isinstance(questions_data, list):
-                questions_data = [questions_data]
-
-            # 获取当前最大ID
-            db = SessionLocal()
-            try:
-                max_id = db.query(func.max(ExamQuestion.id)).scalar() or 0
-                next_id = max_id + 1
-
-                saved_questions = []
-                for i, q_data in enumerate(questions_data[:count]):
-                    q_career = career
-                    q_category = "专业" if career != "通用" else "通用"
-                    q_knowledge = q_data.get("knowledge_point", knowledge_point)
-
-                    eq = ExamQuestion(
-                        category=q_knowledge,
-                        difficulty=q_data.get("difficulty", difficulty),
-                        question_type=q_data.get("question_type", question_type),
-                        question=q_data.get("question", ""),
-                        options_json=json.dumps(q_data.get("options", []), ensure_ascii=False),
-                        answer=q_data.get("answer", ""),
-                        analysis=q_data.get("analysis", ""),
-                        source=q_career,
-                    )
-                    db.add(eq)
-                    db.flush()
-
-                    saved_questions.append({
-                        "id": eq.id,
-                        "knowledge_point": q_knowledge,
-                        "category": q_category,
-                        "career": q_career,
-                        "difficulty": eq.difficulty,
-                        "question_type": eq.question_type,
-                        "question": eq.question,
-                        "options": q_data.get("options", []),
-                        "answer": eq.answer,
-                        "analysis": eq.analysis,
-                    })
-
-                db.commit()
-                return {"questions": saved_questions, "source": "ai_generated"}
-
-            except Exception as e:
-                db.rollback()
-                return {"error": f"保存AI生成题目失败: {str(e)}"}
-            finally:
-                db.close()
-
-    except json.JSONDecodeError as e:
-        return {"error": f"解析AI返回的JSON失败: {str(e)}", "raw_content": content if 'content' in dir() else ""}
-    except httpx.TimeoutException:
-        return {"error": "AI API请求超时，请稍后重试"}
     except Exception as e:
-        return {"error": f"AI出题失败: {str(e)}"}
+        db.rollback()
+        return {"error": f"保存AI生成题目失败: {str(e)}"}
+    finally:
+        db.close()
 
 
 # ═══════════════════════════════════════════════════════════════

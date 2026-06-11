@@ -349,10 +349,12 @@ def seed_jobs():
         db.close()
 
 
+from routers.llm import chat as llm_chat
+
 # ── AI 解析（调用小米 MiMo） ──
-AI_API_KEY = os.environ.get("MIMO_API_KEY", "")
-AI_BASE = "https://api.xiaomimimo.com/v1"
-AI_MODEL = "mimo-v2-flash"
+MIMO_KEY = os.environ.get("MIMO_API_KEY", "")
+MIMO_URL = "https://api.xiaomimimo.com/v1"
+MIMO_MODEL = "mimo-v2-flash"
 
 def ai_analyze_job(job: DeliveryJob, user_skills: str = ""):
     """AI解析岗位JD + 技能匹配"""
@@ -392,30 +394,16 @@ JD描述：{job.job_description}
 }}"""
 
     try:
-        resp = requests.post(
-            f"{AI_BASE}/chat/completions",
-            headers={"Content-Type": "application/json", "api-key": AI_API_KEY},
-            json={
-                "model": AI_MODEL,
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.3,
-                "max_tokens": 2000,
-            },
-            timeout=30
-        )
-        if resp.status_code == 200:
-            data = resp.json()
-            content = data["choices"][0]["message"]["content"]
-            # 尝试提取JSON
-            content = content.strip()
+        content = llm_chat(prompt, temperature=0.3, max_tokens=2000,
+                          model=MIMO_MODEL, base_url=MIMO_URL, api_key=MIMO_KEY)
+        if content:
             if content.startswith("```"):
                 content = content.split("\n", 1)[1].rsplit("```", 1)[0].strip()
                 if content.startswith("json"):
                     content = content[4:].strip()
             return json.loads(content)
-        else:
-            return _fallback_analysis(job)
-    except Exception as e:
+        return _fallback_analysis(job)
+    except Exception:
         return _fallback_analysis(job)
 
 
