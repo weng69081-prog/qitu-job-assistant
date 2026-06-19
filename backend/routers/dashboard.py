@@ -19,9 +19,9 @@ TOPIC_POOL = [
     {"text": "关系型 vs 非关系型数据库", "tag": "面试", "url": "/interview", "type": "interview"},
     {"text": "面向对象三大特性", "tag": "面试", "url": "/interview", "type": "interview"},
     {"text": "HTTPS 如何保障安全", "tag": "面试", "url": "/interview", "type": "interview"},
-    {"text": "行测逻辑推理专项练习", "tag": "笔试", "url": "/exam-practice", "type": "exam"},
-    {"text": "数量关系速算技巧", "tag": "笔试", "url": "/exam-practice", "type": "exam"},
-    {"text": "资料分析：图表题精练", "tag": "笔试", "url": "/exam-practice", "type": "exam"},
+    {"text": "算法与数据结构真题", "tag": "笔试", "url": "/exam-practice", "type": "exam"},
+    {"text": "数据库SQL实战练习", "tag": "笔试", "url": "/exam-practice", "type": "exam"},
+    {"text": "计算机网络高频面试题", "tag": "笔试", "url": "/exam-practice", "type": "exam"},
     {"text": "计算机专业基础真题", "tag": "笔试", "url": "/exam-practice", "type": "exam"},
 ]
 

@@ -63,8 +63,10 @@ SITUATION_QUESTIONS = [
 # 基础接口
 # ═══════════════════════════════════════
 
-# 全局题目缓存：session_id -> [题目列表]
-_question_cache: dict = {}
+from database import SessionLocal
+from models import InterviewConversation
+import json as _iv_json
+
 
 @router.post("/setup")
 def setup_interview(data: dict = Body({})):
@@ -86,6 +88,7 @@ def setup_interview(data: dict = Body({})):
 - 不要序号，不要提示语
 
 请直接返回 JSON 数组（不要markdown代码块），示例：["题1","题2","题3"]'''
+    questions = []
     try:
         text = chat(prompt, system="你是资深面试官，出的题专业、实际、有深度。", max_tokens=800)
         text = text.strip()
@@ -93,11 +96,24 @@ def setup_interview(data: dict = Body({})):
             text = text.split("\n", 1)[1]
             if text.endswith("```"):
                 text = text[:-3]
-        questions = json.loads(text)
-        if isinstance(questions, list) and len(questions) >= total_questions:
-            _question_cache[session_id] = questions[:total_questions]
+        qs = json.loads(text)
+        if isinstance(qs, list) and len(qs) >= total_questions:
+            questions = qs[:total_questions]
     except:
         pass
+
+    # 持久化到 DB
+    db = SessionLocal()
+    try:
+        conv = InterviewConversation(
+            session_id=session_id,
+            job=job, category=category, mode=mode,
+            questions_json=_iv_json.dumps(questions),
+        )
+        db.merge(conv)
+        db.commit()
+    finally:
+        db.close()
 
     return {
         "session_id": session_id,
@@ -106,10 +122,18 @@ def setup_interview(data: dict = Body({})):
         "time_per_question": max(90, (duration * 60) // total_questions),
     }
 
+
 @router.get("/question")
 def get_question(session_id: str = "", index: int = 1, mode: str = "basic", category: str = "", job: str = ""):
-    """从缓存取预生成的题目"""
-    questions = _question_cache.get(session_id, [])
+    """从 DB 取预生成的题目"""
+    questions = []
+    db = SessionLocal()
+    try:
+        conv = db.query(InterviewConversation).filter(InterviewConversation.session_id == session_id).first()
+        if conv and conv.questions_json:
+            questions = _iv_json.loads(conv.questions_json)
+    finally:
+        db.close()
     if questions and 1 <= index <= len(questions):
         q = questions[index - 1]
     else:
@@ -627,7 +651,6 @@ def analyze_interview_expression(data: dict = Body({})):
 # 对话式面试（AI 面试官）
 # ═══════════════════════════════════════
 
-_conv_store: dict = {}  # session_id -> {"job":..., "mode":..., "messages": [...]}
 
 @router.post("/chat/start")
 def chat_start(data: dict = Body({})):
@@ -636,29 +659,37 @@ def chat_start(data: dict = Body({})):
     category = data.get("category", "")
     mode = data.get("mode", "basic")
     session_id = f"iv_{random.randint(10000,99999)}"
-    mode_desc = "压力面试风格，问题有挑战性，会追问细节" if mode == "stress" else "温和专业风格，循序渐进地考察"
 
-    system_prompt = f"""你是一位资深、专业的面试官，正在面试一位应聘「{job}」岗位的候选人。
-{mode_desc}
+    if mode == "stress":
+        system_prompt = f"""你是一位极其严格、挑剔的资深面试官，正在压力面试一位应聘「{job}」岗位的候选人。
+
+重要：这是「压力面试」，你的风格必须和普通面试截然不同。
+
+压力面试规则：
+1. 不寒暄、不客套，直接开始提问
+2. 问题要有深度和挑战性，问到候选人需要认真思考才能回答
+3. 候选人回答后必须追问细节：「具体怎么实现的？」「为什么这么选？」「有什么数据支撑？」「遇到过什么困难？」
+4. 对模糊、笼统的回答必须质疑：「这个太笼统了，能说得具体一点吗」「不要讲概念，讲你实际做的」
+5. 如果候选人回答冗长，直接打断：「说重点」「能更简洁地总结一下吗」
+6. 全程保持专业但不友好，不要安慰和鼓励
+7. 你的回复控制在80-150字，精炼有力
+8. 一次只问一个问题，但追问要犀利
+9. 第一问直接抛一个技术/专业问题，不要问背景"""
+    else:
+        system_prompt = f"""你是一位资深、有亲和力的专业面试官，正在面试一位应聘「{job}」岗位的候选人。
+
+风格：温和专业，循序渐进，像有经验的面试官在引导新人
+
 面试规则：
-1. 先热情问候，然后自然地开始提问
-2. 【重要】第一问从候选人的背景开始：学历、专业方向、学习经历或对岗位的理解。**绝不要直接问「项目经历」或要求介绍项目**——候选人可能是低年级或无项目经验的学生。
-3. 根据候选人的回答进行追问和深入探讨
-4. 如果候选人回答不够好，可以给提示或换个角度问
-5. 每次回答后给出简短的建设性反馈（不用打分）
+1. 先热情问候，自然地开始
+2. 【重要】第一问从候选人的背景开始：学历、专业方向、学习经历或对岗位的理解。**绝不要直接问「项目经历」**——候选人可能是低年级或无项目经验的学生
+3. 根据候选人的回答自然追问，由浅入深
+4. 候选人回答得好时给予具体肯定：「你刚才说的XX观点很好」
+5. 候选人回答不完整时温和引导：「你可以从XX角度再想想」
 6. 当话题充分展开后，自然过渡到下一个主题
-7. 保持专业友好的面试氛围
-8. 你的回复控制在80-150字，精炼有重点
-9. 不要一次问多个问题，一次只问一个"""
-
-    _conv_store[session_id] = {
-        "job": job,
-        "category": category,
-        "mode": mode,
-        "system": system_prompt,
-        "messages": [],
-        "started": __import__("datetime").datetime.now().isoformat(),
-    }
+7. 给人「面完有收获」的感觉，而不是「被拷问」的感觉
+8. 每次回复控制在80-150字，精炼有重点
+9. 一次只问一个问题"""
 
     from routers.llm import chat_messages
     first_msg = chat_messages(
@@ -669,7 +700,19 @@ def chat_start(data: dict = Body({})):
     if not first_msg:
         first_msg = f"你好！欢迎参加{job}岗位的模拟面试。请先简单说说你的专业背景和学习经历吧。"
 
-    _conv_store[session_id]["messages"].append({"role": "assistant", "content": first_msg})
+    # 持久化到 DB
+    db = SessionLocal()
+    try:
+        conv = InterviewConversation(
+            session_id=session_id,
+            job=job, category=category, mode=mode,
+            system_prompt=system_prompt,
+            messages_json=_iv_json.dumps([{"role": "assistant", "content": first_msg}]),
+        )
+        db.merge(conv)
+        db.commit()
+    finally:
+        db.close()
 
     return {
         "session_id": session_id,
@@ -678,31 +721,41 @@ def chat_start(data: dict = Body({})):
         "mode": mode,
     }
 
+
 @router.post("/chat")
 def chat_continue(data: dict = Body({})):
     """继续对话面试"""
     session_id = data.get("session_id", "")
     user_message = data.get("message", "")
-    if not session_id or session_id not in _conv_store:
-        return {"error": "会话不存在或已过期"}
     if not user_message.strip():
         return {"error": "请输入你的回答"}
 
-    conv = _conv_store[session_id]
-    conv["messages"].append({"role": "user", "content": user_message})
+    db = SessionLocal()
+    try:
+        conv = db.query(InterviewConversation).filter(InterviewConversation.session_id == session_id).first()
+        if not conv:
+            return {"error": "会话不存在或已过期"}
 
-    from routers.llm import chat_messages
-    response = chat_messages(
-        conv["messages"],
-        system=conv["system"],
-        max_tokens=400
-    )
-    if not response:
-        response = "好的，我明白了。让我们继续下一个话题。"
+        messages = _iv_json.loads(conv.messages_json) if conv.messages_json else []
+        messages.append({"role": "user", "content": user_message})
 
-    conv["messages"].append({"role": "assistant", "content": response})
+        from routers.llm import chat_messages
+        response = chat_messages(
+            messages,
+            system=conv.system_prompt,
+            max_tokens=400
+        )
+        if not response:
+            response = "好的，我明白了。让我们继续下一个话题。"
 
-    round_num = len([m for m in conv["messages"] if m["role"] == "user"])
+        messages.append({"role": "assistant", "content": response})
+        conv.messages_json = _iv_json.dumps(messages)
+        conv.last_active = datetime.utcnow()
+        db.commit()
+
+        round_num = len([m for m in messages if m["role"] == "user"])
+    finally:
+        db.close()
 
     return {
         "session_id": session_id,
@@ -710,27 +763,31 @@ def chat_continue(data: dict = Body({})):
         "round": round_num,
     }
 
+
 @router.post("/chat/end")
 def chat_end(data: dict = Body({})):
     """结束面试，生成综合评估报告"""
     session_id = data.get("session_id", "")
-    if not session_id or session_id not in _conv_store:
-        return {"error": "会话不存在或已过期"}
 
-    conv = _conv_store[session_id]
-    msgs = conv["messages"]
+    db = SessionLocal()
+    try:
+        conv = db.query(InterviewConversation).filter(InterviewConversation.session_id == session_id).first()
+        if not conv:
+            return {"error": "会话不存在或已过期"}
 
-    # 用 MiMo 生成综合评估
-    transcript = "\n".join(
-        f"{'面试官' if m['role'] == 'assistant' else '候选人'}：{m['content']}"
-        for m in msgs
-    )
+        msgs = _iv_json.loads(conv.messages_json) if conv.messages_json else []
 
-    from routers.llm import chat
-    prompt = f"""你是资深面试官。请根据以下完整面试记录，对候选人进行综合评估。
+        # 用 MiMo 生成综合评估
+        transcript = "\n".join(
+            f"{'面试官' if m['role'] == 'assistant' else '候选人'}：{m['content']}"
+            for m in msgs
+        )
 
-岗位：{conv['job']}
-面试形式：{conv['mode']}
+        from routers.llm import chat
+        prompt = f"""你是资深面试官。请根据以下完整面试记录，对候选人进行综合评估。
+
+岗位：{conv.job}
+面试形式：{conv.mode}
 
 面试对话记录：
 {transcript[:3000]}
@@ -750,23 +807,50 @@ def chat_end(data: dict = Body({})):
   "summary": "面试总结（50字以内）"
 }}"""
 
-    text = chat(prompt, system="你是有10年经验的HR总监，评估客观全面，善于发现候选人的潜力和不足。", max_tokens=1200)
-    result = {}
-    try:
-        text = text.strip()
-        if text.startswith("```"):
-            text = text.split("\n", 1)[1]
-            if text.endswith("```"):
-                text = text[:-3]
-        result = json.loads(text)
-    except:
-        result = {"overall_score": 75, "dimensions": {}, "strengths": ["态度积极"], "weaknesses": ["经验尚浅"], "suggestions": ["持续练习"], "summary": "面试完成"}
+        text = chat(prompt, system="你是有10年经验的HR总监，评估客观全面，善于发现候选人的潜力和不足。", max_tokens=1200)
+        result = {}
+        try:
+            text = text.strip()
+            if text.startswith("```"):
+                text = text.split("\n", 1)[1]
+                if text.endswith("```"):
+                    text = text[:-3]
+            result = json.loads(text)
+        except:
+            result = {"overall_score": 75, "dimensions": {}, "strengths": ["态度积极"], "weaknesses": ["经验尚浅"], "suggestions": ["持续练习"], "summary": "面试完成"}
 
-    result["total_questions"] = len([m for m in msgs if m["role"] == "assistant"])
-    result["job"] = conv["job"]
+        # 根据弱项生成学习推荐
+        weaknesses = result.get("weaknesses", [])
+        learning_tags = []
+        for w in weaknesses:
+            if "项目" in w or "经验" in w:
+                learning_tags.append("项目经验 实战")
+            if "技术" in w or "基础" in w or "专业" in w:
+                learning_tags.append(f"{conv.job} 技术面试")
+            if "表达" in w or "逻辑" in w or "沟通" in w:
+                learning_tags.append("面试表达 技巧")
+            if "算法" in w or "数据结构" in w:
+                learning_tags.append("算法 刷题")
+            if "系统" in w or "设计" in w:
+                learning_tags.append("系统设计 面试")
+        if not learning_tags:
+            learning_tags = [f"{conv.job} 面试 准备"]
 
-    # 清理缓存
-    del _conv_store[session_id]
+        result["learning_tags"] = learning_tags
+        result["total_questions"] = len([m for m in msgs if m["role"] == "assistant"])
+        result["job"] = conv.job
+
+        # 保留对话原文，不删记录（用户可以在历史里回顾）
+        transcript_lines = [
+            {"role": m["role"], "content": m["content"]}
+            for m in msgs
+        ]
+        result["transcript"] = transcript_lines
+        conv.messages_json = _iv_json.dumps(msgs)
+        conv.last_active = datetime.utcnow()
+        db.commit()
+    finally:
+        db.close()
 
     return result
 

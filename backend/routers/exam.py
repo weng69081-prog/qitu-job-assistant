@@ -111,62 +111,6 @@ def get_career_knowledge(career: str):
 # ═══════════════════════════════════════════════════════════════
 
 EXPANDED_MOCK_QUESTIONS = [
-    # ========== 行测言语理解（12题） ==========
-    {"knowledge_point":"行测言语理解","category":"通用","career":"通用","difficulty":"easy","question_type":"single_choice","question":"填入划横线部分最恰当的一项是：科学的发展总带给人类崭新的思维方式，比如互联网给人类带来了________的思维方式。","options":[{"key":"A","value":"互联互通"},{"key":"B","value":"天马行空"},{"key":"C","value":"无中生有"},{"key":"D","value":"海纳百川"}],"answer":"A","analysis":"互联网的核心特征是连接，'互联互通'最能体现这一特点。"},
-    {"knowledge_point":"行测言语理解","category":"通用","career":"通用","difficulty":"easy","question_type":"single_choice","question":"下列句子中没有语病的一项是：","options":[{"key":"A","value":"通过这次活动，使我们增长了见识。"},{"key":"B","value":"他不但学习好，而且品德也好。"},{"key":"C","value":"这篇文章的内容和见解都很丰富。"},{"key":"D","value":"能否刻苦学习，是取得好成绩的关键。"}],"answer":"B","analysis":"A项缺少主语，C项搭配不当（见解丰富），D项两面对一面。"},
-    {"knowledge_point":"行测言语理解","category":"通用","career":"通用","difficulty":"easy","question_type":"judge","question":"判断：'已通过'和'已经通过了'表达的意思完全相同。","options":[{"key":"对","value":"正确"},{"key":"错","value":"错误"}],"answer":"错","analysis":"'已通过'表示完成状态，'已经通过了'强调动作完成的过程，语气略有不同。"},
-    {"knowledge_point":"行测言语理解","category":"通用","career":"通用","difficulty":"easy","question_type":"single_choice","question":"下列词语中，与'朝三暮四'意思最接近的是：","options":[{"key":"A","value":"朝秦暮楚"},{"key":"B","value":"持之以恒"},{"key":"C","value":"一心一意"},{"key":"D","value":"见异思迁"}],"answer":"A","analysis":"朝三暮四和朝秦暮楚都比喻反复无常、变化多端。"},
-    {"knowledge_point":"行测言语理解","category":"通用","career":"通用","difficulty":"medium","question_type":"single_choice","question":"依次填入下面一段文字横线处的语句，衔接最恰当的一组是：\\\"学术研究不能急功近利，________，________，________，________，________。\\\"①需要厚积薄发 ②需要淡泊名利 ③需要长期积累 ④需要耐得住寂寞 ⑤需要严谨求实","options":[{"key":"A","value":"②①③⑤④"},{"key":"B","value":"③②①④⑤"},{"key":"C","value":"④①③②⑤"},{"key":"D","value":"①③②④⑤"}],"answer":"D","analysis":"先谈积累（①③），再谈态度（②④），最后落脚到方法（⑤），逻辑递进最合理。"},
-    {"knowledge_point":"行测言语理解","category":"通用","career":"通用","difficulty":"medium","question_type":"single_choice","question":"'不积跬步，无以至千里'这句话强调的是：","options":[{"key":"A","value":"千里之外的距离"},{"key":"B","value":"积累的重要性"},{"key":"C","value":"速度的重要性"},{"key":"D","value":"方向的正确性"}],"answer":"B","analysis":"这句话出自《荀子·劝学》，强调积累的重要性。"},
-    {"knowledge_point":"行测言语理解","category":"通用","career":"通用","difficulty":"medium","question_type":"judge","question":"判断：'他可能不会来'和'他一定不会来'表达的意思相同。","options":[{"key":"对","value":"正确"},{"key":"错","value":"错误"}],"answer":"错","analysis":"'可能不会来'表示不确定性，'一定不会来'表示确定性，二者意思不同。"},
-    {"knowledge_point":"行测言语理解","category":"通用","career":"通用","difficulty":"medium","question_type":"single_choice","question":"下列各句中，加点的成语使用恰当的一项是：","options":[{"key":"A","value":"他在学术会议上\"夸夸其谈\"，赢得了听众的阵阵掌声。"},{"key":"B","value":"他对这个问题\"胸有成竹\"，回答得十分流利。"},{"key":"C","value":"他\"处心积虑\"地帮助同学，获得了大家的好评。"},{"key":"D","value":"他\"无所不为\"地钻研技术，终于取得了突破。"}],"answer":"B","analysis":"'胸有成竹'比喻做事前已有通盘考虑，使用正确。A项'夸夸其谈'含贬义，C项'处心积虑'含贬义，D项'无所不为'含贬义。"},
-    {"knowledge_point":"行测言语理解","category":"通用","career":"通用","difficulty":"hard","question_type":"single_choice","question":"这段文字意在说明：\\\"人工智能在给人类带来便利的同时，也引发了就业结构的深刻变革。一些传统岗位正在消失，而新型岗位不断涌现。关键在于劳动者能否主动适应这种变化，提升自身技能。\\\"","options":[{"key":"A","value":"人工智能的利弊分析"},{"key":"B","value":"就业结构的变化趋势"},{"key":"C","value":"劳动者应主动提升技能适应变革"},{"key":"D","value":"传统岗位正在被淘汰"}],"answer":"C","analysis":"文段最后一句'关键在于'提示了作者的核心观点，即劳动者主动适应。"},
-    {"knowledge_point":"行测言语理解","category":"通用","career":"通用","difficulty":"hard","question_type":"single_choice","question":"\"在全球化的背景下，文化多样性面临着前所未有的挑战。一些地方文化正在消失，取而代之的是全球同质化的文化景观。然而，文化多样性是人类创新的源泉，保护文化多样性不仅是对历史的尊重，更是对未来的投资。\"作者对文化多样性的态度是：","options":[{"key":"A","value":"悲观消极"},{"key":"B","value":"客观中立"},{"key":"C","value":"积极倡导"},{"key":"D","value":"漠不关心"}],"answer":"C","analysis":"作者指出文化多样性面临挑战，但更强调其重要性和保护的必要性，态度是积极倡导。"},
-    {"knowledge_point":"行测言语理解","category":"通用","career":"通用","difficulty":"hard","question_type":"judge","question":"判断：'他的写作水平有了很大提高'和'他的写作水平有了很大的提高'中，'很'字可以省略而不影响句意。","options":[{"key":"对","value":"正确"},{"key":"错","value":"错误"}],"answer":"对","analysis":"'很大'中的'很'作为程度副词，省略后句意基本不变，只是程度强调减弱。"},
-    {"knowledge_point":"行测言语理解","category":"通用","career":"通用","difficulty":"hard","question_type":"single_choice","question":"\"市场经济的本质是法治经济。只有建立健全的法律体系，才能保障市场主体的合法权益，维护公平竞争的市场秩序。\"这段话的核心观点是：","options":[{"key":"A","value":"市场经济需要法治保障"},{"key":"B","value":"法律体系需要不断完善"},{"key":"C","value":"市场主体权益应受保护"},{"key":"D","value":"公平竞争是市场核心"}],"answer":"A","analysis":"首句'市场经济的本质是法治经济'即为全文核心观点，后续是对此的展开说明。"},
-
-    # ========== 行测数量关系（12题） ==========
-    {"knowledge_point":"行测数量关系","category":"通用","career":"通用","difficulty":"easy","question_type":"single_choice","question":"某商品原价200元，先提价10%，再打九折，最终售价是多少元？","options":[{"key":"A","value":"198"},{"key":"B","value":"200"},{"key":"C","value":"220"},{"key":"D","value":"180"}],"answer":"A","analysis":"提价10%后为220元，打九折后为220×0.9=198元。"},
-    {"knowledge_point":"行测数量关系","category":"通用","career":"通用","difficulty":"easy","question_type":"single_choice","question":"甲、乙两人同时从相距300米的两地相向而行，甲每分钟走60米，乙每分钟走40米，几分钟后相遇？","options":[{"key":"A","value":"2"},{"key":"B","value":"3"},{"key":"C","value":"4"},{"key":"D","value":"5"}],"answer":"B","analysis":"相遇时间=距离÷速度之和=300÷(60+40)=3分钟。"},
-    {"knowledge_point":"行测数量关系","category":"通用","career":"通用","difficulty":"easy","question_type":"single_choice","question":"一个数除以5余3，除以7余5，这个数最小是多少？","options":[{"key":"A","value":"33"},{"key":"B","value":"38"},{"key":"C","value":"43"},{"key":"D","value":"48"}],"answer":"A","analysis":"这个数加2能被5和7整除，即能被35整除，最小为35-2=33。"},
-    {"knowledge_point":"行测数量关系","category":"通用","career":"通用","difficulty":"easy","question_type":"judge","question":"判断：两个连续奇数的和一定是偶数。","options":[{"key":"对","value":"正确"},{"key":"错","value":"错误"}],"answer":"对","analysis":"奇数+奇数=偶数，两个连续奇数的和一定是偶数。"},
-    {"knowledge_point":"行测数量关系","category":"通用","career":"通用","difficulty":"medium","question_type":"single_choice","question":"某工程队修一条路，前5天修了全长的25%，照这样的速度，还需要多少天才能修完？","options":[{"key":"A","value":"10"},{"key":"B","value":"12"},{"key":"C","value":"15"},{"key":"D","value":"20"}],"answer":"C","analysis":"每天修5%，剩余75%需要75÷5=15天。"},
-    {"knowledge_point":"行测数量关系","category":"通用","career":"通用","difficulty":"medium","question_type":"single_choice","question":"某项工作，甲单独做需要10天，乙单独做需要15天。两人合作，需要多少天完成？","options":[{"key":"A","value":"5"},{"key":"B","value":"6"},{"key":"C","value":"7"},{"key":"D","value":"8"}],"answer":"B","analysis":"甲每天做1/10，乙每天做1/15，合作每天做1/10+1/15=1/6，需要6天。"},
-    {"knowledge_point":"行测数量关系","category":"通用","career":"通用","difficulty":"medium","question_type":"single_choice","question":"一个等差数列的首项为3，公差为4，第10项是多少？","options":[{"key":"A","value":"39"},{"key":"B","value":"43"},{"key":"C","value":"35"},{"key":"D","value":"47"}],"answer":"A","analysis":"an=a1+(n-1)d=3+9×4=39。"},
-    {"knowledge_point":"行测数量关系","category":"通用","career":"通用","difficulty":"medium","question_type":"judge","question":"判断：一个三角形的三个内角之比为1:2:3，则这个三角形是直角三角形。","options":[{"key":"对","value":"正确"},{"key":"错","value":"错误"}],"answer":"对","analysis":"三个角分别为30°、60°、90°，含有90°角，所以是直角三角形。"},
-    {"knowledge_point":"行测数量关系","category":"通用","career":"通用","difficulty":"hard","question_type":"single_choice","question":"一个水池装有甲、乙、丙三个水管，单独开甲管12小时注满，乙管8小时注满，丙管24小时排空。三管齐开，多少小时注满水池？","options":[{"key":"A","value":"4.8"},{"key":"B","value":"6"},{"key":"C","value":"8"},{"key":"D","value":"10"}],"answer":"B","analysis":"每小时注水量：1/12+1/8-1/24=2/24+3/24-1/24=4/24=1/6，所以需要6小时。"},
-    {"knowledge_point":"行测数量关系","category":"通用","career":"通用","difficulty":"hard","question_type":"single_choice","question":"甲乙两人从A地到B地，甲的速度是乙的1.5倍。甲比乙早出发10分钟，结果同时到达。已知AB两地相距6公里，求甲的速度？","options":[{"key":"A","value":"6公里/小时"},{"key":"B","value":"9公里/小时"},{"key":"C","value":"12公里/小时"},{"key":"D","value":"15公里/小时"}],"answer":"C","analysis":"设乙的速度为v，甲为1.5v。甲用时：6/(1.5v)，乙用时：6/v。6/v - 6/(1.5v)=10/60，解得v=8，甲速度=12公里/小时。"},
-    {"knowledge_point":"行测数量关系","category":"通用","career":"通用","difficulty":"hard","question_type":"single_choice","question":"某公司去年利润为100万元，今年利润增长率为20%，预计明年的增长率比今年下降5个百分点，则明年的利润约为多少万元？","options":[{"key":"A","value":"120"},{"key":"B","value":"138"},{"key":"C","value":"144"},{"key":"D","value":"150"}],"answer":"B","analysis":"今年利润=100×(1+20%)=120万元。明年增长率=20%-5%=15%，明年利润=120×(1+15%)=138万元。"},
-    {"knowledge_point":"行测数量关系","category":"通用","career":"通用","difficulty":"hard","question_type":"judge","question":"判断：如果a>b>0，那么1/a < 1/b。","options":[{"key":"对","value":"正确"},{"key":"错","value":"错误"}],"answer":"对","analysis":"分子相同，分母越大值越小，a>b>0，所以1/a < 1/b。"},
-
-    # ========== 行测判断推理（12题） ==========
-    {"knowledge_point":"行测判断推理","category":"通用","career":"通用","difficulty":"easy","question_type":"single_choice","question":"所有鸟都会飞，企鹅是鸟，所以企鹅会飞。这个推理是否正确？","options":[{"key":"A","value":"正确，符合三段论"},{"key":"B","value":"不正确，大前提错误"},{"key":"C","value":"不正确，小前提错误"},{"key":"D","value":"不正确，推理形式错误"}],"answer":"B","analysis":"大前提'所有鸟都会飞'不成立（企鹅不会飞），因此推理无效。"},
-    {"knowledge_point":"行测判断推理","category":"通用","career":"通用","difficulty":"easy","question_type":"single_choice","question":"如果A＞B，B＞C，那么下列哪个结论一定成立？","options":[{"key":"A","value":"A＞C"},{"key":"B","value":"A＝C"},{"key":"C","value":"A＜C"},{"key":"D","value":"A≥C"}],"answer":"A","analysis":"传递性：A＞B且B＞C，则A＞C一定成立。"},
-    {"knowledge_point":"行测判断推理","category":"通用","career":"通用","difficulty":"easy","question_type":"judge","question":"判断：'如果天下雨，地就湿'与'如果地不湿，则天没下雨'是等价的。","options":[{"key":"对","value":"正确"},{"key":"错","value":"错误"}],"answer":"对","analysis":"原命题'若p则q'与逆否命题'若非q则非p'等价，这是逻辑等价关系。"},
-    {"knowledge_point":"行测判断推理","category":"通用","career":"通用","difficulty":"easy","question_type":"single_choice","question":"以下哪组图形关系与'苹果：水果'最为类似？","options":[{"key":"A","value":"汽车：轮胎"},{"key":"B","value":"钢笔：文具"},{"key":"C","value":"桌子：椅子"},{"key":"D","value":"衣服：裤子"}],"answer":"B","analysis":"苹果是水果的一种（种属关系），钢笔是文具的一种（种属关系）。"},
-    {"knowledge_point":"行测判断推理","category":"通用","career":"通用","difficulty":"medium","question_type":"single_choice","question":"所有的偶数是合数。这个说法正确吗？","options":[{"key":"A","value":"正确"},{"key":"B","value":"不正确，2是偶数但不是合数"},{"key":"C","value":"不正确，所有偶数都是质数"},{"key":"D","value":"不正确，0不是合数"}],"answer":"B","analysis":"2是偶数但是质数，不是合数，所以说法错误。"},
-    {"knowledge_point":"行测判断推理","category":"通用","career":"通用","difficulty":"medium","question_type":"judge","question":"判断：'如果一个数能被2和3整除，那么它一定能被6整除'。","options":[{"key":"对","value":"正确"},{"key":"错","value":"错误"}],"answer":"对","analysis":"能被2和3整除说明它同时是2和3的倍数，即6的倍数，所以正确。"},
-    {"knowledge_point":"行测判断推理","category":"通用","career":"通用","difficulty":"medium","question_type":"single_choice","question":"在某次考试中，张明的分数比李华高，李华的分数比王芳高。已知张明的分数不是最高的，那么谁的分数最高？","options":[{"key":"A","value":"张明"},{"key":"B","value":"李华"},{"key":"C","value":"王芳"},{"key":"D","value":"无法确定"}],"answer":"D","analysis":"已知张明＞李华＞王芳，但张明不是最高的，说明还有别人比张明更高，但无法确定具体是谁。"},
-    {"knowledge_point":"行测判断推理","category":"通用","career":"通用","difficulty":"medium","question_type":"single_choice","question":"所有的A是B，所有的B是C，那么以下哪项必然正确？","options":[{"key":"A","value":"所有的A是C"},{"key":"B","value":"所有的C是A"},{"key":"C","value":"有的C不是B"},{"key":"D","value":"有的B不是A"}],"answer":"A","analysis":"A⊆B⊆C，所以A⊆C，即所有的A都是C。"},
-    {"knowledge_point":"行测判断推理","category":"通用","career":"通用","difficulty":"hard","question_type":"single_choice","question":"甲说：'乙在说谎。'乙说：'丙在说谎。'丙说：'甲和乙都在说谎。'请问谁说真话？","options":[{"key":"A","value":"甲"},{"key":"B","value":"乙"},{"key":"C","value":"丙"},{"key":"D","value":"没有人说真话"}],"answer":"B","analysis":"假设甲真→乙假→丙真→甲假（矛盾）。假设乙真→丙假→甲或乙至少一个真→甲可能是假（成立）。所以乙说真话。"},
-    {"knowledge_point":"行测判断推理","category":"通用","career":"通用","difficulty":"hard","question_type":"single_choice","question":"以下哪项如果为真，最能削弱\"吸烟会导致肺癌\"这一结论？","options":[{"key":"A","value":"有吸烟习惯的人更有可能患上其他疾病"},{"key":"B","value":"有些吸烟者活到了90岁以上"},{"key":"C","value":"不吸烟的人也可能得肺癌"},{"key":"D","value":"吸烟与肺癌存在相关性，但不一定是因果关系"}],"answer":"D","analysis":"指出相关不等于因果，是最有力的削弱方式。个别反例（B、C）不能推翻统计规律。"},
-    {"knowledge_point":"行测判断推理","category":"通用","career":"通用","difficulty":"hard","question_type":"judge","question":"判断：所有直角三角形都是等腰三角形。","options":[{"key":"对","value":"正确"},{"key":"错","value":"错误"}],"answer":"错","analysis":"直角三角形不一定等腰，如3-4-5三角形是直角三角形但不是等腰三角形。"},
-    {"knowledge_point":"行测判断推理","category":"通用","career":"通用","difficulty":"hard","question_type":"single_choice","question":"某公司规定：如果员工绩效优秀，则获得年终奖。小王获得了年终奖，由此可以推出：","options":[{"key":"A","value":"小王绩效优秀"},{"key":"B","value":"小王绩效不优秀"},{"key":"C","value":"无法确定小王绩效是否优秀"},{"key":"D","value":"小王绩效可能不优秀"}],"answer":"C","analysis":"原命题'绩效优秀→得年终奖'，逆命题'得年终奖→绩效优秀'不一定成立，所以无法确定。"},
-
-    # ========== 行测资料分析（12题） ==========
-    {"knowledge_point":"行测资料分析","category":"通用","career":"通用","difficulty":"easy","question_type":"single_choice","question":"某公司去年第一季度收入为500万元，第二季度为600万元，第三季度为700万元，第四季度为800万元。全年平均每季度收入为多少万元？","options":[{"key":"A","value":"550"},{"key":"B","value":"600"},{"key":"C","value":"650"},{"key":"D","value":"700"}],"answer":"C","analysis":"(500+600+700+800)÷4=2600÷4=650万元。"},
-    {"knowledge_point":"行测资料分析","category":"通用","career":"通用","difficulty":"easy","question_type":"single_choice","question":"某班有50名学生，其中男生30人，女生20人。男生占总人数的百分比是？","options":[{"key":"A","value":"40%"},{"key":"B","value":"50%"},{"key":"C","value":"60%"},{"key":"D","value":"70%"}],"answer":"C","analysis":"30÷50×100%=60%。"},
-    {"knowledge_point":"行测资料分析","category":"通用","career":"通用","difficulty":"easy","question_type":"judge","question":"判断：同比增长率是指与上个月相比的增长百分比。","options":[{"key":"对","value":"正确"},{"key":"错","value":"错误"}],"answer":"错","analysis":"同比增长率是与上年同期相比，环比增长率才是与上个月相比。"},
-    {"knowledge_point":"行测资料分析","category":"通用","career":"通用","difficulty":"easy","question_type":"single_choice","question":"某城市2023年GDP为1000亿元，2024年为1200亿元。2024年GDP同比增长率为？","options":[{"key":"A","value":"10%"},{"key":"B","value":"15%"},{"key":"C","value":"20%"},{"key":"D","value":"25%"}],"answer":"C","analysis":"(1200-1000)÷1000×100%=20%。"},
-    {"knowledge_point":"行测资料分析","category":"通用","career":"通用","difficulty":"medium","question_type":"single_choice","question":"某产品2019年销量10万件，2020年销量12万件，2021年销量15万件。2021年较2020年增长了多少？","options":[{"key":"A","value":"20%"},{"key":"B","value":"25%"},{"key":"C","value":"30%"},{"key":"D","value":"50%"}],"answer":"B","analysis":"(15-12)÷12×100%=25%。"},
-    {"knowledge_point":"行测资料分析","category":"通用","career":"通用","difficulty":"medium","question_type":"single_choice","question":"根据下表，哪个部门的利润率最高？\\n部门A：收入200万，成本150万\\n部门B：收入300万，成本240万\\n部门C：收入150万，成本100万\\n部门D：收入400万，成本340万","options":[{"key":"A","value":"部门A"},{"key":"B","value":"部门B"},{"key":"C","value":"部门C"},{"key":"D","value":"部门D"}],"answer":"C","analysis":"利润率：(200-150)/200=25%，(300-240)/300=20%，(150-100)/150=33.3%，(400-340)/400=15%，部门C最高。"},
-    {"knowledge_point":"行测资料分析","category":"通用","career":"通用","difficulty":"medium","question_type":"judge","question":"判断：在柱状图中，柱子的高度代表数据的大小，柱子的宽度则没有实际含义。","options":[{"key":"对","value":"正确"},{"key":"错","value":"错误"}],"answer":"对","analysis":"柱状图中，柱子的高度表示数值大小，而宽度通常统一，不携带数据信息。"},
-    {"knowledge_point":"行测资料分析","category":"通用","career":"通用","difficulty":"medium","question_type":"single_choice","question":"某公司员工工资分布：3000-5000元有20人，5000-8000元有30人，8000元以上有10人。月薪5000元以上的员工占比多少？","options":[{"key":"A","value":"33.3%"},{"key":"B","value":"50%"},{"key":"C","value":"66.7%"},{"key":"D","value":"83.3%"}],"answer":"C","analysis":"5000元以上人数=30+10=40人，总人数=20+30+10=60人，占比=40/60≈66.7%。"},
-    {"knowledge_point":"行测资料分析","category":"通用","career":"通用","difficulty":"hard","question_type":"single_choice","question":"某公司近五年营收数据：2019年1000万，2020年1200万（增长20%），2021年1500万（增长25%），2022年1650万（增长10%），2023年1980万（增长20%）。这五年平均增长率最接近以下哪个值？","options":[{"key":"A","value":"14.6%"},{"key":"B","value":"18.6%"},{"key":"C","value":"20%"},{"key":"D","value":"22%"}],"answer":"A","analysis":"总增长倍数=1980/1000=1.98，五年平均增长率=(1.98^(1/5)-1)≈14.6%。"},
-    {"knowledge_point":"行测资料分析","category":"通用","career":"通用","difficulty":"hard","question_type":"single_choice","question":"某公司2023年各季度利润：Q1=50万，Q2=60万，Q3=70万，Q4=80万。已知Q1利润占全年利润的20%，则全年利润为多少？","options":[{"key":"A","value":"200万"},{"key":"B","value":"220万"},{"key":"C","value":"250万"},{"key":"D","value":"260万"}],"answer":"C","analysis":"Q1=50万占20%，全年=50÷20%=250万。"},
-    {"knowledge_point":"行测资料分析","category":"通用","career":"通用","difficulty":"hard","question_type":"judge","question":"判断：在扇形图中，各部分百分比之和应等于100%。","options":[{"key":"对","value":"正确"},{"key":"错","value":"错误"}],"answer":"对","analysis":"扇形图表示整体中各部分的占比，所有部分之和必须为100%。"},
-    {"knowledge_point":"行测资料分析","category":"通用","career":"通用","difficulty":"hard","question_type":"single_choice","question":"已知某产品价格从100元降到80元，销量从1000件增加到1500件。则总收入的变动情况是：","options":[{"key":"A","value":"减少了20%"},{"key":"B","value":"增加了20%"},{"key":"C","value":"增加了25%"},{"key":"D","value":"不变"}],"answer":"B","analysis":"原收入=100×1000=10万元，新收入=80×1500=12万元，增加了(12-10)/10=20%。"},
-
     # ========== HTML/CSS（6题，前端开发工程师） ==========
     {"knowledge_point":"HTML/CSS","category":"专业","career":"前端开发工程师","difficulty":"easy","question_type":"single_choice","question":"HTML中，用于定义超链接的标签是？","options":[{"key":"A","value":"<link>"},{"key":"B","value":"<a>"},{"key":"C","value":"<href>"},{"key":"D","value":"<url>"}],"answer":"B","analysis":"<a>标签用于定义超链接，href属性指定链接目标。link标签用于链接外部资源。"},
     {"knowledge_point":"HTML/CSS","category":"专业","career":"前端开发工程师","difficulty":"easy","question_type":"single_choice","question":"CSS中，以下哪个属性可以实现水平居中？","options":[{"key":"A","value":"text-align:center"},{"key":"B","value":"align:center"},{"key":"C","value":"margin:center"},{"key":"D","value":"horizontal:center"}],"answer":"A","analysis":"text-align:center用于内联元素的水平居中。块级元素水平居中常用margin:0 auto。"},
@@ -489,7 +433,7 @@ def get_mimo_api_key():
 async def generate_ai_questions(career: str, knowledge_point: str, difficulty: str,
                                  question_type: str, count: int):
     """调用AI API生成笔试题目，写入数据库并返回"""
-    prompt = f"""你是一个专业笔试题出题专家。请为"{career}"岗位生成{count}道关于"{knowledge_point}"的笔试题。
+    prompt = f"""你是一个专业笔试题出题专家，请为"{career}"岗位生成{count}道关于"{knowledge_point}"的笔试题。
 
 要求：
 - 难度：{difficulty}
@@ -497,21 +441,26 @@ async def generate_ai_questions(career: str, knowledge_point: str, difficulty: s
 - 如果是single_choice，提供4个选项(A/B/C/D)
 - 如果是judge，选项为[对, 错]
 - 如果是multi_choice，提供4-6个选项
+- 所有题目必须有唯一正确答案，不模棱两可
+- 答案解析必须写清楚"为什么正确选项是对的"以及"为什么错误选项是错的"
+- 考察的知识点要是真实企业中该岗位会问到的内容
+- 题目要有实际应用场景，而不是纯理论背诵
 
-请严格按照以下JSON数组格式返回，不要包含任何其他内容：
+请严格按照以下JSON数组格式返回，不要包含任何其他内容（不要Markdown代码块，纯JSON）：
 [
   {{
-    "question": "题目内容",
-    "options": [{{"key": "A", "value": "选项内容"}}, ...],
-    "answer": "正确答案",
-    "analysis": "详细解析",
+    "question": "题目内容（2-3行以内，清晰直白）",
+    "options": [{{"key": "A", "value": "选项内容"}}, {{"key": "B", "value": "选项内容"}}, {{"key": "C", "value": "选项内容"}}, {{"key": "D", "value": "选项内容"}}],
+    "answer": "正确答案（单个字母如A，或逗号分隔如A,B）",
+    "analysis": "详细解析：先指出正确选项为什么对，再逐个说明错误选项为什么错，最后总结该知识点在实际开发中的应用",
     "knowledge_point": "{knowledge_point}",
     "difficulty": "{difficulty}",
     "question_type": "{question_type}"
   }}
 ]
 
-每个题目必须包含完整的question、options、answer、analysis、knowledge_point、difficulty、question_type字段。"""
+注意：analysis必须足够详细，让考生看完后能完全理解该知识点，不要只写一句话。
+"""
 
     from routers.llm import async_chat
     content = await async_chat(
@@ -1085,6 +1034,31 @@ def save_exam_record(
         db.commit()
         db.refresh(record)
 
+        # 根据薄弱知识点生成学习推荐
+        weak_kps = []
+        for kp, stats in knowledge_stats.items():
+            if stats["correct"] / stats["total"] < 0.6:
+                weak_kps.append(kp)
+
+        learning_tags = set()
+        for kp in weak_kps:
+            if "算法" in kp or "数据结构" in kp:
+                learning_tags.add("算法 刷题 LeetCode")
+            if "数据库" in kp or "SQL" in kp:
+                learning_tags.add("SQL 数据库 面试")
+            if "前端" in kp or "HTML" in kp or "CSS" in kp or "JavaScript" in kp or "JS" in kp or "Vue" in kp or "React" in kp:
+                learning_tags.add(f"前端开发 {career} 面试")
+            if "Java" in kp or "Python" in kp or "编程" in kp:
+                learning_tags.add(f"{kp} 编程题 刷题")
+            if "网络" in kp or "HTTP" in kp:
+                learning_tags.add("计算机网络 面试")
+            if "系统" in kp or "设计" in kp:
+                learning_tags.add("系统设计 面试")
+            if "框架" in kp or "Spring" in kp or "MyBatis" in kp:
+                learning_tags.add(f"{kp} 面试 高频题")
+        if not learning_tags and career:
+            learning_tags.add(f"{career} 笔试 面试")
+
         return {
             "id": record.id,
             "career": career,
@@ -1095,6 +1069,7 @@ def save_exam_record(
             "accuracy": accuracy,
             "duration_seconds": duration_seconds,
             "knowledge_stats": knowledge_stats,
+            "learning_tags": list(learning_tags),
             "message": "练习记录已保存",
         }
     except Exception as e:

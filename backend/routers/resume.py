@@ -1,7 +1,6 @@
 import base64
 import json
 import os
-import sqlite3
 import tempfile
 from datetime import datetime
 from fastapi import APIRouter, UploadFile, File, HTTPException
@@ -10,30 +9,10 @@ from pydantic import BaseModel
 from typing import Optional, List
 from resume_generator import generate_resume_docx
 
+from database import SessionLocal
+from models import ResumeHistory
+
 router = APIRouter(prefix="/api/resume", tags=["简历优化"])
-
-# ── 简历历史记录表 ──
-from pathlib import Path
-_BASE = Path(__file__).resolve().parent.parent
-HISTORY_DB = str(_BASE / "data" / "resume_history.db")
-
-def init_history_db():
-    os.makedirs(str(_BASE / "data"), exist_ok=True)
-    with sqlite3.connect(HISTORY_DB) as conn:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS resume_history (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                template_id TEXT DEFAULT 'classic',
-                template_name TEXT DEFAULT '',
-                career TEXT DEFAULT '',
-                name TEXT DEFAULT '',
-                form_data TEXT DEFAULT '{}',
-                generated_text TEXT DEFAULT '',
-                created_at TEXT DEFAULT (datetime('now','localtime'))
-            )
-        """)
-
-init_history_db()
 
 # ── 数据模型 ──
 
@@ -263,53 +242,69 @@ class SaveResumeRequest(BaseModel):
 def save_resume(data: SaveResumeRequest):
     """保存一份简历到历史记录"""
     tpl_name = TEMPLATES.get(data.template_id, TEMPLATES["classic"])["name"]
-    with sqlite3.connect(HISTORY_DB) as conn:
-        cur = conn.execute(
-            "INSERT INTO resume_history (template_id, template_name, career, name, form_data, generated_text) VALUES (?,?,?,?,?,?)",
-            (data.template_id, tpl_name, data.career, data.name, data.form_data, data.generated_text)
+    db = SessionLocal()
+    try:
+        record = ResumeHistory(
+            template_id=data.template_id,
+            template_name=tpl_name,
+            career=data.career,
+            name=data.name,
+            form_data=data.form_data,
+            generated_text=data.generated_text,
         )
-        record_id = cur.lastrowid
-    return {"ok": True, "id": record_id}
+        db.add(record)
+        db.commit()
+        return {"ok": True, "id": record.id}
+    finally:
+        db.close()
 
 
 @router.get("/history")
 def list_history():
     """列出所有保存的简历（倒序，最多30条）"""
-    with sqlite3.connect(HISTORY_DB) as conn:
-        rows = conn.execute(
-            "SELECT id, template_name, career, name, created_at FROM resume_history ORDER BY id DESC LIMIT 30"
-        ).fetchall()
-    return {
-        "records": [
-            {
-                "id": r[0], "template_name": r[1], "career": r[2],
-                "name": r[3], "created_at": r[4]
-            }
-            for r in rows
-        ]
-    }
+    db = SessionLocal()
+    try:
+        rows = db.query(ResumeHistory).order_by(ResumeHistory.id.desc()).limit(30).all()
+        return {
+            "records": [
+                {
+                    "id": r.id, "template_name": r.template_name, "career": r.career,
+                    "name": r.name, "created_at": r.created_at
+                }
+                for r in rows
+            ]
+        }
+    finally:
+        db.close()
 
 
 @router.get("/history/{record_id}")
 def get_history(record_id: int):
     """获取某条历史记录的完整数据（用于恢复）"""
-    with sqlite3.connect(HISTORY_DB) as conn:
-        row = conn.execute("SELECT * FROM resume_history WHERE id=?", (record_id,)).fetchone()
-    if not row:
-        raise HTTPException(404, "记录不存在")
-    return {
-        "id": row[0], "template_id": row[1],
-        "template_name": row[2], "career": row[3],
-        "name": row[4], "form_data": json.loads(row[5]),
-        "generated_text": row[6], "created_at": row[7],
-    }
+    db = SessionLocal()
+    try:
+        row = db.query(ResumeHistory).filter(ResumeHistory.id == record_id).first()
+        if not row:
+            raise HTTPException(404, "记录不存在")
+        return {
+            "id": row.id, "template_id": row.template_id,
+            "template_name": row.template_name, "career": row.career,
+            "name": row.name, "form_data": json.loads(row.form_data),
+            "generated_text": row.generated_text, "created_at": row.created_at,
+        }
+    finally:
+        db.close()
 
 
 @router.delete("/history/{record_id}")
 def delete_history(record_id: int):
     """删除一条历史记录"""
-    with sqlite3.connect(HISTORY_DB) as conn:
-        conn.execute("DELETE FROM resume_history WHERE id=?", (record_id,))
+    db = SessionLocal()
+    try:
+        db.query(ResumeHistory).filter(ResumeHistory.id == record_id).delete()
+        db.commit()
+    finally:
+        db.close()
     return {"ok": True}
 
 

@@ -111,6 +111,7 @@ const dragStartY = ref(0)
 const dragOrigX = ref(0)
 const dragOrigY = ref(0)
 const walking = ref(true)
+const waving = ref(false)
 let wasDragged = false
 const FAB_SIZE = 72
 const PADDING = 24

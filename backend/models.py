@@ -150,6 +150,68 @@ class DeliveryTracking(Base):
     updated_at = Column(DateTime, default=datetime.utcnow)
 
 
+class User(Base):
+    """统一用户表（原 data/users.db → 合并到 interview.db）"""
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String(100), unique=True, nullable=False)
+    password_hash = Column(String(200), nullable=False)
+    nickname = Column(String(100), default="")
+    avatar = Column(String(500), default="")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class Profile(Base):
+    """用户画像表"""
+    __tablename__ = "profiles"
+    user_id = Column(Integer, primary_key=True)
+    education = Column(String(50), default="本科")
+    city = Column(String(100), default="北京")
+    skills = Column(String(500), default="")
+    salary = Column(String(50), default="8K-12K")
+    major_category = Column(String(100), default="")
+    major = Column(String(100), default="")
+    job_targets = Column(String(500), default="")
+    gender = Column(String(10), default="")
+    age = Column(Integer, default=22)
+    experience = Column(String(500), default="")
+    certificate = Column(String(500), default="")
+    interests = Column(String(500), default="")
+    confusion = Column(String(500), default="")
+    grade = Column(String(50), default="大一")
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+
+class ResumeHistory(Base):
+    """简历历史记录"""
+    __tablename__ = "resume_history"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, default=0)
+    template_id = Column(String(50), default="classic")
+    template_name = Column(String(100), default="")
+    career = Column(String(100), default="")
+    name = Column(String(100), default="")
+    form_data = Column(Text, default="{}")
+    generated_text = Column(Text, default="")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class InterviewConversation(Base):
+    """持久化的对话式面试会话（替代内存 _conv_store）"""
+    __tablename__ = "interview_conversations"
+    session_id = Column(String(50), primary_key=True)
+    job = Column(String(200), default="")
+    category = Column(String(100), default="")
+    mode = Column(String(20), default="basic")
+    system_prompt = Column(Text, default="")
+    # JSON: [{"role":"assistant","content":"..."},{"role":"user","content":"..."}]
+    messages_json = Column(Text, default="[]")
+    # JSON: ["问题1","问题2",...]
+    questions_json = Column(Text, default="[]")
+    started_at = Column(DateTime, default=datetime.utcnow)
+    last_active = Column(DateTime, default=datetime.utcnow)
+
+
 class UserSession(Base):
     """持久化用户会话，避免后端重启导致登录失效"""
     __tablename__ = "user_sessions"

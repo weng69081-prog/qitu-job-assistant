@@ -1,52 +1,13 @@
-"""用户认证与个人资料 API"""
-import hashlib, secrets, sqlite3, json
+"""用户认证与个人资料 API（SQLAlchemy 统一版）"""
+import hashlib, secrets, json
 from datetime import datetime
 from fastapi import APIRouter, Query, HTTPException
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/user", tags=["user"])
 
-from pathlib import Path
-_BASE = Path(__file__).resolve().parent.parent
-DB_PATH = str(_BASE / "data" / "users.db")
-
-def init_db():
-    import os
-    os.makedirs(str(_BASE / "data"), exist_ok=True)
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL,
-                nickname TEXT DEFAULT '',
-                avatar TEXT DEFAULT '',
-                created_at TEXT DEFAULT (datetime('now','localtime'))
-            )
-        """)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS profiles (
-                user_id INTEGER PRIMARY KEY REFERENCES users(id),
-                education TEXT DEFAULT '本科',
-                city TEXT DEFAULT '北京',
-                skills TEXT DEFAULT '',
-                salary TEXT DEFAULT '8K-12K',
-                major_category TEXT DEFAULT '',
-                major TEXT DEFAULT '',
-                job_targets TEXT DEFAULT '',
-                gender TEXT DEFAULT '',
-                age INTEGER DEFAULT 22,
-                experience TEXT DEFAULT '',
-                certificate TEXT DEFAULT '',
-                interests TEXT DEFAULT '',
-                confusion TEXT DEFAULT '',
-                grade TEXT DEFAULT '大一',
-                updated_at TEXT DEFAULT (datetime('now','localtime'))
-            )
-        """)
-    conn.close()
-
-init_db()
+from database import SessionLocal
+from models import User, Profile, UserSession
 
 # ── 简单的密码加盐哈希 ──
 def hash_pw(password: str, salt: str = "") -> tuple:
@@ -55,12 +16,8 @@ def hash_pw(password: str, salt: str = "") -> tuple:
     h = hashlib.sha256((password + salt).encode()).hexdigest()
     return h, salt
 
-# ── 持久化 token（存到 interview.db，后端重启不丢登录） ──
-from database import SessionLocal
-from models import UserSession
-
+# ── 持久化 token ──
 def ensure_session_table():
-    """确保 user_sessions 表存在"""
     from database import engine, Base
     Base.metadata.create_all(bind=engine, tables=[UserSession.__table__])
 
@@ -75,7 +32,7 @@ def make_token(user_id: int) -> str:
         db.close()
     return tok
 
-def get_user_id(token: str) -> int:
+def get_user_id(token: str) -> int | None:
     ensure_session_table()
     db = SessionLocal()
     try:
@@ -88,19 +45,21 @@ def get_user_id(token: str) -> int:
 # ═══════════ 注册 ═══════════
 @router.post("/register")
 def register(username: str = Query(...), password: str = Query(...), nickname: str = ""):
-    with sqlite3.connect(DB_PATH) as conn:
-        exists = conn.execute("SELECT id FROM users WHERE username=?", (username,)).fetchone()
+    db = SessionLocal()
+    try:
+        exists = db.query(User).filter(User.username == username).first()
         if exists:
             raise HTTPException(400, "用户名已存在")
         h, s = hash_pw(password)
-        cur = conn.execute(
-            "INSERT INTO users (username, password_hash, nickname) VALUES (?,?,?)",
-            (username, h + ":" + s, nickname or username)
-        )
-        user_id = cur.lastrowid
-        # 创建默认 profile
-        conn.execute("INSERT INTO profiles (user_id) VALUES (?)", (user_id,))
-    return {"ok": True, "token": make_token(user_id), "user": {"id": user_id, "username": username, "nickname": nickname or username}}
+        user = User(username=username, password_hash=h + ":" + s, nickname=nickname or username)
+        db.add(user)
+        db.flush()
+        profile = Profile(user_id=user.id)
+        db.add(profile)
+        db.commit()
+        return {"ok": True, "token": make_token(user.id), "user": {"id": user.id, "username": username, "nickname": nickname or username}}
+    finally:
+        db.close()
 
 
 # ═══════════ 修改密码 ═══════════
@@ -113,12 +72,12 @@ def change_password(
     uid = get_user_id(token)
     if not uid:
         raise HTTPException(401, "未登录")
-    with sqlite3.connect(DB_PATH) as conn:
-        row = conn.execute("SELECT password_hash FROM users WHERE id=?", (uid,)).fetchone()
-        if not row:
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.id == uid).first()
+        if not user:
             raise HTTPException(404, "用户不存在")
-        pw_stored = row[0]
-        parts = pw_stored.split(":")
+        parts = user.password_hash.split(":")
         h, s = parts[0], parts[1] if len(parts) > 1 else ""
         test_h, _ = hash_pw(old_password, s)
         if test_h != h:
@@ -126,10 +85,8 @@ def change_password(
         if len(new_password) < 6:
             raise HTTPException(400, "新密码至少6位")
         new_h, new_s = hash_pw(new_password)
-        conn.execute("UPDATE users SET password_hash=? WHERE id=?", (new_h + ":" + new_s, uid))
-    # 使旧 token 失效
-    db = SessionLocal()
-    try:
+        user.password_hash = new_h + ":" + new_s
+        # 使旧 token 失效
         db.query(UserSession).filter(UserSession.token == token).delete()
         db.commit()
     finally:
@@ -140,35 +97,30 @@ def change_password(
 # ═══════════ 登录 ═══════════
 @router.post("/login")
 def login(username: str = Query(...), password: str = Query(...)):
-    with sqlite3.connect(DB_PATH) as conn:
-        row = conn.execute("SELECT id, username, password_hash, nickname FROM users WHERE username=?", (username,)).fetchone()
-        if not row:
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.username == username).first()
+        if not user:
             raise HTTPException(401, "用户名或密码错误")
-        user_id, uname, pw_stored, nickname = row
-        parts = pw_stored.split(":")
+        parts = user.password_hash.split(":")
         h, s = parts[0], parts[1] if len(parts) > 1 else ""
         test_h, _ = hash_pw(password, s)
         if test_h != h:
             raise HTTPException(401, "用户名或密码错误")
-    # 判断是否填过基础信息（新生版：昵称+专业大类+具体专业为必填）
-    with sqlite3.connect(DB_PATH) as conn:
-        user = conn.execute("SELECT nickname FROM users WHERE id=?", (user_id,)).fetchone()
-        prof = conn.execute(
-            "SELECT major_category, major FROM profiles WHERE user_id=?",
-            (user_id,)
-        ).fetchone()
-    needs_profile = True
-    if user and prof:
-        nickname = user[0] or ''
-        major_cat = prof[0] or ''
-        major = prof[1] or ''
-        # 昵称、专业大类、具体专业都填了才算填过
-        if nickname.strip() and major_cat.strip() and major.strip():
-            needs_profile = False
+
+        # 判断是否填过基础信息
+        prof = db.query(Profile).filter(Profile.user_id == user.id).first()
+        needs_profile = True
+        if user.nickname and prof:
+            if user.nickname.strip() and (prof.major_category or "").strip() and (prof.major or "").strip():
+                needs_profile = False
+    finally:
+        db.close()
+
     return {
-        "ok": True, "token": make_token(user_id),
+        "ok": True, "token": make_token(user.id),
         "needs_profile": needs_profile,
-        "user": {"id": user_id, "username": uname, "nickname": nickname or uname}
+        "user": {"id": user.id, "username": user.username, "nickname": user.nickname or user.username}
     }
 
 
@@ -178,21 +130,24 @@ def get_profile(token: str = Query(...)):
     uid = get_user_id(token)
     if not uid:
         raise HTTPException(401, "未登录")
-    with sqlite3.connect(DB_PATH) as conn:
-        user = conn.execute("SELECT username, nickname, avatar FROM users WHERE id=?", (uid,)).fetchone()
-        prof = conn.execute("SELECT * FROM profiles WHERE user_id=?", (uid,)).fetchone()
-    if not user:
-        raise HTTPException(404, "用户不存在")
-    return {
-        "username": user[0], "nickname": user[1], "avatar": user[2],
-        "profile": {
-            "education": prof[1], "city": prof[2], "skills": prof[3],
-            "salary": prof[4], "major_category": prof[5], "major": prof[6],
-            "job_targets": prof[7], "gender": prof[8], "age": prof[9],
-            "experience": prof[10], "certificate": prof[11],
-            "interests": prof[13], "confusion": prof[14], "grade": prof[15],
-        } if prof else {}
-    }
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.id == uid).first()
+        prof = db.query(Profile).filter(Profile.user_id == uid).first()
+        if not user:
+            raise HTTPException(404, "用户不存在")
+        return {
+            "username": user.username, "nickname": user.nickname, "avatar": user.avatar,
+            "profile": {
+                "education": prof.education, "city": prof.city, "skills": prof.skills,
+                "salary": prof.salary, "major_category": prof.major_category, "major": prof.major,
+                "job_targets": prof.job_targets, "gender": prof.gender, "age": prof.age,
+                "experience": prof.experience, "certificate": prof.certificate,
+                "interests": prof.interests, "confusion": prof.confusion, "grade": prof.grade,
+            } if prof else {}
+        }
+    finally:
+        db.close()
 
 
 @router.post("/profile")
@@ -207,14 +162,28 @@ def update_profile(
     uid = get_user_id(token)
     if not uid:
         raise HTTPException(401, "未登录")
-    with sqlite3.connect(DB_PATH) as conn:
+    db = SessionLocal()
+    try:
         if nickname:
-            conn.execute("UPDATE users SET nickname=? WHERE id=?", (nickname, uid))
-        conn.execute("""
-            UPDATE profiles SET education=?, city=?, skills=?, salary=?,
-            major_category=?, major=?, job_targets=?, gender=?, age=?,
-            experience=?, certificate=?, interests=?, confusion=?, grade=?,
-            updated_at=datetime('now','localtime')
-            WHERE user_id=?
-        """, (education, city, skills, salary, major_category, major, job_targets, gender, age or 22, experience, certificate, interests, confusion, grade, uid))
+            db.query(User).filter(User.id == uid).update({"nickname": nickname})
+        prof = db.query(Profile).filter(Profile.user_id == uid).first()
+        if prof:
+            prof.education = education or prof.education
+            prof.city = city or prof.city
+            prof.skills = skills or prof.skills
+            prof.salary = salary or prof.salary
+            prof.major_category = major_category or prof.major_category
+            prof.major = major or prof.major
+            prof.job_targets = job_targets or prof.job_targets
+            prof.gender = gender or prof.gender
+            prof.age = age or prof.age or 22
+            prof.experience = experience or prof.experience
+            prof.certificate = certificate or prof.certificate
+            prof.interests = interests or prof.interests
+            prof.confusion = confusion or prof.confusion
+            prof.grade = grade or prof.grade
+            prof.updated_at = datetime.utcnow()
+        db.commit()
+    finally:
+        db.close()
     return {"ok": True}

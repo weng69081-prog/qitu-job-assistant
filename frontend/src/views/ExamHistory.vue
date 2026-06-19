@@ -54,13 +54,15 @@
                 <span>正确 <b>{{ detailData.correct_count || 0 }}</b> /  错误 <b>{{ detailData.wrong_count || 0 }}</b></span>
               </div>
               <div v-if="detailData.answers && detailData.answers.length" class="eh-d-list">
-                <div v-for="(a, i) in detailData.answers" :key="i" class="eh-d-item"
-                  :class="a.is_correct ? 'eh-d-correct' : 'eh-d-wrong'">
+                <div v-for="(a, i) in detailData.answers" :key="i" class="eh-d-item" :class="a.is_correct ? 'eh-d-correct' : 'eh-d-wrong'">
                   <div class="eh-d-q">{{ i+1 }}. {{ a.question || a.content || '题目' }}</div>
                   <div class="eh-d-ans">
                     <span v-if="!a.is_correct">✗ 你的答案：{{ a.user_answer || '—' }}</span>
                     <span v-if="!a.is_correct" class="eh-d-correction">✓ 正确答案：{{ a.correct_answer }}</span>
                     <span v-else>✓ 正确</span>
+                  </div>
+                  <div class="eh-d-analysis" v-if="a.analysis">
+                    <i class="fa-solid fa-book-open"></i> {{ a.analysis }}
                   </div>
                 </div>
               </div>
@@ -242,5 +244,14 @@ onMounted(loadRecords)
 .eh-d-wrong { background: #FEF2F2; }
 .eh-d-q { font-weight: 600; color: #1E293B; margin-bottom: 4px; line-height: 1.5; }
 .eh-d-ans { display: flex; gap: 10px; flex-wrap: wrap; font-size: 12px; }
+.eh-d-analysis {
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.5;
+}
 .eh-d-correction { color: #16A34A; font-weight: 700; }
 </style>

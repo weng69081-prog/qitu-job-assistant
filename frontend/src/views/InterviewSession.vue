@@ -967,6 +967,10 @@ function startVoiceInput() {
   recognition.onend = () => {
     isRecording.value = false
     voiceActive.value = false
+    // 语音录制结束后，有内容则自动发送，不用再点"发送"按钮
+    if (userInput.value.trim()) {
+      sendMessage()
+    }
   }
 
   try {
@@ -1219,7 +1223,8 @@ async function handleStartInterview() {
       custom_material: customInterview.material.trim()
     })
     sessionId.value = data.session_id
-    const firstMsg = buildOpeningMessage()
+    // 使用后端实时生成的第一句话（压力/普通模式完全不同），而非硬编码固定文案
+    const firstMsg = data.message || buildOpeningMessage()
     messages.value.push({ role: 'assistant', content: firstMsg, time: Date.now() })
 
     // Auto-speak the first message

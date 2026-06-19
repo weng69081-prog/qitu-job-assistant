@@ -528,6 +528,20 @@
           </div>
         </div>
 
+        <!-- 考点统计 -->
+        <div v-if="examResult?.knowledge_stats" class="weak-section">
+          <el-divider content-position="left">
+            <span style="font-weight:600;font-size:0.9rem"><i class="fa-solid fa-chart-pie" style="color:#2563EB"></i> 考点统计</span>
+          </el-divider>
+          <div class="weak-list">
+            <div v-for="(stats, kp) in examResult.knowledge_stats" :key="kp" class="weak-item">
+              <span class="weak-name">{{ kp }}</span>
+              <span class="weak-rate">{{ stats.correct }}/{{ stats.total }} 正确</span>
+              <el-progress :percentage="Math.round(stats.correct/stats.total*100)" :width="80" :stroke-width="6" />
+            </div>
+          </div>
+        </div>
+
         <!-- 薄弱知识点 -->
         <div v-if="weakPoints.length > 0" class="weak-section">
           <el-divider content-position="left">
@@ -538,6 +552,39 @@
               <span class="weak-rank">{{ wi + 1 }}</span>
               <span class="weak-name">{{ wp.name }}</span>
               <span class="weak-rate">{{ wp.wrongRate }}% 错误率</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 学习推荐 -->
+        <div v-if="examResult?.learning_tags && examResult.learning_tags.length > 0" class="weak-section">
+          <el-divider content-position="left">
+            <span style="font-weight:600;font-size:0.9rem"><i class="fa-solid fa-graduation-cap" style="color:#67c23a"></i> 学习推荐</span>
+          </el-divider>
+          <div class="learning-tag-list">
+            <el-tag v-for="tag in examResult.learning_tags" :key="tag" effect="plain" type="success" style="margin:4px" size="medium">{{ tag }}</el-tag>
+          </div>
+        </div>
+
+        <!-- 每题详情 -->
+        <div class="weak-section">
+          <el-divider content-position="left">
+            <span style="font-weight:600;font-size:0.9rem"><i class="fa-solid fa-list"></i> 题目详情</span>
+          </el-divider>
+          <div v-for="(q, i) in questions" :key="q.id" class="question-detail-item">
+            <div class="qdi-header">
+              <span class="qdi-num">{{ i + 1 }}</span>
+              <el-tag :type="q._result?.is_correct ? 'success' : 'danger'" size="small" effect="dark">
+                {{ q._result?.is_correct ? '✓ 正确' : '✗ 错误' }}
+              </el-tag>
+            </div>
+            <div class="qdi-question">{{ q.question }}</div>
+            <div class="qdi-answer" v-if="q._result">
+              <span v-if="!q._result.is_correct">你的答案：<b class="wrong-ans">{{ q._userAnswer }}</b> · </span>
+              正确答案：<b class="correct-ans">{{ q._result.correct_answer }}</b>
+            </div>
+            <div class="qdi-analysis" v-if="q.analysis">
+              <i class="fa-solid fa-book-open"></i> {{ q.analysis }}
             </div>
           </div>
         </div>
@@ -603,6 +650,9 @@ const answerResult = ref(null)
 const answeredCount = ref(0)
 const correctCount = ref(0)
 const savedQuestions = ref(new Set())
+
+// 笔试记录结果（finishExam后从后端返回）
+const examResult = ref(null)
 
 // 计时
 const timer = ref(0)
@@ -1220,25 +1270,34 @@ function confirmEndExam() {
 async function finishExam() {
   stopTimer()
 
+  // 构建带有完整信息的答题记录
+  const answers = questions.value.map(q => ({
+    question_id: q.id,
+    question: q.question,
+    knowledge_point: q.knowledge_point || '',
+    difficulty: q.difficulty || '',
+    question_type: q.question_type || '',
+    options_json: q.options_json || '',
+    user_answer: q._userAnswer || '',
+    correct_answer: q._result ? q._result.correct_answer : '',
+    correct: q._result ? q._result.is_correct : false,
+    analysis: q.analysis || (q._result ? q._result.analysis : ''),
+  }))
+
+  let recordResult = null
   try {
-    await axios.post('/api/exam/record', {
+    const { data } = await axios.post('/api/exam/record', {
       career: career.value,
       mode: mode.value,
-      total: questions.length,
-      answered: answeredCount.value,
-      correct: correctCount.value,
-      time_seconds: timer.value,
-      questions: questions.value.map(q => ({
-        id: q.id,
-        question: q.question,
-        user_answer: q._userAnswer,
-        is_correct: q._result ? q._result.is_correct : null,
-      })),
+      answers,
+      duration_seconds: timer.value,
     })
+    recordResult = data
   } catch (e) {
     console.error('保存记录失败', e)
   }
 
+  examResult.value = recordResult
   phase.value = 'done'
 }
 
@@ -2364,5 +2423,59 @@ function backToReady() {
   .sidebar-grid {
     grid-template-columns: repeat(10, 1fr);
   }
+}
+
+/* ═══════ 报告页新元素 ═══════ */
+.learning-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.question-detail-item {
+  border: 1px dashed #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: #fafbfc;
+}
+.qdi-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.qdi-num {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+}
+.qdi-question {
+  font-size: 14px;
+  color: #1e293b;
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+.qdi-answer {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+.wrong-ans { color: #ef4444; }
+.correct-ans { color: #10b981; }
+.qdi-analysis {
+  font-size: 13px;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 8px 10px;
+  border-radius: 6px;
+  line-height: 1.5;
 }
 </style>
