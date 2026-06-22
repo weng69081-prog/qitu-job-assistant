@@ -5,7 +5,7 @@
       <PageBanner fullwidth
         title="学习中心"
         description="以用户画像为中心，面试→薄弱→路线→复习→简历的完整闭环"
-        :path-items="['学习进度', '面试复盘', '专属路线', '复习提醒']"
+        :path-items="['学习进度', '专属路线', '面试复盘', '复习提醒']"
       />
     </div>
 
@@ -252,68 +252,6 @@
         </div>
       </div>
 
-      <!-- ═══ Tab 2: 面试备战 ═══ -->
-      <div v-if="activeTab === 'interview'">
-        <div class="lc-section-title">
-          <span><Crosshair class="ic" /> 面试复盘</span>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <button class="btn-sm btn-outline" @click="fetchInterviewSessions" :disabled="intvLoading">
-              <template v-if="intvLoading">加载中...</template>
-              <template v-else><RefreshCw class="ic" /> 刷新</template>
-            </button>
-            <router-link to="/interview" class="btn-sm btn-blue" style="text-decoration:none;"><Mic class="ic" /> 去模拟面试</router-link>
-          </div>
-        </div>
-
-        <!-- 面试记录卡片网格 -->
-        <div v-if="interviewSessions.length" class="card-grid grid-2col">
-          <div v-for="s in interviewSessions" :key="s.id" class="grid-card intv-card" @click="goInterviewStudy(s.id)">
-              <div class="path-header">
-                <div class="path-title">{{ s.job }}</div>
-                <div class="path-h-right">
-                  <span class="intv-score" :class="scoreClass(s.score)">{{ s.score }}分</span>
-                </div>
-              </div>
-            <div class="path-desc">
-              <template v-if="s.mode === 'stress'"><AlertTriangle class="ic" /> 压力模式</template>
-              <template v-else><ClipboardList class="ic" /> 普通模式</template>
-              · {{ s.question_count }}题 · {{ s.created_at }}
-            </div>
-              <div v-if="s.weaknesses.length" class="intv-weak-list">
-                <span v-for="(w, wi) in s.weaknesses" :key="wi" class="intv-weak-tag">{{ w }}</span>
-              </div>
-              <!-- 维度分简略 -->
-              <div v-if="Object.keys(s.dimensions).length" class="intv-dims">
-                <span v-for="(v, k) in s.dimensions" :key="k" class="intv-dim-item">
-                  {{ k }}: <b>{{ v }}</b>
-                </span>
-              </div>
-            </div>
-          </div>
-        <div v-else class="lc-card">
-          <div class="empty-state">还没有面试记录～去模拟面试试试吧 <Mic class="ic" /></div>
-        </div>
-
-        <!-- 统计 -->
-        <div class="lc-card" style="margin-top:16px;">
-          <div class="card-title">面试笔试统计</div>
-          <div class="stats-grid">
-            <div class="stat-item">
-              <div class="stat-num">{{ stats.interview_count }}</div>
-              <div class="stat-label">模拟面试</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-num">{{ stats.exam_count }}</div>
-              <div class="stat-label">笔试练习</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-num warn-num">{{ stats.weakness_count }}</div>
-              <div class="stat-label">薄弱点</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- ═══ Tab 2: 专属路线 ═══ -->
       <div v-if="activeTab === 'path'">
         <div class="lc-section-title">
@@ -394,6 +332,68 @@
         </div>
       </div>
 
+      <!-- ═══ Tab 3: 面试复盘 ═══ -->
+      <div v-if="activeTab === 'interview'">
+        <div class="lc-section-title">
+          <span><Crosshair class="ic" /> 面试复盘</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn-sm btn-outline" @click="fetchInterviewSessions" :disabled="intvLoading">
+              <template v-if="intvLoading">加载中...</template>
+              <template v-else><RefreshCw class="ic" /> 刷新</template>
+            </button>
+            <router-link to="/interview" class="btn-sm btn-blue" style="text-decoration:none;"><Mic class="ic" /> 去模拟面试</router-link>
+          </div>
+        </div>
+
+        <!-- 面试记录卡片网格 -->
+        <div v-if="interviewSessions.length" class="card-grid grid-2col">
+          <div v-for="s in interviewSessions" :key="s.id" class="grid-card intv-card" @click="goInterviewStudy(s.id)">
+              <div class="path-header">
+                <div class="path-title">{{ s.job }}</div>
+                <div class="path-h-right">
+                  <span class="intv-score" :class="scoreClass(s.score)">{{ s.score }}分</span>
+                </div>
+              </div>
+            <div class="path-desc">
+              <template v-if="s.mode === 'stress'"><AlertTriangle class="ic" /> 压力模式</template>
+              <template v-else><ClipboardList class="ic" /> 普通模式</template>
+              · {{ s.question_count }}题 · {{ s.created_at }}
+            </div>
+              <div v-if="s.weaknesses.length" class="intv-weak-list">
+                <span v-for="(w, wi) in s.weaknesses" :key="wi" class="intv-weak-tag">{{ w }}</span>
+              </div>
+              <!-- 维度分简略 -->
+              <div v-if="Object.keys(s.dimensions).length" class="intv-dims">
+                <span v-for="(v, k) in s.dimensions" :key="k" class="intv-dim-item">
+                  {{ k }}: <b>{{ v }}</b>
+                </span>
+              </div>
+            </div>
+          </div>
+        <div v-else class="lc-card">
+          <div class="empty-state">还没有面试记录～去模拟面试试试吧 <Mic class="ic" /></div>
+        </div>
+
+        <!-- 统计 -->
+        <div class="lc-card" style="margin-top:16px;">
+          <div class="card-title">面试笔试统计</div>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-num">{{ stats.interview_count }}</div>
+              <div class="stat-label">模拟面试</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-num">{{ stats.exam_count }}</div>
+              <div class="stat-label">笔试练习</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-num warn-num">{{ stats.weakness_count }}</div>
+              <div class="stat-label">薄弱点</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ═══ Tab 4: 复习提醒 ═══ -->
       <div v-if="activeTab === 'review'">
         <div class="lc-section-title">
@@ -454,8 +454,8 @@ const API = 'http://localhost:8000'
 
 const tabs = [
   { key: 'study', icon: Book, label: '学习进度' },
-  { key: 'interview', icon: Crosshair, label: '面试复盘' },
   { key: 'path', icon: Map, label: '专属路线' },
+  { key: 'interview', icon: Crosshair, label: '面试复盘' },
   { key: 'review', icon: RefreshCw, label: '复习提醒' },
 ]
 const activeTab = ref('study')
