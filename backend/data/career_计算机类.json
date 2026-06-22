@@ -1,0 +1,114 @@
+[
+  {
+    "career": "云计算工程师 (Cloud Computing Engineer)",
+    "match": 92,
+    "difficulty": "中级",
+    "salary": "20k-40k",
+    "responsibilities": [
+      "设计与维护企业云基础设施架构（如AWS/Azure/阿里云）",
+      "负责系统的高可用性、容灾备份及弹性伸缩方案",
+      "通过容器化技术（Docker/Kubernetes）优化资源调度",
+      "实施云上安全策略与成本优化管理"
+    ],
+    "hard_requirements": [
+      "精通至少一种主流公有云平台（AWS/Azure/GCP）的底层服务",
+      "熟悉Linux系统管理及网络协议（TCP/IP/HTTP）",
+      "具备脚本编写能力（Python/Shell）以实现自动化运维"
+    ],
+    "soft_requirements": [
+      "严谨的安全意识与风险评估能力",
+      "优秀的故障排查与应急响应思维",
+      "持续学习新技术的主动性"
+    ],
+    "growth_path": [
+      "初级云运维工程师",
+      "高级云架构师",
+      "首席技术官（CTO）或云服务解决方案专家"
+    ],
+    "trend": "随着企业数字化转型加速，云原生技术已成为IT基础设施的主流标准。"
+  },
+  {
+    "career": "嵌入式系统开发工程师 (Embedded Systems Engineer)",
+    "match": 88,
+    "difficulty": "中级",
+    "salary": "18k-35k",
+    "responsibilities": [
+      "开发物联网设备的底层驱动与硬件接口",
+      "优化系统资源（内存/CPU）占用，确保实时性",
+      "设计低功耗算法以延长设备续航",
+      "进行硬件与软件的联合调试及稳定性测试"
+    ],
+    "hard_requirements": [
+      "精通C/C++语言及数据结构",
+      "熟悉单片机（ARM/DSP）或RTOS（FreeRTOS/Linux）",
+      "具备基本的电路原理图阅读与硬件调试能力"
+    ],
+    "soft_requirements": [
+      "极强的逻辑思维与耐心",
+      "跨部门（硬件/软件）沟通协作能力",
+      "对细节的极致追求"
+    ],
+    "growth_path": [
+      "嵌入式软件开发工程师",
+      "嵌入式系统架构师",
+      "智能硬件产品技术总监"
+    ],
+    "trend": "万物互联时代，边缘计算与智能硬件的结合正在重塑终端设备生态。"
+  },
+  {
+    "career": "游戏开发工程师 (Game Development Engineer)",
+    "match": 85,
+    "difficulty": "中级",
+    "salary": "15k-35k",
+    "responsibilities": [
+      "使用游戏引擎（Unity/Unreal）开发核心玩法模块",
+      "编写高性能的游戏逻辑代码与图形渲染优化",
+      "设计游戏内的网络同步与物理仿真系统",
+      "与美术、策划协作，实现资源的高效导入与管理"
+    ],
+    "hard_requirements": [
+      "精通C#（Unity）或C++（Unreal）编程",
+      "掌握计算机图形学基础或3D数学知识",
+      "具备数据结构与算法优化的实战经验"
+    ],
+    "soft_requirements": [
+      "极强的创造力与游戏审美",
+      "抗压能力与项目进度管理意识",
+      "对玩家体验的敏感度"
+    ],
+    "growth_path": [
+      "游戏客户端开发工程师",
+      "游戏主程/技术主管",
+      "游戏制作人或技术总监"
+    ],
+    "trend": "元宇宙概念兴起，高沉浸感的3D交互与实时渲染技术需求爆发。"
+  },
+  {
+    "career": "区块链开发工程师 (Blockchain Developer)",
+    "match": 80,
+    "difficulty": "高级",
+    "salary": "25k-50k",
+    "responsibilities": [
+      "设计与开发智能合约及去中心化应用（DApp）",
+      "研究并优化区块链底层协议（如共识算法/加密机制）",
+      "维护节点服务器，确保网络的安全与稳定",
+      "实现链上与链下系统的数据交互与接口对接"
+    ],
+    "hard_requirements": [
+      "精通Solidity/Rust/Go等区块链开发语言",
+      "深入理解密码学原理与分布式系统理论",
+      "熟悉至少一条公链（如Ethereum/Solana）的架构"
+    ],
+    "soft_requirements": [
+      "极强的抽象思维与数学逻辑",
+      "对新兴技术的探索欲与敏锐度",
+      "高度的代码安全责任感"
+    ],
+    "growth_path": [
+      "区块链应用开发工程师",
+      "区块链系统架构师",
+      "Web3技术负责人或首席科学家"
+    ],
+    "trend": "Web3.0与去中心化金融（DeFi）正在重构互联网的信任机制。"
+  }
+]
