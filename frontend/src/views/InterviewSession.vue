@@ -925,6 +925,7 @@ async function uploadRecording() {
 const isRecording = ref(false)
 const voiceActive = ref(false)
 let recognition = null
+let restartTimer = null
 const speechRecogSupported = computed(() => {
   return !!(window.SpeechRecognition || window.webkitSpeechRecognition)
 })
@@ -940,7 +941,7 @@ function toggleVoiceInput() {
 function startVoiceInput() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition
   if (!SR) {
-    ElMessage.warning('当前浏览器不支持语音输入')
+    ElMessage.warning('当前浏览器不支持语音输入，试试用 Chrome 浏览器')
     return
   }
   if (isRecording.value) return
@@ -948,7 +949,7 @@ function startVoiceInput() {
   recognition = new SR()
   recognition.lang = 'zh-CN'
   recognition.interimResults = true
-  recognition.continuous = true
+  recognition.continuous = false // Chrome 下 continuous=true 不稳定，改 false + onend 自动重连
 
   isRecording.value = true
   voiceActive.value = true
@@ -967,7 +968,7 @@ function startVoiceInput() {
     }
 
     if (finalTranscript) {
-      // 先移除当前显示的中期占位文字，再追加最终文字
+      // 移除当前显示的中期占位文字，再追加最终文字
       if (lastInterimLen > 0) {
         userInput.value = userInput.value.slice(0, -lastInterimLen)
         lastInterimLen = 0
@@ -989,7 +990,15 @@ function startVoiceInput() {
   recognition.onerror = (evt) => {
     console.warn('SpeechRecognition error:', evt.error)
     if (evt.error === 'not-allowed') {
-      ElMessage.warning('麦克风权限被拒绝，请使用文字输入')
+      ElMessage.warning('麦克风权限被拒绝，请在浏览器地址栏左边点🔒开启麦克风权限')
+    } else if (evt.error === 'no-speech') {
+      ElMessage.warning('没有检测到语音，请靠近麦克风说话')
+    } else if (evt.error === 'audio-capture') {
+      ElMessage.warning('麦克风被其他应用占用，请关闭后再试')
+    } else if (evt.error === 'aborted') {
+      // 正常停止，忽略
+    } else {
+      ElMessage.warning('语音识别出错：' + evt.error + '，请重试')
     }
     isRecording.value = false
     voiceActive.value = false
@@ -1002,9 +1011,15 @@ function startVoiceInput() {
       userInput.value = userInput.value.slice(0, -lastInterimLen)
     }
     lastInterimLen = 0
-    // 如果用户还没主动停止，自动重连继续听
+    // 用户还没主动停止 → 等300ms后自动重连
     if (isRecording.value) {
-      try { recognition.start() } catch { /* 第二次调用可能报错，忽略 */ }
+      restartTimer = setTimeout(() => {
+        if (recognition && isRecording.value) {
+          try { recognition.start() } catch (e) {
+            console.warn('SpeechRecognition restart failed:', e)
+          }
+        }
+      }, 300)
     } else {
       voiceActive.value = false
     }
@@ -1012,15 +1027,20 @@ function startVoiceInput() {
 
   try {
     recognition.start()
-  } catch {
+  } catch (e) {
+    console.warn('SpeechRecognition start failed:', e)
     isRecording.value = false
     voiceActive.value = false
     lastInterimLen = 0
-    ElMessage.warning('语音输入启动失败')
+    ElMessage.warning('语音输入启动失败：' + (e.message || '未知错误'))
   }
 }
 
 function stopVoiceInput() {
+  if (restartTimer) {
+    clearTimeout(restartTimer)
+    restartTimer = null
+  }
   if (recognition) {
     try { recognition.stop() } catch { /* ignore */ }
     recognition = null
