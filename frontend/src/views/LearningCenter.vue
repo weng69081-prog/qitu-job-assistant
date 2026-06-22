@@ -5,7 +5,7 @@
       <PageBanner fullwidth
         title="学习中心"
         description="以用户画像为中心，面试→薄弱→路线→复习→简历的完整闭环"
-        :path-items="['学习进度', '面试备战', '专属路线', '复习提醒']"
+        :path-items="['学习进度', '面试复盘', '专属路线', '复习提醒']"
       />
     </div>
 
@@ -255,7 +255,7 @@
       <!-- ═══ Tab 2: 面试备战 ═══ -->
       <div v-if="activeTab === 'interview'">
         <div class="lc-section-title">
-          <span><Crosshair class="ic" /> 面试备战</span>
+          <span><Crosshair class="ic" /> 面试复盘</span>
           <div style="display:flex;gap:8px;align-items:center;">
             <button class="btn-sm btn-outline" @click="fetchInterviewSessions" :disabled="intvLoading">
               <template v-if="intvLoading">加载中...</template>
@@ -454,7 +454,7 @@ const API = 'http://localhost:8000'
 
 const tabs = [
   { key: 'study', icon: Book, label: '学习进度' },
-  { key: 'interview', icon: Crosshair, label: '面试备战' },
+  { key: 'interview', icon: Crosshair, label: '面试复盘' },
   { key: 'path', icon: Map, label: '专属路线' },
   { key: 'review', icon: RefreshCw, label: '复习提醒' },
 ]
