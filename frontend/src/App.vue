@@ -20,11 +20,15 @@
       <nav class="sidebar-nav">
         <router-link to="/dashboard" class="sn-item" active-class="sn-active">
           <span class="sn-dot"></span>
-          <span class="sn-label">首页</span>
+          <span class="sn-label">首页概览</span>
         </router-link>
         <router-link to="/career" class="sn-item" active-class="sn-active">
           <span class="sn-dot"></span>
           <span class="sn-label">职业探索</span>
+        </router-link>
+        <router-link to="/learning-center" class="sn-item" active-class="sn-active">
+          <span class="sn-dot"></span>
+          <span class="sn-label">学习中心</span>
         </router-link>
         <router-link to="/interview" class="sn-item" active-class="sn-active">
           <span class="sn-dot"></span>
@@ -32,19 +36,11 @@
         </router-link>
         <router-link to="/exam-practice" class="sn-item" active-class="sn-active">
           <span class="sn-dot"></span>
-          <span class="sn-label">笔试</span>
-        </router-link>
-        <router-link to="/learning-center" class="sn-item" active-class="sn-active">
-          <span class="sn-dot"></span>
-          <span class="sn-label">学习中心</span>
-        </router-link>
-        <router-link to="/resume" class="sn-item" active-class="sn-active">
-          <span class="sn-dot"></span>
-          <span class="sn-label">简历</span>
+          <span class="sn-label">笔试练习</span>
         </router-link>
         <router-link to="/delivery-assistant" class="sn-item" active-class="sn-active">
           <span class="sn-dot"></span>
-          <span class="sn-label">投递</span>
+          <span class="sn-label">投递助手</span>
         </router-link>
         </nav>
 
