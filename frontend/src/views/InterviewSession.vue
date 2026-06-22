@@ -953,6 +953,8 @@ function startVoiceInput() {
   isRecording.value = true
   voiceActive.value = true
 
+  let lastInterimLen = 0
+
   recognition.onresult = (e) => {
     let finalTranscript = ''
     let interimTranscript = ''
@@ -963,13 +965,24 @@ function startVoiceInput() {
         interimTranscript += e.results[i][0].transcript
       }
     }
+
     if (finalTranscript) {
-      userInput.value += (userInput.value ? ' ' : '') + finalTranscript
+      // 先移除当前显示的中期占位文字，再追加最终文字
+      if (lastInterimLen > 0) {
+        userInput.value = userInput.value.slice(0, -lastInterimLen)
+        lastInterimLen = 0
+      }
+      userInput.value += (userInput.value && finalTranscript ? ' ' : '') + finalTranscript
     }
+
     if (interimTranscript) {
-      // 显示临时结果让用户看到实时转写
-      userInput.value = userInput.value.replace(/\s*\(.*?\)$/, '')
-      userInput.value += ' (' + interimTranscript + ')'
+      // 替换之前的中期占位文字
+      if (lastInterimLen > 0) {
+        userInput.value = userInput.value.slice(0, -lastInterimLen)
+      }
+      const display = ' (' + interimTranscript + ')'
+      userInput.value += display
+      lastInterimLen = display.length
     }
   }
 
@@ -980,11 +993,21 @@ function startVoiceInput() {
     }
     isRecording.value = false
     voiceActive.value = false
+    lastInterimLen = 0
   }
 
   recognition.onend = () => {
-    isRecording.value = false
-    voiceActive.value = false
+    // 清理中期占位文字
+    if (lastInterimLen > 0 && userInput.value) {
+      userInput.value = userInput.value.slice(0, -lastInterimLen)
+    }
+    lastInterimLen = 0
+    // 如果用户还没主动停止，自动重连继续听
+    if (isRecording.value) {
+      try { recognition.start() } catch { /* 第二次调用可能报错，忽略 */ }
+    } else {
+      voiceActive.value = false
+    }
   }
 
   try {
@@ -992,6 +1015,7 @@ function startVoiceInput() {
   } catch {
     isRecording.value = false
     voiceActive.value = false
+    lastInterimLen = 0
     ElMessage.warning('语音输入启动失败')
   }
 }
