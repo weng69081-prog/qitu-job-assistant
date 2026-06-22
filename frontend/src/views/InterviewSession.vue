@@ -739,19 +739,25 @@ async function toggleCamera(val) {
 
 async function startCamera() {
   try {
+    // 先渲染 video 元素（v-if 需要 cameraOn && cameraReady）
+    cameraOn.value = true
+    cameraReady.value = true
+    await nextTick()
+    // 此时 videoRef 已挂载，获取流并绑定
     cameraStream = await navigator.mediaDevices.getUserMedia({
       video: { width: 320, height: 240, facingMode: 'user' },
-      audio: true
+      audio: false
     })
     if (videoRef.value) {
       videoRef.value.srcObject = cameraStream
-      cameraReady.value = true
     }
-    cameraOn.value = true
     // Start emotion capture
     captureTimer = setInterval(captureAndAnalyze, 10000)
   } catch (err) {
     ElMessage.warning('无法开启摄像头：' + (err.message || '权限被拒绝'))
+    // 恢复状态
+    cameraOn.value = false
+    cameraReady.value = false
     throw err
   }
 }
@@ -948,11 +954,23 @@ function startVoiceInput() {
   voiceActive.value = true
 
   recognition.onresult = (e) => {
-    let transcript = ''
+    let finalTranscript = ''
+    let interimTranscript = ''
     for (let i = e.resultIndex; i < e.results.length; i++) {
-      transcript += e.results[i][0].transcript
+      if (e.results[i].isFinal) {
+        finalTranscript += e.results[i][0].transcript
+      } else {
+        interimTranscript += e.results[i][0].transcript
+      }
     }
-    userInput.value += transcript
+    if (finalTranscript) {
+      userInput.value += (userInput.value ? ' ' : '') + finalTranscript
+    }
+    if (interimTranscript) {
+      // 显示临时结果让用户看到实时转写
+      userInput.value = userInput.value.replace(/\s*\(.*?\)$/, '')
+      userInput.value += ' (' + interimTranscript + ')'
+    }
   }
 
   recognition.onerror = (evt) => {
@@ -967,10 +985,6 @@ function startVoiceInput() {
   recognition.onend = () => {
     isRecording.value = false
     voiceActive.value = false
-    // 语音录制结束后，有内容则自动发送，不用再点"发送"按钮
-    if (userInput.value.trim()) {
-      sendMessage()
-    }
   }
 
   try {
