@@ -4,7 +4,7 @@
 
 from fastapi import APIRouter, UploadFile, File, Form, Body, Query
 from database import SessionLocal
-from models import InterviewSession as SessionModel, WrongQuestion, SavedQuestion
+from models import InterviewSession as SessionModel, WrongQuestion, SavedQuestion, WeaknessItem
 from sqlalchemy import desc
 import random, json
 from datetime import datetime
@@ -240,6 +240,29 @@ def save_session(data: dict = Body({})):
     db.add(session)
     db.commit()
     db.refresh(session)
+    # 自动提取薄弱点写入 WeaknessItem
+    try:
+        weaknesses_list = json.loads(data.get("weaknesses_json", "[]"))
+        for w_text in weaknesses_list:
+            if isinstance(w_text, str) and w_text.strip():
+                existing = db.query(WeaknessItem).filter(
+                    WeaknessItem.name == w_text.strip(),
+                    WeaknessItem.user_id == 1,
+                    WeaknessItem.category == "interview",
+                ).first()
+                if existing:
+                    existing.detected_count = (existing.detected_count or 0) + 1
+                else:
+                    w = WeaknessItem(
+                        user_id=1, name=w_text.strip(),
+                        score=50, category="interview",
+                        source=session.job, career=session.job,
+                        detected_count=1,
+                    )
+                    db.add(w)
+        db.commit()
+    except:
+        pass
     db.close()
     return {"id": session.id, "message": "面试记录已保存"}
 

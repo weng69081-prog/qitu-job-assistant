@@ -121,6 +121,7 @@ onMounted(() => {
   posY.value = window.innerHeight - FAB_SIZE - PADDING
   startWalking()
   startAutoEncourage()
+  loadXiaoJuHistory()
 })
 
 onBeforeUnmount(() => {
@@ -303,12 +304,38 @@ function onFabClick() {
   }
 }
 
-const messages = ref([
-  {
+const API = window.API_BASE || 'http://localhost:8000'
+
+const messages = ref([])
+
+const XIAOJU_NODE = 0  // 小橘用 node_id=0 表示全局对话（共享记忆池）
+
+async function loadXiaoJuHistory() {
+  try {
+    const r = await fetch(`${API}/api/learning/chat/${XIAOJU_NODE}/history`)
+    const d = await r.json()
+    if (d.messages && d.messages.length) {
+      messages.value = d.messages
+      if (!d.is_archived) {
+        messages.value.push({
+          role: 'assistant',
+          content: '喵！小橘记得你～上次没聊完的可以继续！有什么问题尽管问！'
+        })
+      }
+      return
+    }
+  } catch {}
+  messages.value = [{
     role: 'assistant',
     content: '喵！我是小橘，你的AI求职小助手～有什么问题尽管问我吧！关于职业规划、面试技巧、简历修改我都能帮忙！'
-  }
-])
+  }]
+}
+
+async function saveXiaoJuMsg(role, content) {
+  try {
+    await fetch(`${API}/api/learning/chat/${XIAOJU_NODE}/save?role=${role}&content=${encodeURIComponent(content)}`, { method: 'POST' })
+  } catch {}
+}
 
 const suggestions = [
   '自我介绍应该怎么写？',
@@ -334,6 +361,7 @@ async function send() {
   inputText.value = ''
 
   messages.value.push({ role: 'user', content: text })
+  await saveXiaoJuMsg('user', text)
   hasChatted.value = true
   loading.value = true
   scrollBottom()
@@ -342,10 +370,12 @@ async function send() {
     const raw = await fetch('/api/assistant/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: messages.value.slice(1).map(m => ({ role: m.role, content: m.content })) })
+      body: JSON.stringify({ messages: messages.value.map(m => ({ role: m.role, content: m.content })) })
     })
     const data = await raw.json()
-    messages.value.push({ role: 'assistant', content: data.reply || '喵……小橘需要再想想。' })
+    const reply = data.reply || '喵……小橘需要再想想。'
+    messages.value.push({ role: 'assistant', content: reply })
+    await saveXiaoJuMsg('assistant', reply)
   } catch {
     messages.value.push({ role: 'assistant', content: '喵……网络好像出了点问题，等下再试试？' })
   } finally {

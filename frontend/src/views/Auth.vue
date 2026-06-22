@@ -72,14 +72,9 @@
         <form v-else @submit.prevent="doRegister">
           <div class="form-group">
             <label>用户名</label>
-            <input v-model="regForm.username" type="text" placeholder="3位以上字母数字" @focus="regErrors.username = ''" />
+            <input v-model="regForm.username" type="text" placeholder="3位以上即可" @focus="regErrors.username = ''" />
           </div>
           <p v-if="regErrors.username" class="error-msg">{{ regErrors.username }}</p>
-
-          <div class="form-group">
-            <label>昵称</label>
-            <input v-model="regForm.nickname" type="text" placeholder="选填" />
-          </div>
 
           <div class="form-group">
             <label>密码</label>
@@ -129,7 +124,7 @@ const remember = ref(false)
 const loginForm = reactive({ username: '', password: '' })
 const loginErrors = reactive({ username: '', password: '' })
 
-const regForm = reactive({ username: '', nickname: '', password: '', pwd2: '' })
+const regForm = reactive({ username: '', password: '', pwd2: '' })
 const regErrors = reactive({ username: '', password: '', pwd2: '' })
 
 function switchTab(t) {
@@ -152,7 +147,11 @@ async function doLogin() {
     if (remember.value) localStorage.setItem('user', JSON.stringify(data.user))
     else sessionStorage.setItem('user', JSON.stringify(data.user))
     ElMessage.success(`欢迎回来，${data.user.nickname || data.user.username}！`)
-    router.push('/career')
+    if (data.needs_profile) {
+      router.push('/profile-setup')
+    } else {
+      router.push('/career')
+    }
   } catch (e) {
     loginErrors.password = '用户名或密码错误'
   } finally { loading.value = false }
@@ -167,7 +166,7 @@ async function doRegister() {
   if (regForm.password !== regForm.pwd2) { regErrors.pwd2 = '两次密码不一致'; return }
   loading.value = true
   try {
-    const qs = new URLSearchParams({ username: regForm.username, password: regForm.password, nickname: regForm.nickname || regForm.username })
+    const qs = new URLSearchParams({ username: regForm.username, password: regForm.password })
     const res = await fetch('/api/user/register?' + qs, { method: 'POST' })
     if (!res.ok) { const e = await res.json(); throw new Error(e.detail) }
     ElMessage.success('注册成功，请登录')

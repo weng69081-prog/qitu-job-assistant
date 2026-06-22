@@ -1,12 +1,17 @@
+from pathlib import Path
+from dotenv import load_dotenv
+
+# 在import任何业务模块之前加载环境变量（.env文件）
+load_dotenv(Path(__file__).resolve().parent / ".env")
+
+import json
+import os
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from database import engine, Base
-from routers import career, interview, resume, user, exam, bilibili, delivery, assistant, dashboard
-import json
-import os
-from pathlib import Path
+from routers import career, interview, resume, user, exam, bilibili, delivery, assistant, dashboard, learning
 
 # 创建数据库表
 Base.metadata.create_all(bind=engine)
@@ -58,6 +63,7 @@ app.include_router(bilibili.router)
 app.include_router(delivery.router)
 app.include_router(assistant.router)
 app.include_router(dashboard.router)
+app.include_router(learning.router)
 
 # ═══ 健康检查（必须放在静态文件挂载前，否则被SPA拦截） ═══
 @app.get("/api/health")

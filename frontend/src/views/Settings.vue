@@ -113,6 +113,23 @@
 
         <div class="set-card">
           <div class="set-card-header">
+            <Target :size="16" color="#2563EB" />
+            <span>技能与目标</span>
+          </div>
+          <div class="set-card-body">
+            <el-form label-position="top">
+              <el-form-item label="技能（用逗号分隔）">
+                <el-input v-model="form.skills" placeholder="如：Vue.js, Python, Java, SQL" />
+              </el-form-item>
+              <el-form-item label="目标岗位">
+                <el-input v-model="form.targetJob" placeholder="如：前端开发工程师" />
+              </el-form-item>
+            </el-form>
+          </div>
+        </div>
+
+        <div class="set-card">
+          <div class="set-card-header">
             <Bell :size="16" color="#2563EB" />
             <span>通知设置</span>
           </div>
@@ -204,7 +221,7 @@ import { useCareerStore } from '../stores/career'
 import {
   User, Camera, Crosshair, Lightbulb,
   Bell, Shield, Key, ChevronRight,
-  HardDrive, Trash2, Save, LogOut,
+  HardDrive, Trash2, Save, LogOut, Target,
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -256,6 +273,7 @@ const majorMap = {
 const form = reactive({
   nickname: '', education: '本科', grade: '大一', majorCategory: '', major: '',
   interests: [], confusion: '',
+  skills: '', targetJob: '',
 })
 const majorOptions = ref([])
 
@@ -303,6 +321,8 @@ onMounted(async () => {
     form.major = p.major || ''
     if (p.interests) form.interests = p.interests.split(',').filter(Boolean)
     form.confusion = p.confusion || ''
+    form.skills = p.skills || ''
+    form.targetJob = p.target_job || ''
     if (form.majorCategory) majorOptions.value = majorMap[form.majorCategory] || []
   } catch(e) { console.log('加载设置失败') }
 
@@ -330,6 +350,8 @@ async function save() {
       grade: form.grade,
       interests: form.interests.join(','),
       confusion: form.confusion,
+      skills: form.skills,
+      target_job: form.targetJob,
     })
     await fetch('/api/user/profile?' + qs, { method:'POST' })
     localStorage.removeItem('needs_profile')

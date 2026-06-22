@@ -34,6 +34,10 @@
           <span class="sn-dot"></span>
           <span class="sn-label">笔试</span>
         </router-link>
+        <router-link to="/learning-center" class="sn-item" active-class="sn-active">
+          <span class="sn-dot"></span>
+          <span class="sn-label">学习中心</span>
+        </router-link>
         <router-link to="/resume" class="sn-item" active-class="sn-active">
           <span class="sn-dot"></span>
           <span class="sn-label">简历</span>
@@ -94,7 +98,7 @@ const userDisplay = ref({})
 const isStandalone = computed(() => route.meta?.standalone === true)
 const isFavorites = computed(() => route.path === '/favorites')
 const isDashboard = computed(() => route.path === '/dashboard')
-const fullBannerPages = ['/career', '/interview', '/exam-practice', '/resume', '/delivery-assistant']
+const fullBannerPages = ['/career', '/interview', '/exam-practice', '/resume', '/delivery-assistant', '/learning-center']
 const isFullBannerPage = computed(() => fullBannerPages.some(path => route.path === path || route.path.startsWith(`${path}/`)))
 const showTopbar = computed(() => !isFavorites.value && !isDashboard.value && !isFullBannerPage.value)
 
