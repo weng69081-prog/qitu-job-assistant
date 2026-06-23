@@ -1117,6 +1117,26 @@ def get_smart_resume(user_id: int = 1, career: str = ""):
         db.close()
 
 
+@router.get("/resume/list")
+def list_smart_resumes(user_id: int = 1):
+    """列出用户所有已生成的智能简历"""
+    db = SessionLocal()
+    try:
+        items = db.query(SmartResume).filter(
+            SmartResume.user_id == user_id
+        ).order_by(SmartResume.created_at.desc()).all()
+        return [{
+            "id": r.id,
+            "career": r.career,
+            "summary": r.summary[:100] if r.summary else "",
+            "skills_text": r.skills_text[:100] if r.skills_text else "",
+            "match_score": r.match_score,
+            "created_at": r.created_at.strftime("%Y-%m-%d %H:%M") if r.created_at else "",
+        } for r in items]
+    finally:
+        db.close()
+
+
 @router.post("/resume/generate")
 def generate_resume(user_id: int = 1, career: str = ""):
     """AI根据画像生成简历内容"""
