@@ -13,7 +13,10 @@ venv/
 screenshots/
 # 数据库文件（开发用，不提交）
 backend/data/*.db
+backend/interview.db
 backend/debug_logs.jsonl
 # 备份文件
 *.bak
 *.bak2
+# 录制文件
+backend/resumes/*.webm

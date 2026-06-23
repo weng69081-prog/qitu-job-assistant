@@ -252,9 +252,9 @@
                   size="small"
                   :type="autoSpeakEnabled ? 'primary' : 'default'"
                   @click="autoSpeakEnabled = !autoSpeakEnabled"
-                  title="自动朗读AI回复"
+                  title="AI回复自动朗读：开启后AI说的话会自动读出来"
                 >
-                  <i class="fa-solid fa-volume-high"></i> {{ autoSpeakEnabled ? '已开启' : '已关闭' }}
+                  <i class="fa-solid fa-volume-high"></i> {{ autoSpeakEnabled ? 'AI朗读' : '朗读关' }}
                 </el-button>
               </div>
               <el-button
@@ -294,9 +294,6 @@
                 </div>
               </div>
               <!-- 录制状态覆盖 -->
-              <div v-if="isRecordingVideo" class="recording-badge">
-                <span class="rec-dot"></span> REC {{ recordingDuration }}
-              </div>
             </div>
             <div class="camera-placeholder" v-else>
               <div class="camera-placeholder-icon"><i class="fa-solid fa-camera"></i></div>
@@ -308,36 +305,6 @@
                 <span class="ed-label">{{ key }}</span>
                 <div class="ed-bar-track"><div class="ed-bar-fill" :style="{ width: val + '%', background: edBarColor(key, val) }"></div></div>
                 <span class="ed-val">{{ val }}%</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 录制控制区 -->
-          <div class="recording-controls">
-            <div class="recording-header">
-              <span><i class="fa-solid fa-film"></i> 录制控制</span>
-            </div>
-            <div class="recording-buttons">
-              <div class="rec-btn-group">
-                <el-button
-                  size="small"
-                  :type="micOn ? 'primary' : 'default'"
-                  @click="toggleMic"
-                  :disabled="!cameraOn"
-                  title="麦克风开关"
-                >
-                  <template v-if="micOn"><i class="fa-solid fa-microphone"></i> 麦克风开</template>
-                  <template v-else><i class="fa-solid fa-volume-xmark"></i> 麦克风关</template>
-                </el-button>
-                <el-button
-                  size="small"
-                  :type="isRecordingVideo ? 'danger' : 'success'"
-                  @click="toggleRecording"
-                  :disabled="!cameraOn || !micOn"
-                >
-                  <template v-if="isRecordingVideo"><i class="fa-solid fa-stop"></i> 停止录制</template>
-                  <template v-else><i class="fa-solid fa-circle"></i> 开始录制</template>
-                </el-button>
               </div>
             </div>
           </div>
@@ -791,140 +758,11 @@ async function captureAndAnalyze() {
   } catch { /* silent */ }
 }
 
-// ==================== Microphone + Recording ====================
-const micOn = ref(false)
-let micStream = null
-
-async function toggleMic() {
-  if (micOn.value) {
-    if (micStream) {
-      micStream.getAudioTracks().forEach(t => t.stop())
-      micStream = null
-    }
-    micOn.value = false
-    return
-  }
-  try {
-    micStream = await navigator.mediaDevices.getUserMedia({ audio: true })
-    micOn.value = true
-    ElMessage.success('🎙️ 麦克风已开启')
-  } catch {
-    ElMessage.warning('无法开启麦克风')
-  }
-}
-
-// ==================== Video Recording ====================
-const isRecordingVideo = ref(false)
-const recordingDuration = ref('00:00')
-let mediaRecorder = null
-let recordedChunks = []
-let recordingTimer = null
-let recordingStartTime = 0
-
-async function toggleRecording() {
-  if (isRecordingVideo.value) {
-    stopRecording()
-  } else {
-    startRecording()
-  }
-}
-
-async function startRecording() {
-  if (!cameraStream) {
-    ElMessage.warning('请先开启摄像头')
-    return
-  }
-  if (!micOn.value) {
-    ElMessage.warning('请先开启麦克风')
-    return
-  }
-  try {
-    // Create combined stream from camera (already includes audio if available)
-    recordedChunks = []
-    let combinedStream = cameraStream // cameraStream already has audio from getUserMedia
-
-    // Check if we need to add microphone audio separately
-    const audioTracks = cameraStream.getAudioTracks()
-    if (!audioTracks.length && micStream) {
-      // If camera stream has no audio, try to combine
-      const tracks = [...cameraStream.getVideoTracks(), ...micStream.getAudioTracks()]
-      combinedStream = new MediaStream(tracks)
-    }
-
-    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
-      ? 'video/webm;codecs=vp9,opus'
-      : MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
-        ? 'video/webm;codecs=vp8,opus'
-        : 'video/webm'
-
-    mediaRecorder = new MediaRecorder(combinedStream, { mimeType })
-
-    mediaRecorder.ondataavailable = (e) => {
-      if (e.data.size > 0) recordedChunks.push(e.data)
-    }
-
-    mediaRecorder.onstop = async () => {
-      await uploadRecording()
-    }
-
-    mediaRecorder.onerror = () => {
-      ElMessage.error('录制出错')
-      isRecordingVideo.value = false
-    }
-
-    mediaRecorder.start(1000) // collect data every second
-    isRecordingVideo.value = true
-    recordingStartTime = Date.now()
-
-    // Start timer
-    recordingTimer = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000)
-      const m = String(Math.floor(elapsed / 60)).padStart(2, '0')
-      const s = String(elapsed % 60).padStart(2, '0')
-      recordingDuration.value = `${m}:${s}`
-    }, 1000)
-
-    ElMessage.success('⏺️ 开始录制')
-  } catch (err) {
-    ElMessage.error('启动录制失败：' + (err.message || '未知错误'))
-  }
-}
-
-function stopRecording() {
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-    mediaRecorder.stop()
-  }
-  isRecordingVideo.value = false
-  if (recordingTimer) {
-    clearInterval(recordingTimer)
-    recordingTimer = null
-  }
-}
-
-async function uploadRecording() {
-  if (!recordedChunks.length || !sessionId.value) {
-    recordedChunks = []
-    return
-  }
-  try {
-    const blob = new Blob(recordedChunks, { type: 'video/webm' })
-    const formData = new FormData()
-    formData.append('file', blob, `interview_${sessionId.value}_${Date.now()}.webm`)
-    formData.append('session_id', sessionId.value)
-    await axios.post(`${API}/interview/upload-recording`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
-    ElMessage.success('✅ 录制已上传')
-  } catch {
-    ElMessage.warning('录制上传失败')
-  }
-  recordedChunks = []
-}
-
 // ==================== Voice Input (SpeechRecognition) ====================
 const isRecording = ref(false)
 const voiceActive = ref(false)
 let recognition = null
+let restartTimer = null
 const speechRecogSupported = computed(() => {
   return !!(window.SpeechRecognition || window.webkitSpeechRecognition)
 })
@@ -940,7 +778,7 @@ function toggleVoiceInput() {
 function startVoiceInput() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition
   if (!SR) {
-    ElMessage.warning('当前浏览器不支持语音输入')
+    ElMessage.warning('当前浏览器不支持语音输入，试试用 Chrome 浏览器')
     return
   }
   if (isRecording.value) return
@@ -948,10 +786,12 @@ function startVoiceInput() {
   recognition = new SR()
   recognition.lang = 'zh-CN'
   recognition.interimResults = true
-  recognition.continuous = true
+  recognition.continuous = false // Chrome 下 continuous=true 不稳定，改 false + onend 自动重连
 
   isRecording.value = true
   voiceActive.value = true
+
+  let lastInterimLen = 0
 
   recognition.onresult = (e) => {
     let finalTranscript = ''
@@ -963,40 +803,81 @@ function startVoiceInput() {
         interimTranscript += e.results[i][0].transcript
       }
     }
+
     if (finalTranscript) {
-      userInput.value += (userInput.value ? ' ' : '') + finalTranscript
+      // 移除当前显示的中期占位文字，再追加最终文字
+      if (lastInterimLen > 0) {
+        userInput.value = userInput.value.slice(0, -lastInterimLen)
+        lastInterimLen = 0
+      }
+      userInput.value += (userInput.value && finalTranscript ? ' ' : '') + finalTranscript
     }
+
     if (interimTranscript) {
-      // 显示临时结果让用户看到实时转写
-      userInput.value = userInput.value.replace(/\s*\(.*?\)$/, '')
-      userInput.value += ' (' + interimTranscript + ')'
+      // 替换之前的中期占位文字
+      if (lastInterimLen > 0) {
+        userInput.value = userInput.value.slice(0, -lastInterimLen)
+      }
+      const display = ' (' + interimTranscript + ')'
+      userInput.value += display
+      lastInterimLen = display.length
     }
   }
 
   recognition.onerror = (evt) => {
     console.warn('SpeechRecognition error:', evt.error)
     if (evt.error === 'not-allowed') {
-      ElMessage.warning('麦克风权限被拒绝，请使用文字输入')
+      ElMessage.warning('麦克风权限被拒绝，请在浏览器地址栏左边点🔒开启麦克风权限')
+    } else if (evt.error === 'no-speech') {
+      ElMessage.warning('没有检测到语音，请靠近麦克风说话')
+    } else if (evt.error === 'audio-capture') {
+      ElMessage.warning('麦克风被其他应用占用，请关闭后再试')
+    } else if (evt.error === 'aborted') {
+      // 正常停止，忽略
+    } else {
+      ElMessage.warning('语音识别出错：' + evt.error + '，请重试')
     }
     isRecording.value = false
     voiceActive.value = false
+    lastInterimLen = 0
   }
 
   recognition.onend = () => {
-    isRecording.value = false
-    voiceActive.value = false
+    // 清理中期占位文字
+    if (lastInterimLen > 0 && userInput.value) {
+      userInput.value = userInput.value.slice(0, -lastInterimLen)
+    }
+    lastInterimLen = 0
+    // 用户还没主动停止 → 等300ms后自动重连
+    if (isRecording.value) {
+      restartTimer = setTimeout(() => {
+        if (recognition && isRecording.value) {
+          try { recognition.start() } catch (e) {
+            console.warn('SpeechRecognition restart failed:', e)
+          }
+        }
+      }, 300)
+    } else {
+      voiceActive.value = false
+    }
   }
 
   try {
     recognition.start()
-  } catch {
+  } catch (e) {
+    console.warn('SpeechRecognition start failed:', e)
     isRecording.value = false
     voiceActive.value = false
-    ElMessage.warning('语音输入启动失败')
+    lastInterimLen = 0
+    ElMessage.warning('语音输入启动失败：' + (e.message || '未知错误'))
   }
 }
 
 function stopVoiceInput() {
+  if (restartTimer) {
+    clearTimeout(restartTimer)
+    restartTimer = null
+  }
   if (recognition) {
     try { recognition.stop() } catch { /* ignore */ }
     recognition = null
@@ -1495,12 +1376,7 @@ function cleanupAll() {
   stopVoiceInput()
   stopCountdown()
   stopRiskWatch()
-  if (isRecordingVideo.value) stopRecording()
-  if (micOn.value && micStream) {
-    micStream.getAudioTracks().forEach(t => t.stop())
-    micStream = null
-    micOn.value = false
-  }
+  // 清除可能的麦克风遗留
   if (window.speechSynthesis) {
     window.speechSynthesis.cancel()
   }
@@ -2186,34 +2062,36 @@ onUnmounted(() => {
   font-weight: 700;
   backdrop-filter: blur(4px);
 }
-.recording-badge {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(245, 108, 108, 0.85);
-  color: white;
-  padding: 2px 10px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-.rec-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #fff;
-  animation: recPulse 1s infinite;
-}
-@keyframes recPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
+
+/* Camera placeholder */
 .camera-placeholder {
   background: #F8FBFF;
   aspect-ratio: 4/3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 0 0 var(--session-radius) var(--session-radius);
+  color: #94A3B8;
+}
+.camera-placeholder-icon {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+.camera-placeholder-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0;
+}
+.camera-placeholder-sub {
+  font-size: 0.72rem;
+  margin: 0;
+  opacity: 0.7;
+}
+
+/* Emotion details */
+.emotion-details {
   display: flex;
   flex-direction: column;
   align-items: center;

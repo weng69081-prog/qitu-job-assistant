@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, Text
+from sqlalchemy import Column, Integer, String, Float, DateTime, Text, Boolean
 from database import Base
 from datetime import datetime
 
@@ -217,4 +217,145 @@ class UserSession(Base):
     __tablename__ = "user_sessions"
     token = Column(String(128), primary_key=True)
     user_id = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ════════════════════════════════════════════
+# 学习中心 & 小橘 新表
+# ════════════════════════════════════════════
+
+class WeaknessItem(Base):
+    """薄弱知识点（从面试/笔试报告自动提取）"""
+    __tablename__ = "weakness_items"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, default=0)
+    name = Column(String(200), default="")            # 知识点名称
+    score = Column(Float, default=0.0)                 # 当前掌握度 0-100
+    category = Column(String(50), default="interview") # interview/exam
+    source = Column(String(100), default="")           # 来源描述
+    career = Column(String(100), default="")           # 关联岗位
+    detected_count = Column(Integer, default=1)        # 被检测到次数
+    mastered = Column(Integer, default=0)              # 0未掌握 1已掌握 2已忽略
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class LearningPath(Base):
+    """AI生成的学习路线"""
+    __tablename__ = "learning_paths"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, default=0)
+    career = Column(String(100), default="")           # 目标岗位
+    title = Column(String(200), default="")            # 路线标题
+    description = Column(Text, default="")             # 路线描述
+    difficulty = Column(String(20), default="beginner") # beginner/intermediate/advanced
+    total_nodes = Column(Integer, default=0)
+    progress = Column(Float, default=0.0)              # 完成进度 0-100
+    is_active = Column(Integer, default=1)             # 是否当前路线
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class LearningNode(Base):
+    """学习路线中的节点（可分目录和子节点）"""
+    __tablename__ = "learning_nodes"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    path_id = Column(Integer, default=0)               # 关联路线ID
+    parent_id = Column(Integer, default=0)              # 父节点ID(0=目录节点)
+    user_id = Column(Integer, default=0)
+    title = Column(String(200), default="")
+    description = Column(Text, default="")
+    order_index = Column(Integer, default=0)           # 排序
+    duration = Column(String(50), default="")           # 预计耗时
+    difficulty = Column(String(20), default="medium")
+    status = Column(String(20), default="pending")      # pending/in_progress/completed
+    completed_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class LearningResource(Base):
+    """节点下的学习资源"""
+    __tablename__ = "learning_resources"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    node_id = Column(Integer, default=0)               # 关联节点ID
+    user_id = Column(Integer, default=0)
+    title = Column(String(200), default="")
+    resource_type = Column(String(30), default="article") # article/video/exercise/note
+    url = Column(String(500), default="")
+    content = Column(Text, default="")
+    duration = Column(String(50), default="")
+    is_done = Column(Integer, default=0)               # 是否已完成
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class LearningNote(Base):
+    """学习笔记"""
+    __tablename__ = "learning_notes"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, default=0)
+    node_id = Column(Integer, default=0)               # 关联节点ID
+    resource_id = Column(Integer, default=0)            # 关联资源ID
+    title = Column(String(200), default="")
+    content = Column(Text, default="")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class ReviewSchedule(Base):
+    """复习提醒"""
+    __tablename__ = "review_schedules"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, default=0)
+    weakness_id = Column(Integer, default=0)            # 关联薄弱点ID
+    title = Column(String(200), default="")
+    review_interval = Column(Integer, default=1)       # 间隔天数
+    next_review_at = Column(String(50), default="")    # 下次复习时间
+    reviewed_count = Column(Integer, default=0)         # 已复习次数
+    last_reviewed_at = Column(String(50), default="")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class SmartResume(Base):
+    """智能简历数据（画像→自动生成简历内容）"""
+    __tablename__ = "smart_resumes"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, default=0)
+    career = Column(String(100), default="")
+    summary = Column(Text, default="")                 # AI生成个人总结
+    skills_text = Column(Text, default="")             # AI推荐技能清单
+    experience_text = Column(Text, default="")         # AI优化经历描述
+    education_text = Column(Text, default="")
+    match_score = Column(Float, default=0.0)            # 岗位匹配度
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class XiaoJuSession(Base):
+    """小橘会话（每知识点独立）"""
+    __tablename__ = "xiaoju_sessions"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, default=0)
+    node_id = Column(Integer, default=0)               # 关联节点ID（0=通用会话）
+    topic = Column(String(200), default="")            # 会话主题
+    context_summary = Column(Text, default="")         # AI压缩摘要（超过15轮后）
+    message_count = Column(Integer, default=0)
+    is_archived = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+
+class XiaoJuMessage(Base):
+    """小橘消息"""
+    __tablename__ = "xiaoju_messages"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    session_id = Column(Integer, default=0)             # 关联会话ID
+    role = Column(String(10), default="user")           # user/assistant
+    content = Column(Text, default="")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class XiaoJuMemory(Base):
+    """小橘持久记忆（跨会话保存的关键信息）"""
+    __tablename__ = "xiaoju_memories"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, default=0)
+    key = Column(String(100), default="")              # 记忆键名
+    value = Column(Text, default="")                    # 记忆内容
+    memory_type = Column(String(30), default="user_info") # user_info/preference/learning
     created_at = Column(DateTime, default=datetime.utcnow)

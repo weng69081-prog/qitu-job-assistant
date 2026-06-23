@@ -20,11 +20,15 @@
       <nav class="sidebar-nav">
         <router-link to="/dashboard" class="sn-item" active-class="sn-active">
           <span class="sn-dot"></span>
-          <span class="sn-label">首页</span>
+          <span class="sn-label">首页概览</span>
         </router-link>
         <router-link to="/career" class="sn-item" active-class="sn-active">
           <span class="sn-dot"></span>
           <span class="sn-label">职业探索</span>
+        </router-link>
+        <router-link to="/learning-center" class="sn-item" active-class="sn-active">
+          <span class="sn-dot"></span>
+          <span class="sn-label">学习中心</span>
         </router-link>
         <router-link to="/interview" class="sn-item" active-class="sn-active">
           <span class="sn-dot"></span>
@@ -32,15 +36,11 @@
         </router-link>
         <router-link to="/exam-practice" class="sn-item" active-class="sn-active">
           <span class="sn-dot"></span>
-          <span class="sn-label">笔试</span>
-        </router-link>
-        <router-link to="/resume" class="sn-item" active-class="sn-active">
-          <span class="sn-dot"></span>
-          <span class="sn-label">简历</span>
+          <span class="sn-label">笔试练习</span>
         </router-link>
         <router-link to="/delivery-assistant" class="sn-item" active-class="sn-active">
           <span class="sn-dot"></span>
-          <span class="sn-label">投递</span>
+          <span class="sn-label">投递助手</span>
         </router-link>
         </nav>
 
@@ -94,7 +94,7 @@ const userDisplay = ref({})
 const isStandalone = computed(() => route.meta?.standalone === true)
 const isFavorites = computed(() => route.path === '/favorites')
 const isDashboard = computed(() => route.path === '/dashboard')
-const fullBannerPages = ['/career', '/interview', '/exam-practice', '/resume', '/delivery-assistant']
+const fullBannerPages = ['/career', '/interview', '/exam-practice', '/resume', '/delivery-assistant', '/learning-center']
 const isFullBannerPage = computed(() => fullBannerPages.some(path => route.path === path || route.path.startsWith(`${path}/`)))
 const showTopbar = computed(() => !isFavorites.value && !isDashboard.value && !isFullBannerPage.value)
 

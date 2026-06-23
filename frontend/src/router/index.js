@@ -21,6 +21,12 @@ import Settings from '../views/Settings.vue'
 import ProfileSetup from '../views/ProfileSetup.vue'
 import LandingPage from '../views/LandingPage.vue'
 import Dashboard from '../views/Dashboard.vue'
+import LearningCenter from '../views/LearningCenter.vue'
+import LearningPathDetail from '../views/LearningPathDetail.vue'
+import LearningNodeDetail from '../views/LearningNodeDetail.vue'
+import NodeContentDetail from '../views/NodeContentDetail.vue'
+import InterviewStudy from '../views/InterviewStudy.vue'
+import ReviewBook from '../views/ReviewBook.vue'
 
 const routes = [
   { path: '/', component: LandingPage, meta: { public: true } },
@@ -48,6 +54,12 @@ const routes = [
   { path: '/delivery-assistant', component: DeliveryAssistant },
   { path: '/favorites', component: FavoritesManage, meta: { standalone: true } },
   { path: '/settings', component: Settings },
+  { path: '/learning-center', component: LearningCenter },
+  { path: '/learning-center/path/:pathId', component: LearningPathDetail, props: true },
+  { path: '/learning-center/node/:nodeId', component: LearningNodeDetail, props: true },
+  { path: '/learning-center/node-content/:nodeId', component: NodeContentDetail, props: true },
+  { path: '/learning-center/interview/:sessionId', component: InterviewStudy, props: true },
+  { path: '/learning-center/review', component: ReviewBook },
 ]
 
 // 404 兜底

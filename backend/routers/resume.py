@@ -194,6 +194,53 @@ def generate_resume(data: ResumeGenerateRequest):
     }
 
 
+@router.post("/generate-from-learning")
+def generate_from_learning(token: str = ""):
+    """根据学习画像数据一键生成简历"""
+    from database import SessionLocal
+    from models import Profile, WeaknessItem, InterviewSession
+    from fastapi.responses import JSONResponse
+    db = SessionLocal()
+    try:
+        user_id = 1
+        prof = db.query(Profile).filter(Profile.user_id == user_id).first()
+        if not prof:
+            return JSONResponse({"error": "请先完善个人画像"}, status_code=400)
+        weaknesses = db.query(WeaknessItem).filter(
+            WeaknessItem.user_id == user_id, WeaknessItem.mastered == 0
+        ).all()
+        sessions = db.query(InterviewSession).order_by(
+            InterviewSession.created_at.desc()
+        ).limit(10).all()
+        avg_score = 0
+        if sessions:
+            scores = [s.average_score for s in sessions if s.average_score]
+            avg_score = round(sum(scores) / len(scores), 1) if scores else 0
+
+        from routers.llm import chat
+        prompt = f"""你是资深HR。请为用户生成面向「{prof.job_targets or '目标岗位'}」的简历内容。
+用户画像：学历={prof.education or '本科'}，专业={prof.major or ''}，技能={prof.skills or '暂无'}，年级={prof.grade or ''}。面试平均分={avg_score}。薄弱点：{', '.join([w.name for w in weaknesses[:5]]) if weaknesses else '暂无'}。
+请返回JSON格式（不要markdown代码块）：{{"summary":"50字内个人总结","skills_text":"技能清单，不同技能用｜分隔","experience_text":"一段描述项目/实践经历的文字","education_text":"教育背景描述","match_score":0-100的数字}}"""
+        text = chat(prompt, system="你是资深HR，简历实用。只返回JSON。", max_tokens=1500)
+        text = text.strip()
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1]
+            if text.endswith("```"):
+                text = text[:-3]
+        data = json.loads(text)
+    except:
+        data = {
+            "summary": f"具备{prof.major if prof else '相关'}专业背景，正在求职方向",
+            "skills_text": prof.skills if prof and prof.skills else "基础技能",
+            "experience_text": "在校期间积极参与项目实践",
+            "education_text": f"{prof.education if prof else '本科'} · {prof.major if prof else ''}",
+            "match_score": 65,
+        }
+    finally:
+        db.close()
+    return {"ok": True, "career": prof.job_targets if prof else "", **data}
+
+
 @router.post("/download")
 def download_resume(data: ResumeGenerateRequest):
     """根据用户信息+模板生成 .docx 文件并下载"""

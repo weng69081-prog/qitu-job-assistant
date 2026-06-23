@@ -17,6 +17,12 @@
       </template>
     </PageBanner>
 
+    <!-- ═══ AI根据学习情况生成简历 ═══ -->
+    <div class="ai-resume-bar" @click="generateFromLearning">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      <span>根据学习情况生成简历</span>
+    </div>
+
     <!-- ═══ 收藏岗位快捷选择 ═══ -->
     <div v-if="bookmarks.length" class="bookmark-band">
       <div class="bm-band-header">
@@ -895,6 +901,23 @@ async function deleteHistory(id) {
 }
 
 watch(showHistory, (v) => { if (v) fetchHistory() })
+
+async function generateFromLearning() {
+  const token = localStorage.getItem('token')
+  if (!token) { ElMessage.warning('请先登录'); return }
+  try {
+    const r = await fetch('/api/resume/generate-from-learning?token=' + encodeURIComponent(token))
+    if (!r.ok) {
+      ElMessage.error('暂无足够的学习数据，先做一些面试或笔试吧')
+      return
+    }
+    const data = await r.json()
+    genResult.value = `## 个人简历\n\n**求职意向：${data.career || '目标岗位'}**\n\n### 个人总结\n${data.summary}\n\n### 技能\n${data.skills_text}\n\n### 项目/实践经历\n${data.experience_text}\n\n### 教育背景\n${data.education_text}\n\n---\n**岗位匹配度：${data.match_score || '待评估'}%**`
+    ElMessage.success('简历已根据学习数据生成！')
+  } catch(e) {
+    ElMessage.error('网络错误')
+  }
+}
 </script>
 
 <style scoped>
@@ -1511,6 +1534,16 @@ watch(showHistory, (v) => { if (v) fetchHistory() })
   .form-row input,
   .form-row select { min-width: auto; }
   .req-row { flex-direction: column; }
-  .result-actions { flex-direction: column; gap: 6px; }
 }
+
+/* ═══ AI简历生成条 ═══ */
+.ai-resume-bar {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 20px; margin: 0 0 16px;
+  background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+  border: 1.5px dashed #2563EB; border-radius: 12px;
+  color: #2563EB; font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+}
+.ai-resume-bar:hover { background: linear-gradient(135deg, #DBEAFE, #BFDBFE); }
 </style>
