@@ -268,11 +268,11 @@ pres.title = "启途 — AI求职教育平台";
   ], 0.85, 3.42, 8, 0.28, {});
   addT(s, [
     { text: "申梓淼", options: { fontSize: 12, bold: true, color: C.TEXT_MUTED } },
-    { text: " — 前端页面开发、功能测试与用户体验优化", options: { fontSize: 12, color: C.TEXT_MUTED } },
+    { text: " — 参与页面样式调整与功能测试", options: { fontSize: 12, color: C.TEXT_MUTED } },
   ], 0.85, 3.72, 8, 0.28, {});
   addT(s, [
     { text: "牛保康", options: { fontSize: 12, bold: true, color: C.TEXT_MUTED } },
-    { text: " — 数据处理、项目文档编写与测试支撑", options: { fontSize: 12, color: C.TEXT_MUTED } },
+    { text: " — 参与基础数据整理与测试反馈", options: { fontSize: 12, color: C.TEXT_MUTED } },
   ], 0.85, 4.02, 8, 0.28, {});
 
   // Process bar
