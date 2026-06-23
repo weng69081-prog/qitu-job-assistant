@@ -467,8 +467,6 @@ async def generate_ai_questions(career: str, knowledge_point: str, difficulty: s
         prompt,
         system="你是专业笔试题出题专家。输出必须是纯JSON数组，不要添加任何Markdown格式或额外文字。",
         temperature=0.7, max_tokens=4096,
-        model="mimo-v2-flash", base_url="https://api.xiaomimimo.com/v1",
-        api_key=get_mimo_api_key()
     )
 
     if not content:

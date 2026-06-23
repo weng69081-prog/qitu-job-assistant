@@ -17,12 +17,6 @@
       </template>
     </PageBanner>
 
-    <!-- ═══ AI根据学习情况生成简历 ═══ -->
-    <div class="ai-resume-bar" @click="generateFromLearning">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-      <span>根据学习情况生成简历</span>
-    </div>
-
     <!-- ═══ 收藏岗位快捷选择 ═══ -->
     <div v-if="bookmarks.length" class="bookmark-band">
       <div class="bm-band-header">
@@ -52,6 +46,10 @@
           <div class="template-label">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="#2563EB"/><circle cx="17.5" cy="6.5" r=".5" fill="#2563EB"/><circle cx="21.5" cy="6.5" r=".5" fill="#2563EB"/><path d="M2 7v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7"/><path d="M6 2 4 6l.5 1L2 7v.5l2 1 1 2 1-2 2-1V7l-2.5-1L6 2z"/></svg>
             选择简历模板
+            <span class="ai-resume-btn" @click.stop="generateFromLearning">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              根据学习情况生成
+            </span>
           </div>
           <div class="template-track">
             <div
@@ -1536,14 +1534,15 @@ async function generateFromLearning() {
   .req-row { flex-direction: column; }
 }
 
-/* ═══ AI简历生成条 ═══ */
-.ai-resume-bar {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 12px 20px; margin: 0 0 16px;
+/* ═══ AI简历生成按钮（小号） ═══ */
+.ai-resume-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-left: auto; padding: 4px 10px;
   background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
-  border: 1.5px dashed #2563EB; border-radius: 12px;
-  color: #2563EB; font-size: 14px; font-weight: 700;
+  border: 1.5px dashed #2563EB; border-radius: 8px;
+  color: #2563EB; font-size: 12px; font-weight: 600;
   cursor: pointer; transition: all 0.2s;
+  white-space: nowrap;
 }
-.ai-resume-bar:hover { background: linear-gradient(135deg, #DBEAFE, #BFDBFE); }
+.ai-resume-btn:hover { background: linear-gradient(135deg, #DBEAFE, #BFDBFE); }
 </style>

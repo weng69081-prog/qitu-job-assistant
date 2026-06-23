@@ -102,11 +102,32 @@
             </div>
           </div>
 
-          <!-- Step 2: 简历上传 -->
+          <!-- Step 2: 简历上传 / 选择历史简历 -->
           <div v-if="setupStep === 2" class="setup-step-content">
             <el-form label-position="top">
               <el-form-item>
-                <template #label><i class="fa-regular fa-file"></i> 上传简历（可选）</template>
+                <template #label><i class="fa-regular fa-file"></i> 选择历史生成的简历</template>
+                <div v-if="historyResumes.length" class="history-resume-list">
+                  <div
+                    v-for="hr in historyResumes"
+                    :key="hr.id"
+                    :class="['hr-card', { active: selectedHistoryResume === hr.id }]"
+                    @click="selectHistoryResume(hr)"
+                  >
+                    <div class="hr-career">{{ hr.career }}</div>
+                    <div class="hr-meta">
+                      <span class="hr-score" v-if="hr.match_score">{{ hr.match_score }}分匹配</span>
+                      <span class="hr-date">{{ hr.created_at }}</span>
+                    </div>
+                    <div class="hr-summary" v-if="hr.summary">{{ hr.summary }}</div>
+                  </div>
+                </div>
+                <div v-else class="no-history-hint">
+                  还没有生成过简历，可以去「简历优化」页面生成，或直接上传文件
+                </div>
+              </el-form-item>
+              <el-form-item>
+                <template #label><i class="fa-regular fa-upload"></i> 或上传简历文件（可选）</template>
                 <div class="resume-upload-area">
                   <input type="file" ref="resumeInput" accept=".pdf,.doc,.docx,.txt" style="display:none" @change="onResumeUpload" />
                   <el-button size="small" @click="$refs.resumeInput.click()">
@@ -118,8 +139,8 @@
                 </div>
               </el-form-item>
               <div class="resume-hint-card">
-                <b>简历驱动模式会怎么用？</b>
-                <p>启途会根据简历里的项目、技能和经历追问，不会只问泛泛的固定题。</p>
+                <b>为什么上传简历？</b>
+                <p>面试官会根据简历里的项目、技能和经历追问，不会只问泛泛的固定题。</p>
               </div>
               <el-collapse v-if="resumeParsedText" style="margin-top:12px">
                 <el-collapse-item name="preview">
@@ -503,6 +524,8 @@ const resumeParsedText = ref('')
 const resumeFileId = ref('')
 const resumeUploading = ref(false)
 const resumeUploadProgress = ref(0)
+const historyResumes = ref([])
+const selectedHistoryResume = ref(null)
 
 const interviewTargetLabel = computed(() => {
   const target = customInterview.target.trim() || career.value.trim()
@@ -535,7 +558,30 @@ function clearResume() {
   resumeContent.value = ''
   resumeParsedText.value = ''
   resumeFileId.value = ''
+  selectedHistoryResume.value = null
   if (resumeInput.value) resumeInput.value.value = ''
+}
+
+async function fetchHistoryResumes() {
+  try {
+    const { data } = await axios.get(`${API}/learning/resume/list`)
+    historyResumes.value = Array.isArray(data) ? data : []
+  } catch {
+    historyResumes.value = []
+  }
+}
+
+function selectHistoryResume(hr) {
+  selectedHistoryResume.value = hr.id
+  resumeParsedText.value = [
+    hr.summary || '',
+    hr.skills_text || '',
+    hr.experience_text || '',
+    hr.education_text || ''
+  ].filter(Boolean).join('\n')
+  resumeFileName.value = hr.career + '（AI生成简历）'
+  resumeFileId.value = ''
+  resumeContent.value = null
 }
 
 async function onResumeUpload(e) {
@@ -659,6 +705,11 @@ function handleVisibilityRisk() {
 
 watch(userInput, (val) => {
   if (val.trim()) lastInputAt = Date.now()
+})
+
+// 进入第二步时加载历史简历
+watch(setupStep, (step) => {
+  if (step === 2) fetchHistoryResumes()
 })
 
 const formattedTime = computed(() => {
@@ -1371,6 +1422,11 @@ async function sendMessage() {
 
     // Update keyword hints
     updateKeywords(aiMsg)
+
+    // AI 说「面试到此结束」→ 自动结束面试生成报告
+    if (data.is_complete) {
+      setTimeout(() => handleEndInterview(true), 1500)
+    }
   } catch (err) {
     ElMessage.error('发送失败，请重试')
   }
@@ -1406,17 +1462,19 @@ async function skipQuestion() {
 }
 
 // ==================== End Interview ====================
-async function handleEndInterview() {
+async function handleEndInterview(auto = false) {
   if (!sessionId.value) return
 
-  try {
-    await ElMessageBox.confirm('确定要结束当前面试吗？结束后将生成评估报告。', '确认结束', {
-      confirmButtonText: '结束面试',
-      cancelButtonText: '继续面试',
-      type: 'warning'
-    })
-  } catch {
-    return // cancelled
+  if (auto !== true) {
+    try {
+      await ElMessageBox.confirm('确定要结束当前面试吗？结束后将生成评估报告。', '确认结束', {
+        confirmButtonText: '结束面试',
+        cancelButtonText: '继续面试',
+        type: 'warning'
+      })
+    } catch {
+      return // cancelled
+    }
   }
 
   // Stop recording if active
@@ -2588,4 +2646,24 @@ onUnmounted(() => {
     justify-content: center;
   }
 }
+
+/* ═══ 历史简历卡片 ═══ */
+.history-resume-list {
+  display: flex; flex-direction: column; gap: 8px;
+  max-height: 260px; overflow-y: auto;
+}
+.hr-card {
+  padding: 12px 16px; border-radius: 12px;
+  border: 1.5px dashed #DBEAFE; cursor: pointer;
+  transition: all 0.2s; background: #FAFBFC;
+}
+.hr-card:hover { border-color: #93C5FD; background: #EFF6FF; }
+.hr-card.active { border-color: #2563EB; background: #DBEAFE; }
+.hr-career { font-weight: 700; font-size: 15px; color: #1E293B; }
+.hr-meta { display: flex; gap: 8px; margin-top: 2px; }
+.hr-score { color: #2563EB; font-size: 12px; font-weight: 600; }
+.hr-date { color: #94A3B8; font-size: 12px; }
+.hr-summary { margin-top: 6px; color: #64748B; font-size: 13px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.no-history-hint { color: #94A3B8; font-size: 13px; padding: 8px 0; }
 </style>

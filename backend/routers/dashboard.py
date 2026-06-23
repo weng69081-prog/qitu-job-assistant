@@ -104,7 +104,7 @@ def get_heatmap(year: int = 0, month: int = 0):
     from datetime import datetime, date
     now = datetime.now()
     y = year if year > 0 else now.year
-    m = month if month >= 0 else now.month
+    m = month if month > 0 else now.month
 
     db = SessionLocal()
     try:

@@ -7,355 +7,231 @@ from urllib.parse import quote_plus
 from fastapi import APIRouter, Query, HTTPException, Body
 from sqlalchemy.orm import Session
 from database import get_db, SessionLocal
-from models import DeliveryJob, DeliveryTracking
+from models import DeliveryJob, DeliveryTracking, Profile, ExamRecord, WeaknessItem
 from routers.user import get_user_id
 
 router = APIRouter(prefix="/api/delivery", tags=["求职投递助手"])
 
-# ── 仿真公司数据集 ──
-COMPANIES = [
-    {
-        "name": "字节跳动",
-        "logo": "https://img.icons8.com/color/48/byte.png",
-        "website": "https://www.bytedance.com",
-        "size": "巨头",
-        "industry": "互联网/科技",
-        "intro": "字节跳动是全球领先的科技公司，旗下产品包括抖音、今日头条、飞书等，致力于成为最懂创作者的科技公司。"
-    },
-    {
-        "name": "阿里巴巴",
-        "logo": "https://img.icons8.com/color/48/alibaba.png",
-        "website": "https://www.alibaba.com",
-        "size": "巨头",
-        "industry": "电子商务/科技",
-        "intro": "阿里巴巴集团是全球领先的电子商务和科技公司，业务涵盖电商、云计算、数字媒体与娱乐等领域。"
-    },
-    {
-        "name": "腾讯",
-        "logo": "https://img.icons8.com/color/48/tencent.png",
-        "website": "https://www.tencent.com",
-        "size": "巨头",
-        "industry": "互联网/科技",
-        "intro": "腾讯是一家世界领先的互联网科技公司，业务覆盖社交、游戏、金融科技、企业服务等多个领域。"
-    },
-    {
-        "name": "美团",
-        "logo": "https://img.icons8.com/color/48/meituan.png",
-        "website": "https://www.meituan.com",
-        "size": "大型",
-        "industry": "本地生活/互联网",
-        "intro": "美团是中国领先的生活服务电子商务平台，致力于用科技连接消费者和商家，提供优质生活服务。"
-    },
-    {
-        "name": "百度",
-        "logo": "https://img.icons8.com/color/48/baidu.png",
-        "website": "https://www.baidu.com",
-        "size": "大型",
-        "industry": "互联网/人工智能",
-        "intro": "百度是全球最大的中文搜索引擎，同时深耕人工智能领域，在自动驾驶、智能语音等方面处于行业领先地位。"
-    },
-    {
-        "name": "华为",
-        "logo": "https://img.icons8.com/color/48/huawei.png",
-        "website": "https://www.huawei.com",
-        "size": "巨头",
-        "industry": "通信/科技",
-        "intro": "华为是全球领先的信息与通信技术解决方案提供商，业务涵盖电信网络、企业网络、终端和云计算。"
-    },
-    {
-        "name": "小米",
-        "logo": "https://img.icons8.com/color/48/xiaomi.png",
-        "website": "https://www.mi.com",
-        "size": "大型",
-        "industry": "消费电子/互联网",
-        "intro": "小米是一家以智能手机、智能硬件和IoT平台为核心的消费电子及智能制造公司。"
-    },
-    {
-        "name": "网易",
-        "logo": "https://img.icons8.com/color/48/netease.png",
-        "website": "https://www.163.com",
-        "size": "大型",
-        "industry": "互联网/游戏",
-        "intro": "网易是中国领先的互联网技术公司，业务涵盖游戏、音乐、教育、电商等多个领域。"
-    },
-    {
-        "name": "京东",
-        "logo": "https://img.icons8.com/color/48/jd.png",
-        "website": "https://www.jd.com",
-        "size": "大型",
-        "industry": "电子商务/物流",
-        "intro": "京东是中国领先的技术驱动型电商公司，以供应链为基础的技术与服务企业。"
-    },
-    {
-        "name": "快手",
-        "logo": "https://img.icons8.com/color/48/kuaishou.png",
-        "website": "https://www.kuaishou.com",
-        "size": "大型",
-        "industry": "短视频/社交",
-        "intro": "快手是领先的内容社区和社交平台，以短视频和直播为核心，致力于为用户创造更丰富的社交体验。"
-    },
-]
-
-CITIES = ["北京", "上海", "深圳", "杭州", "广州", "成都", "武汉", "南京", "西安"]
-ADDRESSES = {
-    "北京": ["海淀区中关村科技园", "朝阳区望京SOHO", "西城区金融街", "海淀区上地信息产业基地", "朝阳区国贸CBD"],
-    "上海": ["浦东新区张江高科技园区", "徐汇区漕河泾开发区", "静安区南京西路", "杨浦区五角场", "闵行区虹桥"],
-    "深圳": ["南山区科技园", "福田区CBD", "龙岗区坂田", "宝安区前海", "南山区后海"],
-    "杭州": ["西湖区文三路", "滨江区物联网小镇", "余杭区未来科技城", "萧山区钱江世纪城"],
-    "广州": ["天河区珠江新城", "海珠区琶洲", "番禺区万博", "黄埔区科学城"],
-    "成都": ["高新区天府软件园", "武侯区桐梓林", "锦江区春熙路"],
-    "武汉": ["东湖高新区光谷", "洪山区街道口", "江汉区建设大道"],
-    "南京": ["雨花台区软件谷", "鼓楼区新模范马路", "建邺区河西CBD"],
-    "西安": ["高新区锦业路", "雁塔区长安南路", "未央区凤城八路"],
+# ── AI 生成真实公司岗位数据 ──
+REAL_COMPANIES_CAREER_URLS = {
+    "字节跳动": "https://jobs.bytedance.com/",
+    "阿里巴巴": "https://talent.alibaba.com/",
+    "腾讯": "https://join.qq.com/",
+    "华为": "https://career.huawei.com/",
+    "小米": "https://xiaomi.jobs.feishu.cn/",
+    "百度": "https://talent.baidu.com/",
+    "京东": "https://zhaopin.jd.com/",
+    "网易": "https://hr.163.com/",
+    "美团": "https://zhaopin.meituan.com/",
+    "快手": "https://zhaopin.kuaishou.cn/",
+    "小红书": "https://job.xiaohongshu.com/",
+    "哔哩哔哩": "https://jobs.bilibili.com/",
+    "滴滴": "https://talent.didiglobal.com/",
+    "拼多多": "https://careers.pinduoduo.com/",
+    "理想汽车": "https://www.lixiang.com/join",
+    "蔚来": "https://nio.jobs.feishu.cn/",
+    "科大讯飞": "https://recruit.iflytek.com/",
+    "中兴通讯": "https://job.zte.com.cn/",
+    "OPPO": "https://careers.oppo.com/",
+    "vivo": "https://hr.vivo.com/",
+    "比亚迪": "https://job.byd.com/",
+    "联想": "https://talent.lenovo.com.cn/",
+    "中国银行": "https://www.boc.cn/aboutboc/careers/",
+    "中国工商银行": "https://job.icbc.com.cn/",
+    "招商银行": "https://career.cmbchina.com/",
+    "用友网络": "https://www.yonyou.com/article/recruit/",
+    "海康威视": "https://www.hikvision.com/cn/recruit/",
+    "深信服": "https://www.sangfor.com/recruit",
+    "广联达": "https://www.glodon.com/recruit/",
+    "金蝶国际": "https://www.kingdee.com/recruit",
 }
 
-SALARIES = [
-    (8000, 15000, "8K-15K"), (10000, 18000, "10K-18K"),
-    (12000, 25000, "12K-25K"), (15000, 30000, "15K-30K"),
-    (18000, 35000, "18K-35K"), (20000, 40000, "20K-40K"),
-    (25000, 50000, "25K-50K"), (30000, 60000, "30K-60K"),
-]
+def _ai_seed_batch(career_urls):
+    """调 AI 生成一批真实岗位数据"""
+    company_list = "\n".join(f"- {name} （招聘页: {url}）" for name, url in career_urls.items())
+    prompt = f"""你是一个招聘数据专家。请为以下真实企业各生成2个正在招聘的校招/实习岗位信息。
 
-JOB_TYPES = ["技术", "产品", "运营", "设计", "市场", "职能"]
+注意：
+- 岗位必须是这些企业真正会招的，符合企业业务方向
+- 公司简介写真实的企业情况
+- 技能要求写真实的语言/框架/工具
+- 薪资范围要合理（校招/实习岗）
+- apply_url 使用企业真实招聘页链接
+- 城市写企业实际所在地
 
-# 岗位模板
-JOB_TEMPLATES = {
-    "技术": [
-        {
-            "title": "后端开发工程师",
-            "type": "技术",
-            "education": "本科",
-            "experience": "应届/1-3年",
-            "skills_req": "[\"Java/Python\",\"MySQL\",\"Redis\",\"微服务架构\",\"Git\"]",
-            "skills_pref": "[\"Docker\",\"Kubernetes\",\"消息队列\",\"高并发\"]",
-            "desc": "负责公司核心业务系统的后端开发与维护，参与系统架构设计与优化，编写高质量代码并保证系统稳定性和可扩展性。",
-            "rounds": "3轮",
-            "form": "线上面试",
-            "focus": "算法与数据结构、系统设计、项目经历深挖、Java/Python基础"
-        },
-        {
-            "title": "前端开发工程师",
-            "type": "技术",
-            "education": "本科",
-            "experience": "应届/1-3年",
-            "skills_req": "[\"Vue.js/React\",\"JavaScript/TypeScript\",\"HTML5/CSS3\",\"Webpack/Vite\"]",
-            "skills_pref": "[\"Node.js\",\"小程序开发\",\"性能优化\",\"CI/CD\"]",
-            "desc": "负责公司Web端产品的前端开发工作，与后端工程师协作完成产品功能迭代，优化用户体验和页面性能。",
-            "rounds": "2-3轮",
-            "form": "线上面试",
-            "focus": "前端基础、框架原理、手写代码、性能优化方案"
-        },
-        {
-            "title": "算法工程师",
-            "type": "技术",
-            "education": "硕士及以上",
-            "experience": "应届/1-3年",
-            "skills_req": "[\"Python\",\"深度学习框架\",\"机器学习算法\",\"数据处理\"]",
-            "skills_pref": "[\"NLP\",\"计算机视觉\",\"大模型\",\"强化学习\"]",
-            "desc": "参与AI算法研发与落地，将机器学习/深度学习技术应用到实际业务场景中，持续优化模型效果。",
-            "rounds": "3-4轮",
-            "form": "线上面试",
-            "focus": "算法推导、模型评估、论文解读、编程能力、数学基础"
-        },
-        {
-            "title": "测试开发工程师",
-            "type": "技术",
-            "education": "本科",
-            "experience": "应届/1-3年",
-            "skills_req": "[\"Python/Java\",\"自动化测试框架\",\"Linux\",\"SQL\"]",
-            "skills_pref": "[\"性能测试\",\"安全测试\",\"CI/CD\",\"容器化\"]",
-            "desc": "负责产品质量保障，开发自动化测试工具和框架，制定测试策略，保证产品高质量交付。",
-            "rounds": "2-3轮",
-            "form": "线上面试",
-            "focus": "测试理论、自动化框架设计、编程能力、问题定位能力"
-        },
-        {
-            "title": "数据工程师",
-            "type": "技术",
-            "education": "本科",
-            "experience": "应届/1-3年",
-            "skills_req": "[\"SQL\",\"Python\",\"Hadoop/Spark\",\"数据仓库\"]",
-            "skills_pref": "[\"Flink\",\"Kafka\",\"数据治理\",\"流式计算\"]",
-            "desc": "负责数据平台建设与维护，设计数据管道，保障数据质量和时效性，为业务分析提供数据基础。",
-            "rounds": "2-3轮",
-            "form": "线上面试",
-            "focus": "SQL优化、数仓建模、数据处理框架、项目经验"
-        },
-    ],
-    "产品": [
-        {
-            "title": "产品经理",
-            "type": "产品",
-            "education": "本科",
-            "experience": "应届/1-3年",
-            "skills_req": "[\"产品设计\",\"用户研究\",\"数据分析\",\"Axure/Figma\"]",
-            "skills_pref": "[\"AI产品经验\",\"增长策略\",\"项目管理\",\"技术背景\"]",
-            "desc": "负责产品规划与设计，深入理解用户需求，推动产品从需求分析到上线的全流程，持续优化产品体验。",
-            "rounds": "3-4轮",
-            "form": "线上面试",
-            "focus": "产品思维、需求分析、竞品分析、数据分析能力、案例分析"
-        },
-        {
-            "title": "AI产品经理",
-            "type": "产品",
-            "education": "本科",
-            "experience": "应届/1-3年",
-            "skills_req": "[\"产品设计\",\"AI基础认知\",\"数据分析\",\"用户调研\"]",
-            "skills_pref": "[\"大模型应用\",\"AIGC经验\",\"技术背景\",\"增长思维\"]",
-            "desc": "负责AI产品的规划和落地，理解AI技术能力边界，将AI能力转化为可落地的产品方案。",
-            "rounds": "3-4轮",
-            "form": "线上面试",
-            "focus": "AI产品认知、场景化需求分析、技术理解力、案例分析"
-        },
-    ],
-    "运营": [
-        {
-            "title": "新媒体运营",
-            "type": "运营",
-            "education": "本科",
-            "experience": "应届/1-3年",
-            "skills_req": "[\"内容创作\",\"社交媒体运营\",\"数据分析\",\"视频剪辑\"]",
-            "skills_pref": "[\"短视频运营\",\"私域流量\",\"KOL合作\",\"社群运营\"]",
-            "desc": "负责公司新媒体矩阵的运营，策划优质内容，提升品牌影响力和用户互动。",
-            "rounds": "2轮",
-            "form": "线上面试",
-            "focus": "内容策划、热点敏感度、数据复盘、创意能力"
-        },
-        {
-            "title": "用户运营",
-            "type": "运营",
-            "education": "本科",
-            "experience": "应届/1-3年",
-            "skills_req": "[\"用户分析\",\"活动策划\",\"数据分析\",\"文案能力\"]",
-            "skills_pref": "[\"增长黑客\",\"用户分群\",\"A/B测试\",\"私域运营\"]",
-            "desc": "负责用户增长和留存策略的制定与执行，通过精细化运营提升用户活跃度和转化率。",
-            "rounds": "2-3轮",
-            "form": "线上面试",
-            "focus": "用户分层策略、增长方法论、活动设计、数据分析"
-        },
-    ],
-    "设计": [
-        {
-            "title": "UI/UX设计师",
-            "type": "设计",
-            "education": "本科",
-            "experience": "应届/1-3年",
-            "skills_req": "[\"Figma/Sketch\",\"设计系统\",\"用户研究\",\"交互设计\"]",
-            "skills_pref": "[\"动效设计\",\"3D设计\",\"前端基础\",\"品牌设计\"]",
-            "desc": "负责产品界面的视觉与交互设计，基于用户研究数据持续优化产品体验，维护设计规范。",
-            "rounds": "2-3轮",
-            "form": "线上面试",
-            "focus": "设计作品集展示、设计思维、交互细节、评审流程"
-        },
-    ],
-    "市场": [
-        {
-            "title": "市场营销专员",
-            "type": "市场",
-            "education": "本科",
-            "experience": "应届/1-3年",
-            "skills_req": "[\"市场调研\",\"活动策划\",\"数据分析\",\"文案撰写\"]",
-            "skills_pref": "[\"SEO/SEM\",\"品牌策划\",\"BD谈判\",\"流量投放\"]",
-            "desc": "负责市场活动的策划与执行，制定营销策略，提升品牌知名度和市场占有率。",
-            "rounds": "2轮",
-            "form": "线上面试",
-            "focus": "营销案例分析、市场敏感度、策划能力、沟通表达"
-        },
-    ],
-    "职能": [
-        {
-            "title": "HR专员",
-            "type": "职能",
-            "education": "本科",
-            "experience": "应届/1-3年",
-            "skills_req": "[\"招聘流程\",\"员工关系\",\"Excel\",\"沟通能力\"]",
-            "skills_pref": "[\"人力资源证书\",\"数据分析\",\"绩效管理\",\"组织发展\"]",
-            "desc": "负责公司人才招聘与员工关系维护，参与人力资源体系建设，支持业务团队发展。",
-            "rounds": "2-3轮",
-            "form": "线上面试",
-            "focus": "招聘实务、劳动法规、情景模拟、组织协调"
-        },
-        {
-            "title": "财务助理",
-            "type": "职能",
-            "education": "本科",
-            "experience": "应届/1-3年",
-            "skills_req": "[\"财务基础\",\"Excel\",\"会计准则\",\"财务软件\"]",
-            "skills_pref": "[\"CPA\",\"审计经验\",\"数据分析\",\"ERP系统\"]",
-            "desc": "协助财务团队完成日常账务处理、报表编制和税务申报工作。",
-            "rounds": "2轮",
-            "form": "线上面试",
-            "focus": "财务知识、Excel技能、细心程度、职业素养"
-        },
-    ],
-}
+{company_list}
 
-# ── 初始化种子数据 ──
+返回一个JSON数组，每个元素格式：
+{{
+  "company_name": "公司名",
+  "company_logo": "https://img.icons8.com/color/48/公司名小写.png",
+  "company_website": "https://www.xxx.com",
+  "company_size": "巨头/大型/中型",
+  "industry": "行业",
+  "company_intro": "企业简介（30字以内）",
+  "job_title": "岗位名",
+  "job_type": "技术|产品|运营|设计|市场|职能",
+  "city": "城市",
+  "address": "城市+具体地址",
+  "salary_min": 最低薪资整数,
+  "salary_max": 最高薪资整数,
+  "salary_text": "薪资范围文字",
+  "education": "大专/本科/硕士及以上",
+  "experience": "应届/1-3年/实习",
+  "job_description": "岗位职责（40字以内）",
+  "skills_required": "技能数组JSON字符串，如[\\"Python\\",\\"SQL\\"]",
+  "skills_preferred": "加分技能数组JSON字符串",
+  "apply_url": "企业真实招聘页URL",
+  "interview_rounds": "面试轮次",
+  "interview_form": "线上面试/现场面试",
+  "interview_focus": "面试重点",
+  "has_exam": true或false
+}}
+
+只返回JSON数组，不要markdown代码块。生成{len(career_urls)*2}条数据。"""
+
+    from routers.llm import chat as llm_chat
+    content = llm_chat(prompt, temperature=0.7, max_tokens=8000)
+    if not content:
+        return []
+    if content.startswith("```"):
+        content = content.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+        if content.startswith("json"):
+            content = content[4:].strip()
+    try:
+        jobs = json.loads(content)
+        if isinstance(jobs, dict) and "jobs" in jobs:
+            jobs = jobs["jobs"]
+        return jobs if isinstance(jobs, list) else []
+    except (json.JSONDecodeError, Exception):
+        return []
+
 def seed_jobs():
+    """用AI生成真实岗位替代硬编码假数据"""
     db = SessionLocal()
     try:
         existing = db.query(DeliveryJob).count()
-        if existing > 0:
+        if existing >= 10:
             return
-        import itertools
-        job_id = 0
-        for company in COMPANIES:
-            # 随机选1-3个岗位
-            num_jobs = random.randint(1, 3)
-            # 随机选岗位类型和技术栈
-            job_types = random.sample(list(JOB_TEMPLATES.keys()), min(num_jobs, len(JOB_TEMPLATES)))
-            for jt in job_types:
-                templates = JOB_TEMPLATES[jt]
-                tpl = random.choice(templates)
-                city = random.choice(CITIES)
-                sal = random.choice(SALARIES)
-                addr = random.choice(ADDRESSES[city])
-                days_ago = random.randint(1, 30)
-                month = random.randint(1, 6)
-                day = random.randint(1, 28)
-                job_id += 1
+
+        # 分批生成
+        all_items = list(REAL_COMPANIES_CAREER_URLS.items())
+        batch_size = 8
+        total_generated = 0
+        for i in range(0, len(all_items), batch_size):
+            batch = dict(all_items[i:i+batch_size])
+            jobs = _ai_seed_batch(batch)
+            for j in jobs:
                 job = DeliveryJob(
-                    company_name=company["name"],
-                    company_logo=company["logo"],
-                    company_website=company["website"],
-                    company_size=company["size"],
-                    industry=company["industry"],
-                    company_intro=company["intro"],
-                    job_title=tpl["title"],
-                    job_type=tpl["type"],
-                    city=city,
-                    address=f"{city}{addr}",
-                    salary_min=sal[0],
-                    salary_max=sal[1],
-                    salary_text=sal[2],
-                    education=tpl["education"],
-                    experience=tpl["experience"],
-                    job_description=tpl["desc"],
-                    skills_required=tpl["skills_req"],
-                    skills_preferred=tpl["skills_pref"],
-                    publish_time=f"2026-{month:02d}-{day:02d}",
-                    deadline=f"2026-{month+2 if month<=10 else month-10:02d}-{day:02d}",
-                    has_exam=random.choice([0, 1]),
-                    apply_url=f"{company['website']}/careers/{job_id}",
-                    interview_rounds=tpl["rounds"],
-                    interview_form=tpl["form"],
-                    interview_focus=tpl["focus"],
+                    company_name=j.get("company_name", "未知企业"),
+                    company_logo=j.get("company_logo", ""),
+                    company_website=j.get("company_website", ""),
+                    company_size=j.get("company_size", "中型"),
+                    industry=j.get("industry", "互联网/科技"),
+                    company_intro=j.get("company_intro", ""),
+                    job_title=j.get("job_title", "工程师"),
+                    job_type=j.get("job_type", "技术"),
+                    city=j.get("city", "北京"),
+                    address=j.get("address", ""),
+                    salary_min=j.get("salary_min", 8000),
+                    salary_max=j.get("salary_max", 15000),
+                    salary_text=j.get("salary_text", "8K-15K"),
+                    education=j.get("education", "本科"),
+                    experience=j.get("experience", "应届"),
+                    job_description=j.get("job_description", ""),
+                    skills_required=json.dumps(j.get("skills_required", []), ensure_ascii=False),
+                    skills_preferred=json.dumps(j.get("skills_preferred", []), ensure_ascii=False),
+                    publish_time=datetime.now().strftime("%Y-%m-%d"),
+                    deadline=datetime.now().strftime("%Y-%m-%d"),
+                    has_exam=j.get("has_exam", False),
+                    apply_url=j.get("apply_url", ""),
+                    interview_rounds=j.get("interview_rounds", "2-3轮"),
+                    interview_form=j.get("interview_form", "线上面试"),
+                    interview_focus=j.get("interview_focus", ""),
                     career_category="",
-                    source="simulated",
+                    source="ai_generated",
                 )
                 db.add(job)
-        db.commit()
+                total_generated += 1
+            db.commit()
+
+        if total_generated == 0:
+            # AI失败时用兜底数据
+            _fallback_seed_jobs(db)
+            db.commit()
     finally:
         db.close()
+
+def _fallback_seed_jobs(db):
+    """AI生成失败时的兜底：用预设的知名企业数据"""
+    fallback_companies = [
+        {"name":"字节跳动","career":"https://jobs.bytedance.com/","size":"巨头","industry":"互联网/科技"},
+        {"name":"阿里巴巴","career":"https://talent.alibaba.com/","size":"巨头","industry":"电子商务/科技"},
+        {"name":"腾讯","career":"https://join.qq.com/","size":"巨头","industry":"互联网/科技"},
+        {"name":"华为","career":"https://career.huawei.com/","size":"巨头","industry":"通信/科技"},
+        {"name":"小米","career":"https://xiaomi.jobs.feishu.cn/","size":"大型","industry":"消费电子/互联网"},
+        {"name":"百度","career":"https://talent.baidu.com/","size":"大型","industry":"互联网/人工智能"},
+        {"name":"京东","career":"https://zhaopin.jd.com/","size":"大型","industry":"电子商务/物流"},
+        {"name":"网易","career":"https://hr.163.com/","size":"大型","industry":"互联网/游戏"},
+        {"name":"快手","career":"https://zhaopin.kuaishou.cn/","size":"大型","industry":"短视频/社交"},
+        {"name":"哔哩哔哩","career":"https://jobs.bilibili.com/","size":"大型","industry":"互联网/文化"},
+        {"name":"小红书","career":"https://job.xiaohongshu.com/","size":"大型","industry":"社交/电商"},
+        {"name":"滴滴","career":"https://talent.didiglobal.com/","size":"大型","industry":"出行/科技"},
+        {"name":"拼多多","career":"https://careers.pinduoduo.com/","size":"大型","industry":"电子商务"},
+        {"name":"理想汽车","career":"https://www.lixiang.com/join","size":"大型","industry":"新能源汽车"},
+        {"name":"科大讯飞","career":"https://recruit.iflytek.com/","size":"大型","industry":"人工智能"},
+        {"name":"OPPO","career":"https://careers.oppo.com/","size":"大型","industry":"消费电子"},
+        {"name":"比亚迪","career":"https://job.byd.com/","size":"巨头","industry":"新能源汽车/电子"},
+        {"name":"招商银行","career":"https://career.cmbchina.com/","size":"大型","industry":"金融/银行"},
+    ]
+    cities = ["北京","上海","深圳","杭州","广州","成都","武汉","南京","西安"]
+    salaries = [(8000,15000,"8K-15K"),(12000,25000,"12K-25K"),(15000,30000,"15K-30K"),(20000,40000,"20K-40K")]
+    job_templates = [
+        {"title":"后端开发工程师","type":"技术","skills":"Java,SpringBoot,MySQL","focus":"算法,系统设计"},
+        {"title":"前端开发工程师","type":"技术","skills":"Vue,React,TypeScript","focus":"前端基础,性能优化"},
+        {"title":"算法工程师","type":"技术","skills":"Python,深度学习,机器学习","focus":"算法推导,论文解读"},
+        {"title":"产品经理","type":"产品","skills":"产品设计,用户研究,数据分析","focus":"产品思维,需求分析"},
+        {"title":"新媒体运营","type":"运营","skills":"内容创作,社交媒体运营","focus":"内容策划,数据分析"},
+        {"title":"UI/UX设计师","type":"设计","skills":"Figma,交互设计","focus":"设计作品集,交互细节"},
+    ]
+    for co in fallback_companies:
+        import random
+        for _ in range(2):
+            tpl = random.choice(job_templates)
+            city = random.choice(cities)
+            sal = random.choice(salaries)
+            job = DeliveryJob(
+                company_name=co["name"],
+                company_logo=f"https://img.icons8.com/color/48/{co['name'].lower()}.png",
+                company_website=f"https://www.{co['name']}.com",
+                company_size=co["size"],
+                industry=co["industry"],
+                company_intro=f"{co['name']}是一家知名企业",
+                job_title=tpl["title"],
+                job_type=tpl["type"],
+                city=city,
+                address=f"{city}科技园区",
+                salary_min=sal[0], salary_max=sal[1], salary_text=sal[2],
+                education="本科", experience="应届",
+                job_description=f"负责{co['name']}核心业务开发",
+                skills_required=json.dumps(tpl["skills"].split(","), ensure_ascii=False),
+                skills_preferred="[]",
+                publish_time=datetime.now().strftime("%Y-%m-%d"),
+                deadline=datetime.now().strftime("%Y-%m-%d"),
+                has_exam=False,
+                apply_url=co["career"],
+                interview_rounds="2-3轮",
+                interview_form="线上面试",
+                interview_focus=tpl["focus"],
+                career_category="",
+                source="fallback",
+            )
+            db.add(job)
 
 
 from routers.llm import chat as llm_chat
 
-# ── AI 解析（调用小米 MiMo） ──
-MIMO_KEY = os.environ.get("MIMO_API_KEY", "")
-MIMO_URL = "https://api.xiaomimimo.com/v1"
-MIMO_MODEL = "mimo-v2-flash"
-
+# ── AI 解析（走默认LLM配置 → DeepSeek） ──
 def ai_analyze_job(job: DeliveryJob, user_skills: str = ""):
     """AI解析岗位JD + 技能匹配"""
     prompt = f"""你是一位资深的求职顾问和HR专家。请对以下岗位信息进行全面分析，输出JSON格式。
@@ -394,8 +270,7 @@ JD描述：{job.job_description}
 }}"""
 
     try:
-        content = llm_chat(prompt, temperature=0.3, max_tokens=2000,
-                          model=MIMO_MODEL, base_url=MIMO_URL, api_key=MIMO_KEY)
+        content = llm_chat(prompt, temperature=0.3, max_tokens=2000)
         if content:
             if content.startswith("```"):
                 content = content.split("\n", 1)[1].rsplit("```", 1)[0].strip()
@@ -430,6 +305,97 @@ def _fallback_analysis(job: DeliveryJob):
     }
 
 
+# ── API: 技能差距分析（基于学习+笔试情况） ──
+@router.get("/gap-analysis/{job_id}")
+def gap_analysis(job_id: int, user_id: int = Query(0, description="用户ID")):
+    """分析用户的学习/考试情况与目标岗位的差距"""
+    db = get_db().__next__()
+    try:
+        job = db.query(DeliveryJob).filter(DeliveryJob.id == job_id).first()
+        if not job:
+            raise HTTPException(404, "岗位不存在")
+
+        user_skills = []
+        user_weaknesses = []
+        exam_accuracy = 0
+        exam_count = 0
+
+        if user_id > 0:
+            profile = db.query(Profile).filter(Profile.user_id == user_id).first()
+            if profile and profile.skills:
+                user_skills = [s.strip() for s in profile.skills.split(",") if s.strip()]
+
+            records = db.query(ExamRecord).all()
+            if records:
+                exam_count = len(records)
+                exam_accuracy = sum(r.accuracy for r in records if r.accuracy) / exam_count
+
+            weaknesses = db.query(WeaknessItem).filter(
+                WeaknessItem.user_id == user_id
+            ).all()
+            user_weaknesses = [w.name for w in weaknesses[:20]]
+
+        job_skills_req = json.loads(job.skills_required) if isinstance(job.skills_required, str) else (job.skills_required or [])
+        job_skills_pref = json.loads(job.skills_preferred) if isinstance(job.skills_preferred, str) else (job.skills_preferred or [])
+        all_job_skills = job_skills_req + [s for s in job_skills_pref if s not in job_skills_req]
+
+        matched = [s for s in all_job_skills if any(usk.lower() in s.lower() or s.lower() in usk.lower() for usk in user_skills)]
+        missing = [s for s in job_skills_req if s not in matched]
+
+        prompt = f"""你是一位求职顾问。请分析用户的技能与目标岗位的差距，返回JSON格式。
+
+用户技能：{', '.join(user_skills) or '暂无记录'}
+用户笔试情况：共{exam_count}次练习，平均正确率{exam_accuracy*100:.0f}%
+用户薄弱知识点：{', '.join(user_weaknesses[:5]) or '暂无记录'}
+
+目标岗位：{job.job_title} @ {job.company_name}
+岗位技能要求：{', '.join(job_skills_req)}
+岗位加分技能：{', '.join(job_skills_pref)}
+
+返回JSON（只返回JSON，不要markdown）：
+{{
+  "matched_skills": ["已匹配的技能列表"],
+  "missing_skills": ["缺失的技能列表"],
+  "match_score": 匹配度分数(0-100),
+  "strength_areas": ["用户擅长的方向"],
+  "improve_areas": ["需要提升的方向"],
+  "priority_recommendations": ["建议1（最优先）", "建议2", "建议3"],
+  "exam_feedback": "基于笔试情况的分析和建议（30字以内）",
+  "readiness_level": "准备程度：ready/almost/need_work/far",
+  "summary": "差距总结（40字以内）"
+}}"""
+
+        from routers.llm import chat as llm_chat
+        ai_result = llm_chat(prompt, temperature=0.3, max_tokens=2000)
+        if ai_result:
+            if ai_result.startswith("```"):
+                ai_result = ai_result.split("\n",1)[1].rsplit("```",1)[0].strip()
+                if ai_result.startswith("json"):
+                    ai_result = ai_result[4:].strip()
+            try:
+                return json.loads(ai_result)
+            except json.JSONDecodeError:
+                pass
+
+        return {
+            "matched_skills": matched,
+            "missing_skills": missing,
+            "match_score": max(0, min(100, int(len(matched) / max(len(all_job_skills), 1) * 100))),
+            "strength_areas": matched[:3] if matched else ["暂无明显优势"],
+            "improve_areas": missing[:3] if missing else ["暂无明显短板"],
+            "priority_recommendations": [
+                f"优先补足{'、'.join(missing[:2])}" if missing else "技能匹配度较好",
+                "多练习相关笔试题目" if exam_accuracy < 0.7 else "保持现有练习节奏",
+                "加强薄弱知识点学习",
+            ],
+            "exam_feedback": f"笔试正确率{exam_accuracy:.0f}%，{'建议加强基础练习' if exam_accuracy < 70 else '表现不错，继续保持'}",
+            "readiness_level": "ready" if len(missing) == 0 else ("almost" if len(missing) <= 2 else ("need_work" if len(missing) <= 5 else "far")),
+            "summary": f"已匹配{len(matched)}项技能，缺失{len(missing)}项{'，需重点补足' if missing else ''}",
+        }
+    finally:
+        db.close()
+
+
 # ── 搜索公司官网（实时） ──
 def search_company_website(company_name: str) -> str:
     """实时搜索公司官网URL"""
@@ -446,10 +412,10 @@ def search_company_website(company_name: str) -> str:
                 return results[0]["url"]
     except Exception:
         pass
-    # 兜底：从已知数据库取
-    for c in COMPANIES:
-        if c["name"] == company_name:
-            return c["website"]
+    # 兜底：从真实企业列表取
+    for name, url in REAL_COMPANIES_CAREER_URLS.items():
+        if name == company_name:
+            return url
     return f"https://www.{company_name}.com"
 
 
@@ -564,9 +530,17 @@ def agent_search(payload: dict = Body({})):
         db.close()
 
 
-# ── API: 获取岗位列表 ──
+# ── API: 获取岗位列表（自动按用户画像推荐） ──
+def _extract_job_type_from_target(target: str) -> str:
+    """从目标岗位提取岗位类型"""
+    target_lower = target.lower()
+    if any(k in target_lower for k in ["开发", "技术", "工程师", "算法", "运维", "测试", "数据"]):
+        return "技术"
+    return ""
+
 @router.get("/jobs")
 def list_jobs(
+    token: str = Query("", description="用户token，传了就会按画像推荐"),
     company_size: str = "",
     job_type: str = "",
     salary_min: int = 0,
@@ -581,6 +555,57 @@ def list_jobs(
     try:
         query = db.query(DeliveryJob)
 
+        # 如果传了token但没有明确筛选条件，尝试按用户画像自动推荐
+        profile = None
+        if token:
+            uid = get_user_id(token)
+            if uid:
+                profile = db.query(Profile).filter(Profile.user_id == uid).first()
+
+        # 用户没手动选城市，但有画像城市 → 自动按城市筛选
+        if not city and profile and profile.city:
+            city_list = [c.strip() for c in profile.city.replace("、"," ").replace("，"," ").split() if c.strip()]
+            if city_list:
+                # 多城市取第一个为主，给推荐提示
+                main_city = city_list[0]
+                query = query.filter(
+                    DeliveryJob.city.contains(main_city[:2]) | DeliveryJob.address.contains(main_city[:2])
+                )
+                city = main_city  # 标记已按城市筛选
+
+        # 用户没手动选岗位类型，但画像有目标岗位 → 匹配岗位关键词
+        if not job_type and profile and profile.job_targets:
+            targets = profile.job_targets.replace("、"," ").replace("，"," ").split()
+            if targets:
+                type_filters = []
+                for t in targets[:2]:
+                    t = t.strip()
+                    if t and len(t) >= 2:
+                        type_filters.append(
+                            DeliveryJob.job_title.contains(t) |
+                            DeliveryJob.job_description.contains(t) |
+                            DeliveryJob.job_type.contains(t)
+                        )
+                if type_filters:
+                    from sqlalchemy import or_
+                    query = query.filter(or_(*type_filters))
+
+        # 用户没传技能关键词，但画像有skill → 匹配技能
+        if not keyword and profile and profile.skills:
+            skill_list = [s.strip() for s in profile.skills.split(",") if s.strip() and len(s) >= 2]
+            if skill_list:
+                skill_filters = []
+                for s in skill_list[:3]:
+                    skill_filters.append(
+                        DeliveryJob.skills_required.contains(s) |
+                        DeliveryJob.skills_preferred.contains(s) |
+                        DeliveryJob.job_title.contains(s)
+                    )
+                if skill_filters:
+                    from sqlalchemy import or_
+                    query = query.filter(or_(*skill_filters))
+
+        # 手动筛选参数（覆盖画像自动筛选）
         if company_size:
             sizes = company_size.split(",")
             query = query.filter(DeliveryJob.company_size.in_(sizes))
