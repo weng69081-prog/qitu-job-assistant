@@ -144,9 +144,9 @@
               <el-form-item>
                 <template #label><i class="fa-solid fa-gamepad"></i> 面试模式</template>
                 <el-radio-group v-model="mode" class="mode-radio-group">
-                  <el-radio-button value="basic"><div class="mode-option"><span class="mode-icon"><i class="fa-regular fa-clipboard"></i></span><div><strong>基础模式</strong><p class="mode-desc">固定问题，覆盖常见面试题</p></div></div></el-radio-button>
-                  <el-radio-button value="resume"><div class="mode-option"><span class="mode-icon"><i class="fa-regular fa-file"></i></span><div><strong>简历驱动</strong><p class="mode-desc">基于简历内容生成个性化问题</p></div></div></el-radio-button>
-                  <el-radio-button value="stress"><div class="mode-option"><span class="mode-icon"><i class="fa-solid fa-fire"></i></span><div><strong>压力面试</strong><p class="mode-desc">挑战性追问，模拟高压场景</p></div></div></el-radio-button>
+                  <el-radio-button value="basic"><div class="mode-option"><span class="mode-icon"><i class="fa-regular fa-hand-peace"></i></span><div><strong>标准面试</strong><p class="mode-desc">基于简历全面考察，从背景到技能自然追问</p></div></div></el-radio-button>
+                  <el-radio-button value="deepdive"><div class="mode-option"><span class="mode-icon"><i class="fa-solid fa-microscope"></i></span><div><strong>项目深挖</strong><p class="mode-desc">挑一个项目/技术点往深了问，模拟同事面</p></div></div></el-radio-button>
+                  <el-radio-button value="stress"><div class="mode-option"><span class="mode-icon"><i class="fa-solid fa-fire"></i></span><div><strong>压力面试</strong><p class="mode-desc">基于简历持续追问质疑，模拟高压场景</p></div></div></el-radio-button>
                 </el-radio-group>
               </el-form-item>
               <el-form-item>
@@ -252,9 +252,9 @@
                   size="small"
                   :type="autoSpeakEnabled ? 'primary' : 'default'"
                   @click="autoSpeakEnabled = !autoSpeakEnabled"
-                  title="AI回复自动朗读：开启后AI说的话会自动读出来"
+                  title="自动朗读AI回复"
                 >
-                  <i class="fa-solid fa-volume-high"></i> {{ autoSpeakEnabled ? 'AI朗读' : '朗读关' }}
+                  <i class="fa-solid fa-volume-high"></i> {{ autoSpeakEnabled ? '已开启' : '已关闭' }}
                 </el-button>
               </div>
               <el-button
@@ -294,6 +294,9 @@
                 </div>
               </div>
               <!-- 录制状态覆盖 -->
+              <div v-if="isRecordingVideo" class="recording-badge">
+                <span class="rec-dot"></span> REC {{ recordingDuration }}
+              </div>
             </div>
             <div class="camera-placeholder" v-else>
               <div class="camera-placeholder-icon"><i class="fa-solid fa-camera"></i></div>
@@ -305,6 +308,36 @@
                 <span class="ed-label">{{ key }}</span>
                 <div class="ed-bar-track"><div class="ed-bar-fill" :style="{ width: val + '%', background: edBarColor(key, val) }"></div></div>
                 <span class="ed-val">{{ val }}%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 录制控制区 -->
+          <div class="recording-controls">
+            <div class="recording-header">
+              <span><i class="fa-solid fa-film"></i> 录制控制</span>
+            </div>
+            <div class="recording-buttons">
+              <div class="rec-btn-group">
+                <el-button
+                  size="small"
+                  :type="micOn ? 'primary' : 'default'"
+                  @click="toggleMic"
+                  :disabled="!cameraOn"
+                  title="麦克风开关"
+                >
+                  <template v-if="micOn"><i class="fa-solid fa-microphone"></i> 麦克风开</template>
+                  <template v-else><i class="fa-solid fa-volume-xmark"></i> 麦克风关</template>
+                </el-button>
+                <el-button
+                  size="small"
+                  :type="isRecordingVideo ? 'danger' : 'success'"
+                  @click="toggleRecording"
+                  :disabled="!cameraOn || !micOn"
+                >
+                  <template v-if="isRecordingVideo"><i class="fa-solid fa-stop"></i> 停止录制</template>
+                  <template v-else><i class="fa-solid fa-circle"></i> 开始录制</template>
+                </el-button>
               </div>
             </div>
           </div>
@@ -333,8 +366,8 @@
             </div>
           </div>
 
-          <!-- 关键词提示（简历驱动模式） -->
-          <div v-if="mode === 'resume' && currentKeywords.length" class="keyword-hints">
+          <!-- 关键词提示 -->
+          <div v-if="currentKeywords.length" class="keyword-hints">
             <div class="keyword-header"><i class="fa-solid fa-lightbulb"></i> 关键词提示</div>
             <div class="keyword-tags">
               <el-tag
@@ -758,6 +791,136 @@ async function captureAndAnalyze() {
   } catch { /* silent */ }
 }
 
+// ==================== Microphone + Recording ====================
+const micOn = ref(false)
+let micStream = null
+
+async function toggleMic() {
+  if (micOn.value) {
+    if (micStream) {
+      micStream.getAudioTracks().forEach(t => t.stop())
+      micStream = null
+    }
+    micOn.value = false
+    return
+  }
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    micOn.value = true
+    ElMessage.success('🎙️ 麦克风已开启')
+  } catch {
+    ElMessage.warning('无法开启麦克风')
+  }
+}
+
+// ==================== Video Recording ====================
+const isRecordingVideo = ref(false)
+const recordingDuration = ref('00:00')
+let mediaRecorder = null
+let recordedChunks = []
+let recordingTimer = null
+let recordingStartTime = 0
+
+async function toggleRecording() {
+  if (isRecordingVideo.value) {
+    stopRecording()
+  } else {
+    startRecording()
+  }
+}
+
+async function startRecording() {
+  if (!cameraStream) {
+    ElMessage.warning('请先开启摄像头')
+    return
+  }
+  if (!micOn.value) {
+    ElMessage.warning('请先开启麦克风')
+    return
+  }
+  try {
+    // Create combined stream from camera (already includes audio if available)
+    recordedChunks = []
+    let combinedStream = cameraStream // cameraStream already has audio from getUserMedia
+
+    // Check if we need to add microphone audio separately
+    const audioTracks = cameraStream.getAudioTracks()
+    if (!audioTracks.length && micStream) {
+      // If camera stream has no audio, try to combine
+      const tracks = [...cameraStream.getVideoTracks(), ...micStream.getAudioTracks()]
+      combinedStream = new MediaStream(tracks)
+    }
+
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+      ? 'video/webm;codecs=vp9,opus'
+      : MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
+        ? 'video/webm;codecs=vp8,opus'
+        : 'video/webm'
+
+    mediaRecorder = new MediaRecorder(combinedStream, { mimeType })
+
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) recordedChunks.push(e.data)
+    }
+
+    mediaRecorder.onstop = async () => {
+      await uploadRecording()
+    }
+
+    mediaRecorder.onerror = () => {
+      ElMessage.error('录制出错')
+      isRecordingVideo.value = false
+    }
+
+    mediaRecorder.start(1000) // collect data every second
+    isRecordingVideo.value = true
+    recordingStartTime = Date.now()
+
+    // Start timer
+    recordingTimer = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000)
+      const m = String(Math.floor(elapsed / 60)).padStart(2, '0')
+      const s = String(elapsed % 60).padStart(2, '0')
+      recordingDuration.value = `${m}:${s}`
+    }, 1000)
+
+    ElMessage.success('⏺️ 开始录制')
+  } catch (err) {
+    ElMessage.error('启动录制失败：' + (err.message || '未知错误'))
+  }
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop()
+  }
+  isRecordingVideo.value = false
+  if (recordingTimer) {
+    clearInterval(recordingTimer)
+    recordingTimer = null
+  }
+}
+
+async function uploadRecording() {
+  if (!recordedChunks.length || !sessionId.value) {
+    recordedChunks = []
+    return
+  }
+  try {
+    const blob = new Blob(recordedChunks, { type: 'video/webm' })
+    const formData = new FormData()
+    formData.append('file', blob, `interview_${sessionId.value}_${Date.now()}.webm`)
+    formData.append('session_id', sessionId.value)
+    await axios.post(`${API}/interview/upload-recording`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    ElMessage.success('✅ 录制已上传')
+  } catch {
+    ElMessage.warning('录制上传失败')
+  }
+  recordedChunks = []
+}
+
 // ==================== Voice Input (SpeechRecognition) ====================
 const isRecording = ref(false)
 const voiceActive = ref(false)
@@ -972,16 +1135,14 @@ function speakText(text) {
 
 // ==================== Resume-driven keywords ====================
 const currentKeywords = ref([])
-const resumeQuestions = ref([])
-let resumeQuestionIndex = 0
 
 // ==================== Computed ====================
 const modeLabel = computed(() => {
-  const map = { basic: '基础模式', resume: '简历驱动', stress: '压力面试' }
+  const map = { basic: '标准面试', deepdive: '项目深挖', stress: '压力面试' }
   return map[mode.value] || mode.value
 })
 const modeTagType = computed(() => {
-  const map = { basic: 'primary', resume: 'success', stress: 'danger' }
+  const map = { basic: 'primary', deepdive: 'warning', stress: 'danger' }
   return map[mode.value] || 'info'
 })
 
@@ -1095,26 +1256,12 @@ async function handleStartInterview() {
   riskEvents.value = []
   startRiskWatch()
 
-  // If resume mode and we have a resume, fetch resume questions first
-  if (mode.value === 'resume' && resumeParsedText.value) {
-    try {
-      const { data } = await axios.post(`${API}/interview/resume-questions`, {
-        resume_text: resumeParsedText.value,
-        count: 10
-      })
-      resumeQuestions.value = data.questions || []
-      resumeQuestionIndex = 0
-    } catch {
-      ElMessage.warning('简历问题生成失败，将使用默认问题')
-      resumeQuestions.value = []
-    }
-  }
-
   try {
     const { data } = await axios.post(`${API}/interview/chat/start`, {
       job: buildInterviewJobPrompt(),
       category: category.value || interviewTargetLabel.value,
       mode: mode.value,
+      resume_text: resumeParsedText.value,
       custom_material: customInterview.material.trim()
     })
     sessionId.value = data.session_id
@@ -1153,14 +1300,17 @@ function buildOpeningMessage() {
   const jobName = interviewTargetLabel.value || '目标岗位'
   const modeName = modeLabel.value || '模拟'
   const materialHint = customInterview.material.trim() ? '我已经读取了你提供的自定义面试材料，后面会按材料里的要求追问。' : ''
-  return `你好，我是启途 AI 面试官。今天我们按「${jobName}」做一场${modeName}面试。${materialHint}先别着急介绍项目，我会先用一两个基础问题帮你进入状态；如果后面需要聊项目，我会提前说明。第一个问题：你为什么想了解或尝试「${jobName}」这个方向？`
+  const resumeHint = resumeParsedText.value.trim() ? '也看到了你的简历信息，会结合你的背景来问。' : ''
+  if (mode.value === 'deepdive') {
+    return `你好，我是启途。今天不做常规面试，我们直接聊聊你简历上的项目细节和技术深度。${materialHint}${resumeHint}请先说说你做过的项目中最有收获的一个吧。`
+  }
+  if (mode.value === 'stress') {
+    return `好，我们直接开始${jobName}岗位的压力面试。我不关心你的背景介绍，先说一个你觉得最拿手的技术点，我看看到底懂多少。`
+  }
+  return `你好，我是启途 AI 面试官。今天我们按「${jobName}」做一场${modeName}面试。${materialHint}${resumeHint}先简单说说你的专业背景和学习经历吧。`
 }
 
 function updateKeywords(aiMsg) {
-  if (mode.value !== 'resume') {
-    currentKeywords.value = []
-    return
-  }
   // Extract meaningful keywords from AI message for hints
   const commonWords = ['的', '了', '是', '在', '我', '有', '和', '就', '不', '人', '都', '一', '一个', '上', '也', '很', '到', '说', '要', '去', '你', '会', '着', '没有', '看', '好', '自己', '这', '他', '她', '它', '们', '那', '什么', '怎么', '为什么', '请', '可以', '能', '吗', '吧', '呢', '啊']
   const words = aiMsg.split(/[\s,，。、；：！？?()（）\[\]【】""''"《》\n]+/).filter(w => w.length > 1 && !commonWords.includes(w))
@@ -1199,11 +1349,6 @@ async function sendMessage() {
   scrollToBottom()
 
   try {
-    // For resume mode, if we have pre-generated questions, use them
-    if (mode.value === 'resume' && resumeQuestions.value.length > 0 && resumeQuestionIndex < resumeQuestions.value.length) {
-      // Normal chat but the AI handles it
-    }
-
     const { data } = await axios.post(`${API}/interview/chat`, {
       session_id: sessionId.value,
       message: msg
@@ -1364,8 +1509,6 @@ function resetToSetup() {
   report.summary = ''
   report.sessionId = ''
   currentKeywords.value = []
-  resumeQuestions.value = []
-  resumeQuestionIndex = 0
   riskEvents.value = []
   stopRiskWatch()
 }
@@ -1376,7 +1519,12 @@ function cleanupAll() {
   stopVoiceInput()
   stopCountdown()
   stopRiskWatch()
-  // 清除可能的麦克风遗留
+  if (isRecordingVideo.value) stopRecording()
+  if (micOn.value && micStream) {
+    micStream.getAudioTracks().forEach(t => t.stop())
+    micStream = null
+    micOn.value = false
+  }
   if (window.speechSynthesis) {
     window.speechSynthesis.cancel()
   }
@@ -2062,36 +2210,34 @@ onUnmounted(() => {
   font-weight: 700;
   backdrop-filter: blur(4px);
 }
-
-/* Camera placeholder */
+.recording-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(245, 108, 108, 0.85);
+  color: white;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.rec-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  animation: recPulse 1s infinite;
+}
+@keyframes recPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
 .camera-placeholder {
   background: #F8FBFF;
   aspect-ratio: 4/3;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  border-radius: 0 0 var(--session-radius) var(--session-radius);
-  color: #94A3B8;
-}
-.camera-placeholder-icon {
-  font-size: 2rem;
-  opacity: 0.5;
-}
-.camera-placeholder-text {
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin: 0;
-}
-.camera-placeholder-sub {
-  font-size: 0.72rem;
-  margin: 0;
-  opacity: 0.7;
-}
-
-/* Emotion details */
-.emotion-details {
   display: flex;
   flex-direction: column;
   align-items: center;
