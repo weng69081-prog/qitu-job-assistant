@@ -314,10 +314,6 @@
                   {{ currentEmotion.emotion }} {{ currentEmotion.confidence }}%
                 </div>
               </div>
-              <!-- 录制状态覆盖 -->
-              <div v-if="isRecordingVideo" class="recording-badge">
-                <span class="rec-dot"></span> REC {{ recordingDuration }}
-              </div>
             </div>
             <div class="camera-placeholder" v-else>
               <div class="camera-placeholder-icon"><i class="fa-solid fa-camera"></i></div>
