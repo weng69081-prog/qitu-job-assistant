@@ -365,7 +365,13 @@ const qaItems = computed(() => {
 })
 
 const dimensions = computed(() => {
-  return session.value?.dimensions || {}
+  const raw = session.value?.dimensions || {}
+  // 兼容两种格式：纯数字 或 {score: 数字}
+  const normalized = {}
+  for (const [k, v] of Object.entries(raw)) {
+    normalized[k] = typeof v === 'object' && v !== null ? (v.score ?? 0) : (v ?? 0)
+  }
+  return normalized
 })
 
 const strengths = computed(() => {
