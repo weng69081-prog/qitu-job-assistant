@@ -1465,7 +1465,7 @@ async function skipQuestion() {
 async function handleEndInterview(auto = false) {
   if (!sessionId.value) return
 
-  if (!auto) {
+  if (auto !== true) {
     try {
       await ElMessageBox.confirm('确定要结束当前面试吗？结束后将生成评估报告。', '确认结束', {
         confirmButtonText: '结束面试',

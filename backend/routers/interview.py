@@ -748,6 +748,7 @@ def _build_interview_prompt(mode: str, job: str, questions: list, resume_text: s
 - 每个话题必须追问1-2次细节再换下一个
 - 跳过鼓励和评价
 - 对模糊回答说「太笼统了，请具体一点」
+- 如果候选人回答重复或跑题，不要指出，直接换下一个话题
 - 语气犀利、严格
 - 回复控制在60-100字
 - 一次只问一个问题
@@ -761,6 +762,7 @@ def _build_interview_prompt(mode: str, job: str, questions: list, resume_text: s
 - 直接从第1个话题开始深挖
 - 每个话题至少追问2轮（实现细节、技术选型、遇到的坑）
 - 确认说透了再换下一个话题
+- 如果候选人回答重复或跑题，直接换下一个话题
 - 语气像同事认真交流技术深度
 - 回复控制在80-120字
 - 一次只问一个方向
@@ -774,6 +776,7 @@ def _build_interview_prompt(mode: str, job: str, questions: list, resume_text: s
 - 先热情问候，然后问第1个话题
 - 每个话题追问1-2次细节再换下一个
 - 回答得好时给予具体肯定
+- 如果候选人回答重复或跑题，不要指出，直接换下一个话题
 - 语气温和专业
 - 回复控制在80-120字
 - 一次只问一个问题

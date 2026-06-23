@@ -84,34 +84,34 @@ pres.title = "启途 — AI求职教育平台";
 
   // Right: 3 pain point cards with numbers (no leading zero)
   const pains = [
-    { n: "1", t: "方向迷茫", d: "很多大一学生不清楚所学专业未来能从事什么岗位，也不了解不同职业方向的具体要求和发展路径，缺乏明确的规划方向。" },
-    { n: "2", t: "面试零经验", d: "校园内缺少真实面试场景的训练机会，学生面对企业面试官时容易紧张无措，缺乏有效的应对技巧和实战经验。" },
-    { n: "3", t: "简历不会写", d: "大多数学生不知道如何提炼个人优势、撰写具有竞争力的简历，求职第一关就难以迈出，影响后续的求职信心。" },
+    { n: "1", t: "方向迷茫", d: "很多大一学生不清楚所学专业未来能从事什么岗位，也不了解不同职业方向的具体要求和路径，缺乏明确的规划。" },
+    { n: "2", t: "面试零经验", d: "校园内缺少真实面试场景的训练机会，学生面对面试官时容易紧张无措，缺乏有效的应对技巧和实战经验。" },
+    { n: "3", t: "简历不会写", d: "大多数学生不知道如何提炼个人优势、撰写有竞争力的简历，求职第一关就难以迈出，影响后续信心。" },
   ];
 
-  const cardX = 5.2, cardW = 4.4, cardH = 1.15, gapY = 1.2;
+  const cardX = 5.2, cardW = 4.4, cardH = 1.05, gapY = 1.08;
   pains.forEach((p, i) => {
-    const cy = 1.1 + i * gapY;
+    const cy = 0.95 + i * gapY;
     // Card bg
     s.addShape("roundRect", {
       x: cardX, y: cy, w: cardW, h: cardH,
       fill: { color: i === 1 ? C.ACCENT_LIGHT : C.PRIMARY_LIGHT },
       line: { color: C.BORDER, width: 0.8 }, rectRadius: 0.08,
     });
-    // Number circle - smaller font for single digit
-    s.addShape("ellipse", { x: cardX + 0.15, y: cy + 0.22, w: 0.38, h: 0.38, fill: { color: C.PRIMARY } });
-    addT(s, p.n, cardX + 0.15, cy + 0.22, 0.38, 0.38, {
-      fontSize: 16, bold: true, color: C.WHITE, align: "center", valign: "middle", fontFace: F.EN,
+    // Number circle
+    s.addShape("ellipse", { x: cardX + 0.12, y: cy + 0.22, w: 0.35, h: 0.35, fill: { color: C.PRIMARY } });
+    addT(s, p.n, cardX + 0.12, cy + 0.22, 0.35, 0.35, {
+      fontSize: 15, bold: true, color: C.WHITE, align: "center", valign: "middle", fontFace: F.EN,
     });
     // Title
-    addT(s, p.t, cardX + 0.7, cy + 0.12, 3.5, 0.3, { fontSize: 15, bold: true, color: C.TEXT });
-    // Description - more space from title
-    addT(s, p.d, cardX + 0.7, cy + 0.5, 3.5, 0.6, { fontSize: 10.5, color: C.TEXT_MUTED, lineSpacingMultiple: 1.25, valign: "top" });
+    addT(s, p.t, cardX + 0.65, cy + 0.15, 3.5, 0.28, { fontSize: 14, bold: true, color: C.TEXT });
+    // Description - bigger area
+    addT(s, p.d, cardX + 0.65, cy + 0.48, 3.55, 0.5, { fontSize: 9.5, color: C.TEXT_MUTED, lineSpacingMultiple: 1.15, valign: "top" });
   });
 
-  // Target users bar
-  s.addShape("rect", { x: 0.6, y: 4.3, w: 8.8, h: 0.85, fill: { color: "F8FAFC" }, rectRadius: 0.08 });
-  addT(s, "👥 目标用户：在校大学生（尤其大一新生）— 面临职业规划起步难、求职准备无从下手", 0.85, 4.42, 8.3, 0.6, { fontSize: 12, color: C.TEXT, lineSpacingMultiple: 1.3 });
+  // Target users bar - moved down to avoid overlap
+  s.addShape("rect", { x: 0.6, y: 4.3, w: 8.8, h: 0.75, fill: { color: "F8FAFC" }, rectRadius: 0.08 });
+  addT(s, "👥 目标用户：在校大学生（尤其大一新生）— 面临职业规划起步难、求职准备无从下手", 0.85, 4.42, 8.3, 0.5, { fontSize: 12, color: C.TEXT, lineSpacingMultiple: 1.3 });
 
   addFooter(s);
 }
