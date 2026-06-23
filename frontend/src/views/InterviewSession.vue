@@ -1422,6 +1422,11 @@ async function sendMessage() {
 
     // Update keyword hints
     updateKeywords(aiMsg)
+
+    // AI 说「面试到此结束」→ 自动结束面试生成报告
+    if (data.is_complete) {
+      setTimeout(() => handleEndInterview(true), 1500)
+    }
   } catch (err) {
     ElMessage.error('发送失败，请重试')
   }
@@ -1457,17 +1462,19 @@ async function skipQuestion() {
 }
 
 // ==================== End Interview ====================
-async function handleEndInterview() {
+async function handleEndInterview(auto = false) {
   if (!sessionId.value) return
 
-  try {
-    await ElMessageBox.confirm('确定要结束当前面试吗？结束后将生成评估报告。', '确认结束', {
-      confirmButtonText: '结束面试',
-      cancelButtonText: '继续面试',
-      type: 'warning'
-    })
-  } catch {
-    return // cancelled
+  if (!auto) {
+    try {
+      await ElMessageBox.confirm('确定要结束当前面试吗？结束后将生成评估报告。', '确认结束', {
+        confirmButtonText: '结束面试',
+        cancelButtonText: '继续面试',
+        type: 'warning'
+      })
+    } catch {
+      return // cancelled
+    }
   }
 
   // Stop recording if active

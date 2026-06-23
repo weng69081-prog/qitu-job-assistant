@@ -675,36 +675,22 @@ def analyze_interview_expression(data: dict = Body({})):
 # ═══════════════════════════════════════
 
 
-def _generate_questions(job: str, resume_text: str, mode: str, count: int = 5) -> list:
-    """用 AI 一次性预生成面试题，有简历则结合简历出题"""
+def _generate_questions(job: str, resume_text: str, mode: str, target: int = 8) -> list:
+    """用 AI 生成面试题，不够的用模板补齐（弱模型最多出5-6道）"""
     questions = []
     try:
         if resume_text.strip():
-            q_prompt = f"""根据以下简历信息和岗位，生成{count}道有针对性的面试题。
+            q_prompt = f"""根据以下简历信息和「{job}」岗位，生成面试题。每道题要结合简历上的经历来出。
 
-岗位：{job}
-简历内容：
-{resume_text.strip()[:2000]}
+简历：{resume_text.strip()[:2000]}
 
-要求：
-- 每道题必须结合简历上的具体项目经历、技术栈或背景来出
-- 不同题目覆盖不同方向：项目经验、技术深度、场景题、软技能等
-- 不用通用题，要「看到简历才能问出来的题」
-- 每道题20-40字
-
-返回JSON数组，如：["题1","题2","题3","题4","题5"]"""
-            q_system = "你是有经验的面试官，擅长从简历中挖掘具体的提问点。"
+请直接返回JSON数组，每道题20-40字：["题1","题2","题3","题4","题5","题6","题7","题8"]"""
+            q_system = "你是有经验的面试官。"
         else:
-            q_prompt = f"""为「{job}」岗位生成{count}道面试题。
+            q_prompt = f"""为「{job}」岗位生成面试题，覆盖基础、应用、综合能力。
 
-要求：
-- 适合该岗位的常见面试题
-- 包含基础题和进阶题
-- 每道题20-40字
-- 不同题目覆盖不同方向
-
-返回JSON数组，如：["题1","题2","题3","题4","题5"]"""
-            q_system = "你是资深面试官，出的题专业、实际、有深度。"
+请直接返回JSON数组，每道题20-40字：["题1","题2","题3","题4","题5","题6","题7","题8"]"""
+            q_system = "你是资深面试官。"
 
         from routers.llm import chat
         text = chat(q_prompt, system=q_system, max_tokens=800)
@@ -714,20 +700,38 @@ def _generate_questions(job: str, resume_text: str, mode: str, count: int = 5) -
             if text.endswith("```"):
                 text = text[:-3]
         qs = json.loads(text)
-        if isinstance(qs, list) and len(qs) >= 3:
-            questions = qs[:count]
+        if isinstance(qs, list):
+            questions = [q for q in qs if isinstance(q, str) and len(q) > 5]
     except:
         pass
 
-    if not questions:
-        questions = [
-            f"请说说你为什么选择{job}这个方向？",
-            f"在{job}相关技能中，你最擅长什么？请举例说明。",
-            f"描述一个你解决过的最有挑战性的问题。",
-            f"你如何看待{job}领域的未来发展趋势？",
-            f"如果让你重新做一个项目，你会做什么不同的事情？",
-        ]
-    return questions
+    # 模板题兜底（按岗位生成）
+    templates = [
+        f"请说说你为什么选择{job}这个方向？",
+        f"在{job}相关技能中，你最擅长什么？请举例说明。",
+        f"描述一个你解决过的最有挑战性的技术问题。",
+        f"你如何看待{job}领域的未来发展趋势？",
+        f"如果让你重新做一个项目，你会做什么不同的事情？",
+        f"谈谈你在团队协作中遇到过的一次分歧，你是怎么处理的？",
+        f"你平时通过什么方式学习新技术？",
+        f"你对这次应聘的岗位有什么期待？",
+    ]
+
+    # 用AI生成的题优先，不够用模板补到target个
+    seen = set()
+    result = []
+    for q in questions:
+        if q not in seen and len(result) < target:
+            result.append(q)
+            seen.add(q)
+    for q in templates:
+        if len(result) >= target:
+            break
+        if q not in seen:
+            result.append(q)
+            seen.add(q)
+
+    return result[:target]
 
 
 def _build_interview_prompt(mode: str, job: str, questions: list, resume_text: str) -> str:
@@ -735,20 +739,21 @@ def _build_interview_prompt(mode: str, job: str, questions: list, resume_text: s
     q_list_str = "\n".join(f"{i+1}. {q}" for i, q in enumerate(questions))
 
     if mode == "stress":
-        prompt = f"""你是「{job}」岗位的面试官。下面是你需要依次问的问题：
+        prompt = f"""你是「{job}」岗位的面试官。下面是你需要依次问的{len(questions)}个话题：
 
 {q_list_str}
 
 规则：
 - 不寒暄，直接问第1个
-- 候选人的每个回答都必须追问1次细节，再问下一个
-- 跳过鼓励和评价，直接问下一个问题
+- 每个话题必须追问1-2次细节再换下一个
+- 跳过鼓励和评价
 - 对模糊回答说「太笼统了，请具体一点」
 - 语气犀利、严格
 - 回复控制在60-100字
-- 一次只问一个问题"""
+- 一次只问一个问题
+- 全部问完后说「面试到此结束」自然结束"""
     elif mode == "deepdive":
-        prompt = f"""你是「{job}」岗位的技术主管。下面是你需要依次深挖的话题：
+        prompt = f"""你是「{job}」岗位的技术主管。下面是你需要依次深挖的{len(questions)}个话题：
 
 {q_list_str}
 
@@ -758,19 +763,21 @@ def _build_interview_prompt(mode: str, job: str, questions: list, resume_text: s
 - 确认说透了再换下一个话题
 - 语气像同事认真交流技术深度
 - 回复控制在80-120字
-- 一次只问一个方向"""
+- 一次只问一个方向
+- 全部问完后说「面试到此结束」自然结束"""
     else:  # basic / normal
-        prompt = f"""你是「{job}」岗位的面试官。下面是你需要依次问的问题：
+        prompt = f"""你是「{job}」岗位的面试官。下面是你需要依次问的{len(questions)}个话题：
 
 {q_list_str}
 
 规则：
-- 先热情问候，然后问第1个问题
-- 每回答完一个，先简短肯定（如「好的，了解」），然后自然过渡到下一个
-- 全部问完后自然结束
+- 先热情问候，然后问第1个话题
+- 每个话题追问1-2次细节再换下一个
+- 回答得好时给予具体肯定
 - 语气温和专业
 - 回复控制在80-120字
-- 一次只问一个问题"""
+- 一次只问一个问题
+- 全部问完后说「面试到此结束」自然结束"""
 
     if resume_text.strip():
         prompt += f"""
@@ -778,7 +785,7 @@ def _build_interview_prompt(mode: str, job: str, questions: list, resume_text: s
 === 候选人简历背景（供参考）===
 {resume_text.strip()[:1000]}
 
-按上面的题目列表提问即可，简历仅供参考。"""
+按上面的话题列表提问即可，简历仅供参考。"""
     return prompt
 
 
@@ -792,7 +799,7 @@ def chat_start(data: dict = Body({})):
     session_id = f"iv_{random.randint(10000,99999)}"
 
     # Step 1: 预生成题目（一次 API 调用）
-    questions = _generate_questions(job, resume_text, mode, 5)
+    questions = _generate_questions(job, resume_text, mode, 8)
 
     # Step 2: 构建带题目列表的 system prompt
     system_prompt = _build_interview_prompt(mode, job, questions, resume_text)
@@ -855,24 +862,20 @@ def chat_continue(data: dict = Body({})):
         # 追加用户回答
         messages.append({"role": "user", "content": user_message})
 
-        # 计算当前已回答到第几题（用户消息数 = 已回答的题数）
+        # 计算当前进度（用户消息数，用于生成进度提示）
         user_count = len([m for m in messages if m["role"] == "user"])
-        current_idx = user_count - 1  # 0-indexed
 
-        # 构造动态上下文：告诉AI当前进度 + 下一题是什么
-        if current_idx < len(questions) - 1:
-            next_q = questions[current_idx + 1]
-            remaining_count = len(questions) - (current_idx + 1)
-            context = f"""
-当前进度：已回答完第{current_idx+1}题，还有{remaining_count}题（共{len(questions)}题）
-下一个问题（第{current_idx+2}题）：{next_q}
+        # 构造进度提示（不强制固定题号映射，AI自己决定什么时候换话题）
+        total_topics = len(questions)
+        progress_hint = f"当前是第{user_count}轮回答，共{total_topics}个话题。按上面的话题列表正常推进即可。"
 
-请先对上一个回答简短评价（1-2句话），然后自然地问下一个问题。"""
-        else:
-            context = """
-所有问题已经问完。请简要总结这场面试（1-2句话），然后自然结束。不要问新的问题。"""
+        # 额外的最后阶段提示：让AI知道可以准备结束了
+        if user_count >= total_topics * 3:
+            progress_hint += " 已经聊了很多内容了。如果你觉得所有话题都聊透了，说「面试到此结束」结束面试。"
+        elif user_count >= total_topics * 2:
+            progress_hint += " 适当推进节奏，不要在单个话题上花太多轮次。"
 
-        temp_system = conv.system_prompt + context
+        temp_system = conv.system_prompt + "\n\n" + progress_hint
         from routers.llm import chat_messages
         response = chat_messages(
             messages,
@@ -880,10 +883,7 @@ def chat_continue(data: dict = Body({})):
             max_tokens=400
         )
         if not response:
-            if current_idx < len(questions) - 1:
-                response = f"好的，接下来我想问：{questions[current_idx + 1]}"
-            else:
-                response = "非常感谢你参加这次面试！我们会尽快给你反馈。"
+            response = "好的，继续。你还有什么想补充的吗？"
 
         messages.append({"role": "assistant", "content": response})
         conv.messages_json = _iv_json.dumps(messages)
@@ -891,6 +891,9 @@ def chat_continue(data: dict = Body({})):
         db.commit()
 
         round_num = user_count
+
+        # 检测AI是否说「面试到此结束」→ 标记面试已完成
+        is_complete = "面试到此结束" in response
     finally:
         db.close()
 
@@ -898,6 +901,7 @@ def chat_continue(data: dict = Body({})):
         "session_id": session_id,
         "message": response,
         "round": round_num,
+        "is_complete": is_complete,
     }
 
 
