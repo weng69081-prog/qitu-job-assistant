@@ -564,7 +564,7 @@ function clearResume() {
 
 async function fetchHistoryResumes() {
   try {
-    const { data } = await axios.get(`${API}/resume/list`)
+    const { data } = await axios.get(`${API}/learning/resume/list`)
     historyResumes.value = Array.isArray(data) ? data : []
   } catch {
     historyResumes.value = []
