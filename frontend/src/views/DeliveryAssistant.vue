@@ -377,6 +377,80 @@
           </div>
         </div>
 
+        <!-- ══ 板块：差距分析（你 vs 岗位）══ -->
+        <div class="detail-block card gap-block">
+          <div class="detail-block-header">
+            <Target :size="16" class="icon-blue" />
+            差距分析 · 你 vs 岗位要求
+          </div>
+          <div class="detail-block-body">
+            <!-- 加载中 -->
+            <div v-if="!gapResult" class="gap-loading">
+              <Loader :size="16" class="icon-blue" style="animation:spin 1s linear infinite" />
+              <span>正在分析你的技能与岗位差距...</span>
+            </div>
+
+            <template v-else>
+              <!-- 匹配度进度条 -->
+              <div class="gap-score-row">
+                <div class="gap-score-circle">
+                  <el-progress
+                    type="circle"
+                    :percentage="gapResult.match_score || 0"
+                    :width="80"
+                    :stroke-width="6"
+                    :color="gapResult.match_score >= 70 ? '#67C23A' : gapResult.match_score >= 40 ? '#E6A23C' : '#F56C6C'"
+                  />
+                </div>
+                <div class="gap-score-info">
+                  <div class="gap-readiness-badge" :class="'badge-' + (gapResult.readiness_level || 'need_work')">
+                    {{ gapResult.readiness_level === 'ready' ? '准备充分' : gapResult.readiness_level === 'nearly_ready' ? '基本达标' : '需要补强' }}
+                  </div>
+                  <p class="gap-summary">{{ gapResult.summary }}</p>
+                </div>
+              </div>
+
+              <!-- 优势领域 -->
+              <div v-if="gapResult.strength_areas?.length" class="skill-group">
+                <label><CheckCircle :size="16" style="color:#67C23A" /> 你的优势领域</label>
+                <div class="skill-tags">
+                  <el-tag v-for="s in gapResult.strength_areas" :key="s" size="small" type="success">{{ s }}</el-tag>
+                </div>
+              </div>
+
+              <!-- 待补足领域 -->
+              <div v-if="gapResult.missing_skills?.length" class="skill-group">
+                <label><XCircle :size="16" style="color:#F56C6C" /> 待补足技能</label>
+                <div class="skill-tags">
+                  <el-tag
+                    v-for="s in gapResult.missing_skills" :key="s" size="small" type="danger"
+                    style="cursor:pointer" @click="goExam(s)"
+                  >
+                    {{ s }} <Pen :size="16" class="icon-blue" />
+                  </el-tag>
+                </div>
+              </div>
+
+              <!-- 优先建议 -->
+              <div v-if="gapResult.priority_recommendations?.length" class="skill-group">
+                <label><ArrowUpNarrowWide :size="16" style="color:#E6A23C" /> 优先提升建议</label>
+                <ul class="gap-recommend-list">
+                  <li v-for="(r, i) in gapResult.priority_recommendations" :key="i">
+                    <Circle :size="6" style="color:#E6A23C;margin-right:6px" />
+                    {{ r }}
+                  </li>
+                </ul>
+              </div>
+
+              <!-- 笔试反馈 -->
+              <div v-if="gapResult.exam_feedback" class="gap-exam-feedback">
+                <Lightbulb :size="16" style="color:#E6A23C" />
+                {{ gapResult.exam_feedback }}
+              </div>
+            </template>
+          </div>
+        </div>
+
         <!-- 板块3：面试专项汇总 -->
         <div class="detail-block card">
           <div class="detail-block-header">
@@ -898,6 +972,7 @@ const detailVisible = ref(false)
 const detailJob = ref(null)
 const detailLoading = ref(false)
 const analysisResult = ref(null)
+const gapResult = ref(null)
 
 // ── 投递台账
 const trackingRecords = ref([])
@@ -1150,14 +1225,16 @@ async function showDetail(job) {
   detailVisible.value = true
   detailLoading.value = true
   analysisResult.value = null
+  gapResult.value = null
 
-  // 并行获取详情和AI分析
+  // 并行获取详情、AI分析、差距分析
   const token = getToken()
   const skills = userProfile.value?.skills || ''
 
-  const [detailData, analysis] = await Promise.all([
+  const [detailData, analysis, gap] = await Promise.all([
     apiGet(`/api/delivery/jobs/${job.id}`),
     apiPost(`/api/delivery/ai-analyze/${job.id}?user_skills=${encodeURIComponent(skills)}`),
+    apiGet(`/api/delivery/gap-analysis/${job.id}?user_id=1`).catch(() => null),
   ])
 
   if (detailData) {
@@ -1185,6 +1262,9 @@ async function showDetail(job) {
       overall_assessment: `该岗位来自${job.company_name}，建议尽快准备投递。`,
     }
   }
+  if (gap) {
+    gapResult.value = gap
+  }
   detailLoading.value = false
 }
 
@@ -1204,7 +1284,28 @@ async function goApplyPage() {
 
 function goInterview() {
   detailVisible.value = false
-  router.push('/interview')
+  // 把岗位数据存起来，面试页面自动填
+  const job = detailJob.value
+  const analysis = analysisResult.value
+  if (job && analysis) {
+    const material = [
+      `公司：${job.company_name || ''}`,
+      `行业：${job.industry || ''}`,
+      `岗位：${analysis.job_full_title || job.job_title || ''}`,
+      `地点：${analysis.location_detail || job.address || ''}`,
+      `要求技能：${(analysis.hard_skills || []).join('、')}`,
+      `优先条件：${(analysis.preferred_skills || []).join('、')}`,
+      `面试轮次：${analysis.interview_rounds || ''}`,
+      `面试形式：${analysis.interview_form || ''}`,
+      `面试重点：${(analysis.interview_focus || []).join('、')}`,
+      `公司简介：${analysis.company_summary || job.company_intro || ''}`,
+    ].filter(Boolean).join('\n')
+    sessionStorage.setItem('qitu_interview_job', JSON.stringify({
+      target: analysis.job_full_title || job.job_title || job.company_name,
+      material: material,
+    }))
+  }
+  router.push('/interview/session')
 }
 
 function goExam(skill) {
@@ -2406,5 +2507,83 @@ function openDetailById(jobId) {
 
 :deep(.el-button--small i) {
   margin-right: 2px;
+}
+
+/* ── 差距分析板块 ── */
+.gap-block {
+  border-left: 3px solid #E6A23C;
+}
+.gap-score-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+.gap-score-circle {
+  flex-shrink: 0;
+}
+.gap-score-info {
+  flex: 1;
+}
+.gap-readiness-badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.gap-readiness-badge.badge-ready {
+  background: #f0f9eb;
+  color: #67C23A;
+}
+.gap-readiness-badge.badge-nearly_ready {
+  background: #fdf6ec;
+  color: #E6A23C;
+}
+.gap-readiness-badge.badge-need_work {
+  background: #fef0f0;
+  color: #F56C6C;
+}
+.gap-summary {
+  font-size: 14px;
+  color: #606266;
+  margin: 0;
+  line-height: 1.5;
+}
+.gap-recommend-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+.gap-recommend-list li {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #606266;
+  padding: 4px 0;
+}
+.gap-exam-feedback {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #fdf6ec;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #7c6a2e;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.gap-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 0;
+  font-size: 14px;
+  color: #909399;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 </style>

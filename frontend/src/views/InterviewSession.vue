@@ -553,6 +553,26 @@ function buildInterviewJobPrompt() {
   return parts.join('\n')
 }
 
+// 从投递助手传来的岗位数据自动填入
+onMounted(() => {
+  const stored = sessionStorage.getItem('qitu_interview_job')
+  if (stored) {
+    try {
+      const data = JSON.parse(stored)
+      if (data.target) {
+        customInterview.target = data.target
+      }
+      if (data.material) {
+        customInterview.material = data.material
+      }
+      // 自动跳到步骤3（确认模式），省去前两步
+      setupStep.value = 3
+      ElMessage.success('已自动填入"' + data.target + '"的岗位信息，可以开始面试了！')
+      sessionStorage.removeItem('qitu_interview_job')
+    } catch { /* ignore */ }
+  }
+})
+
 function clearResume() {
   resumeFileName.value = ''
   resumeContent.value = ''
