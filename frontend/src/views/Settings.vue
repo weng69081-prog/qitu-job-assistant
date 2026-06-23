@@ -7,6 +7,9 @@
         <p class="banner-desc">管理你的账号、个人信息与应用配置</p>
       </div>
       <div class="banner-right">
+        <el-button size="small" @click="logout" plain round class="banner-logout-btn">
+          <LogOut :size="14" /> 退出
+        </el-button>
         <span class="qitu-watermark">QITU</span>
         <img src="/src/assets/xiaoju-on-banner.png" class="banner-cat" alt="小橘">
       </div>
