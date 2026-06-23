@@ -30,6 +30,10 @@
           <span class="sn-dot"></span>
           <span class="sn-label">学习中心</span>
         </router-link>
+        <router-link to="/resume" class="sn-item" active-class="sn-active">
+          <span class="sn-dot"></span>
+          <span class="sn-label">简历优化</span>
+        </router-link>
         <router-link to="/interview" class="sn-item" active-class="sn-active">
           <span class="sn-dot"></span>
           <span class="sn-label">面试模拟</span>
