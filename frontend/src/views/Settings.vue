@@ -681,7 +681,11 @@ function logout() {
   justify-content: center;
   gap: 14px;
   margin-top: 30px;
-  padding: 0 0 20px;
+  padding: 20px 0;
+  position: sticky;
+  bottom: 0;
+  background: var(--bg-body);
+  z-index: 10;
 }
 
 /* ═══ 品牌 Footer ═══ */
