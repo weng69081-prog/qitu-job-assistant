@@ -231,11 +231,7 @@ def _fallback_seed_jobs(db):
 
 from routers.llm import chat as llm_chat
 
-# ── AI 解析（调用小米 MiMo） ──
-MIMO_KEY = os.environ.get("MIMO_API_KEY", "")
-MIMO_URL = "https://api.xiaomimimo.com/v1"
-MIMO_MODEL = "mimo-v2-flash"
-
+# ── AI 解析（走默认LLM配置 → DeepSeek） ──
 def ai_analyze_job(job: DeliveryJob, user_skills: str = ""):
     """AI解析岗位JD + 技能匹配"""
     prompt = f"""你是一位资深的求职顾问和HR专家。请对以下岗位信息进行全面分析，输出JSON格式。
@@ -274,8 +270,7 @@ JD描述：{job.job_description}
 }}"""
 
     try:
-        content = llm_chat(prompt, temperature=0.3, max_tokens=2000,
-                          model=MIMO_MODEL, base_url=MIMO_URL, api_key=MIMO_KEY)
+        content = llm_chat(prompt, temperature=0.3, max_tokens=2000)
         if content:
             if content.startswith("```"):
                 content = content.split("\n", 1)[1].rsplit("```", 1)[0].strip()

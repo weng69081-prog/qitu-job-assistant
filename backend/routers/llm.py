@@ -1,4 +1,4 @@
-"""LLM 调用工具 —— 通过 Xiaomi MiMo API 生成自然语言内容"""
+"""LLM 调用工具 —— 通用 LLM API 封装（默认使用 .env 配置）"""
 import os, json
 from pathlib import Path
 
