@@ -239,5 +239,65 @@
     "source": "user_added",
     "major_category": "计算机类",
     "created_at": "2026-06-08T06:18:27.819280"
+  },
+  {
+    "career": "前端开发",
+    "match": 85,
+    "difficulty": "中级",
+    "salary": "8K-25K",
+    "short_intro": "开发网站和应用的用户界面",
+    "responsibilities": [
+      "设计和实现用户界面",
+      "优化网站性能和用户体验",
+      "与设计师和后端团队协作",
+      "确保代码质量和跨浏览器兼容性"
+    ],
+    "hard_requirements": [
+      "精通HTML、CSS、JavaScript",
+      "熟悉至少一种前端框架如React或Vue",
+      "了解版本控制工具如Git"
+    ],
+    "soft_requirements": [
+      "良好的沟通和团队合作能力",
+      "问题解决和逻辑思维能力",
+      "注重细节和用户体验"
+    ],
+    "growth_path": [
+      "初级(1-2年,8K-12K)→负责基本界面开发和维护",
+      "中级(2-4年,12K-20K)→负责复杂功能和性能优化",
+      "高级(4年+,20K-30K+)→负责架构设计和团队指导"
+    ],
+    "trend": "前端技术向跨平台和智能化发展",
+    "keywords": [
+      "JavaScript",
+      "React",
+      "响应式设计"
+    ],
+    "work_type": "技术类",
+    "suitable_audience": "适合有创意、注重细节、喜欢技术的人",
+    "avoid_tips": "不适合不喜欢学习新技术或缺乏耐心的人",
+    "salary_tag": "8KK起",
+    "salary_table": [
+      {
+        "level": "应届/初级（0-2年）",
+        "range": "8K-15K"
+      },
+      {
+        "level": "中级（2-4年）",
+        "range": "15K-22K"
+      },
+      {
+        "level": "高级（4-6年）",
+        "range": "22K-30K"
+      },
+      {
+        "level": "资深/专家（6年+）",
+        "range": "30K-50K+"
+      }
+    ],
+    "ai_generated": true,
+    "source": "user_added",
+    "major_category": "计算机类",
+    "created_at": "2026-06-23T00:54:15.457729"
   }
 ]
