@@ -543,13 +543,14 @@ onMounted(async () => {
 
 /* 综合指标网格 */
 .stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
 }
 .stat-cell {
   text-align: center;
-  padding: 8px 4px;
+  padding: 6px 4px;
+  flex: 1;
   background: #F8FAFC;
   border-radius: 12px;
 }
