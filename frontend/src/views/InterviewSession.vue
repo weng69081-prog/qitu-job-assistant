@@ -254,7 +254,7 @@
                   @click="autoSpeakEnabled = !autoSpeakEnabled"
                   title="自动朗读AI回复"
                 >
-                  <i class="fa-solid fa-volume-high"></i> {{ autoSpeakEnabled ? '已开启' : '已关闭' }}
+                  <i class="fa-solid fa-volume-high"></i> {{ autoSpeakEnabled ? 'AI朗读' : '朗读关' }}
                 </el-button>
               </div>
               <el-button
@@ -1519,12 +1519,6 @@ function cleanupAll() {
   stopVoiceInput()
   stopCountdown()
   stopRiskWatch()
-  if (isRecordingVideo.value) stopRecording()
-  if (micOn.value && micStream) {
-    micStream.getAudioTracks().forEach(t => t.stop())
-    micStream = null
-    micOn.value = false
-  }
   if (window.speechSynthesis) {
     window.speechSynthesis.cancel()
   }
