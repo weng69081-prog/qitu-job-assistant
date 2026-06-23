@@ -857,11 +857,13 @@ async function saveField(field) {
     const resp = await fetch(`/api/user/profile?${params}`, { method: 'POST' })
     if (resp.ok) {
       userProfile.value[field] = val
-      // also update agentForm
       if (field === 'city') agentForm.value.city = val
       if (field === 'job_targets') agentForm.value.target = val
       if (field === 'skills') agentForm.value.skills = val
-      ElMessage.success('已保存')
+      ElMessage.success('已保存，正在刷新推荐岗位...')
+      // 保存后自动按新画像刷新推荐岗位
+      currentPage.value = 1
+      await loadJobs()
     }
   } catch { /* ignore */ }
 }
@@ -1028,6 +1030,10 @@ async function loadJobs() {
   const params = new URLSearchParams()
   params.set('page', currentPage.value)
   params.set('page_size', pageSize)
+  // 传token让后端按用户画像自动推荐
+  const tok = getToken()
+  if (tok) params.set('token', tok)
+  // 用户手动筛选参数（覆盖画像推荐）
   if (filters.value.company_size) params.set('company_size', filters.value.company_size)
   if (filters.value.job_type) params.set('job_type', filters.value.job_type)
   if (filters.value.city) params.set('city', filters.value.city)
