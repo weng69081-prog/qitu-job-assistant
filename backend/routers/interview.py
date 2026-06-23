@@ -857,6 +857,9 @@ def chat_continue(data: dict = Body({})):
             return {"error": "会话不存在或已过期"}
 
         questions = _iv_json.loads(conv.questions_json) if conv.questions_json else []
+        # 旧会话兼容：没有预生成题目的给个默认提示
+        if not questions:
+            questions = [f"请聊聊{conv.job or '岗位'}相关的话题"]
         messages = _iv_json.loads(conv.messages_json) if conv.messages_json else []
 
         # 追加用户回答
