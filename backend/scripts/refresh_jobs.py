@@ -9,9 +9,12 @@ sys.path.insert(0, ".")
 from models import DeliveryJob
 from database import SessionLocal
 
-API_KEY = os.getenv("LLM_API_KEY", "sk-cuftttewiw9g8ffl58xxsmcrr6nb6yxfjst4bby8hel4c9kn")
+API_KEY = os.getenv("LLM_API_KEY", "")
 BASE_URL = os.getenv("LLM_BASE_URL", "https://api.xiaomimimo.com/v1")
 MODEL = os.getenv("LLM_MODEL", "mimo-v2-flash")
+# 根据 URL 选择认证方式
+AUTH_HEADER = "api-key" if "mimo" in BASE_URL else "Authorization"
+AUTH_VAL = API_KEY if "mimo" in BASE_URL else f"Bearer {API_KEY}"
 
 BATCH_SIZE = 3
 
@@ -46,7 +49,7 @@ def chat(prompt, max_tokens=3000):
     }).encode("utf-8")
     req = urllib.request.Request(
         f"{BASE_URL}/chat/completions", data=body,
-        headers={"api-key": API_KEY, "Content-Type": "application/json"},
+        headers={AUTH_HEADER: AUTH_VAL, "Content-Type": "application/json"},
     )
     try:
         with urllib.request.urlopen(req, timeout=120) as resp:

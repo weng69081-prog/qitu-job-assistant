@@ -15,6 +15,9 @@ if env_path.exists():
 API_KEY = os.getenv("LLM_API_KEY", "")
 BASE_URL = os.getenv("LLM_BASE_URL", "https://api.siliconflow.cn/v1")
 MODEL = os.getenv("LLM_MODEL", "Qwen/Qwen3-32B")
+# MiMo 配置（表情分析专用）
+MIMO_KEY = os.getenv("MIMO_API_KEY", "")
+MIMO_URL = os.getenv("MIMO_BASE_URL", "https://api.xiaomimimo.com/v1")
 
 import urllib.request
 
@@ -31,8 +34,10 @@ def chat(prompt: str, system: str = "", temperature: float = 0.7, max_tokens: in
     messages.append({"role": "user", "content": prompt})
 
     use_model = model or MODEL
-    use_url = base_url or BASE_URL
     use_key = api_key or API_KEY
+    use_url = base_url or BASE_URL
+    # DeepSeek 用 Bearer token，MiMo 用 api-key
+    auth_header = {"Authorization": f"Bearer {use_key}"} if "deepseek" in use_url else {"api-key": use_key}
 
     body = json.dumps({
         "model": use_model,
@@ -46,7 +51,7 @@ def chat(prompt: str, system: str = "", temperature: float = 0.7, max_tokens: in
         f"{use_url}/chat/completions",
         data=body,
         headers={
-            "api-key": use_key,
+            **auth_header,
             "Content-Type": "application/json",
         },
     )
@@ -139,13 +144,15 @@ def analyze_emotion(image_base64: str) -> dict:
     last_err = ""
     for i, content in enumerate(formats):
         try:
+            # 表情分析固定走 MiMo（需要多模态模型）
+            emo_headers = {"api-key": MIMO_KEY, "Content-Type": "application/json"}
             payload = {
                 "model": "mimo-v2-omni",
                 "messages": [{"role": "user", "content": content}],
                 "max_tokens": 500,
                 "temperature": 0.3
             }
-            resp = httpx.post(f"{BASE_URL}/chat/completions", json=payload, headers={"api-key": API_KEY, "Content-Type": "application/json"}, timeout=30)
+            resp = httpx.post(f"{MIMO_URL}/chat/completions", json=payload, headers=emo_headers, timeout=30)
             resp.raise_for_status()
             text = resp.json()["choices"][0]["message"]["content"]
             # 尝试提取JSON
@@ -191,6 +198,10 @@ def chat_messages(messages: list, system: str = "", max_tokens: int = 1024, temp
         full_messages.append({"role": "system", "content": system})
     full_messages.extend(messages)
 
+    # chat_messages 也用环境变量判断认证方式
+    use_url = BASE_URL
+    ch_headers = {"Authorization": f"Bearer {API_KEY}"} if "deepseek" in use_url else {"api-key": API_KEY}
+    
     body = json.dumps({
         "model": MODEL,
         "messages": full_messages,
@@ -199,9 +210,9 @@ def chat_messages(messages: list, system: str = "", max_tokens: int = 1024, temp
     }).encode("utf-8")
 
     req = urllib.request.Request(
-        f"{BASE_URL}/chat/completions",
+        f"{use_url}/chat/completions",
         data=body,
-        headers={"api-key": API_KEY, "Content-Type": "application/json"},
+        headers={**ch_headers, "Content-Type": "application/json"},
     )
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:
@@ -235,11 +246,12 @@ async def async_chat(prompt: str, system: str = "", temperature: float = 0.7, ma
         "temperature": temperature,
         "max_tokens": max_tokens,
     }
+    async_headers = {"Authorization": f"Bearer {use_key}"} if "deepseek" in use_url else {"api-key": use_key}
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
             resp = await client.post(
                 f"{use_url}/chat/completions",
-                headers={"api-key": use_key, "Content-Type": "application/json"},
+                headers={**async_headers, "Content-Type": "application/json"},
                 json=payload
             )
             if resp.status_code != 200:
