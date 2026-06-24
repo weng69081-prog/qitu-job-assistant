@@ -622,12 +622,10 @@ def _try_ai_generate(career_name: str) -> dict | None:
 
 
 @router.get("/paths")
-def get_paths(user_id: int = 1):
+def get_paths(user_id: int = 0):
     db = SessionLocal()
     try:
-        paths = db.query(LearningPath).filter(
-            LearningPath.user_id == user_id
-        ).order_by(LearningPath.created_at.desc()).all()
+        paths = db.query(LearningPath).order_by(LearningPath.created_at.desc()).all()
         return {
             "items": [
                 {

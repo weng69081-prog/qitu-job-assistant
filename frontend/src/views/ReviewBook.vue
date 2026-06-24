@@ -45,7 +45,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 
-const API = 'http://localhost:8000'
+const API = ''
 const reviews = ref([])
 
 function isOverdue(dateStr) {

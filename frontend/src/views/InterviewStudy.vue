@@ -99,7 +99,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
-const API = 'http://localhost:8000'
+const API = ''
 const sessionId = route.params.sessionId
 
 const session = ref({})

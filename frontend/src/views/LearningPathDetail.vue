@@ -121,7 +121,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { BookOpen, FileText } from 'lucide-vue-next'
 const route = useRoute()
 const router = useRouter()
-const API = 'http://localhost:8000'
+const API = ''
 const pathId = route.params.pathId
 
 const path = ref({})

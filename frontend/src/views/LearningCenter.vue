@@ -450,7 +450,7 @@ const router = useRouter()
 const route = useRoute()
 const store = useCareerStore()
 
-const API = 'http://localhost:8000'
+const API = ''
 
 const tabs = [
   { key: 'study', icon: Book, label: '学习进度' },

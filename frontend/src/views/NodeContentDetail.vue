@@ -118,7 +118,7 @@ import { useRoute } from 'vue-router'
 import { FileText, Pencil, Save, Monitor, RefreshCw, MessageSquare, CheckCircle } from 'lucide-vue-next'
 
 const route = useRoute()
-const API = 'http://localhost:8000'
+const API = ''
 const nodeId = route.params.nodeId
 const nodeTitle = ref('学习节点')
 const nodeDesc = ref('')
