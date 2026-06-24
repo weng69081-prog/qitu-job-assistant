@@ -280,7 +280,7 @@ const router = useRouter()
 const store = useCareerStore()
 
 // 数据
-const selectedCategory = ref('计算机类')
+const selectedCategory = ref('')
 const majorCategories = ['计算机类', '机电土木类', '经管财会类', '文法艺术类', '医药护理类', '教育师范类', '农林类', '轻工制造类']
 const allCareers = ref([])
 const loading = ref(false)
@@ -523,6 +523,20 @@ async function loadCareers() {
 }
 
 onMounted(async () => {
+  // 先读取用户资料，自动切换到用户的专业大类
+  try {
+    const token = localStorage.getItem('token')
+    if (token) {
+      const res = await axios.get(`${API}/user/profile`, { params: { token } })
+      const p = res.data.profile || {}
+      if (p.major_category) {
+        selectedCategory.value = p.major_category
+      }
+    }
+  } catch (e) {
+    // 获取失败则使用默认（空字符串，loadCareers会兜底）
+  }
+  if (!selectedCategory.value) selectedCategory.value = '计算机类'
   await loadCareers()
   // 自动加载视频 — 优先展示收藏岗位的视频
   nextTick(() => {
